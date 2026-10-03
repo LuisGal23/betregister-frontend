@@ -7,7 +7,8 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "test:ledger": "node --experimental-strip-types --test tests/ledger-utils.test.ts tests/market-insights.test.ts tests/bank-tools.test.ts"
+    "test:ledger": "node --experimental-strip-types --test tests/ledger-utils.test.ts tests/market-insights.test.ts tests/bank-tools.test.ts",
+    "vercel-build": "ng build"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
