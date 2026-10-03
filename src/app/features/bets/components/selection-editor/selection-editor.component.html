@@ -1,0 +1,107 @@
+<div class="selection-editor">
+  @if (showSport()) {
+    <label
+      >Deporte de la selección {{ index() + 1
+      }}<select
+        [name]="'selectionSport' + index()"
+        [ngModel]="value().sport"
+        (ngModelChange)="changeSport($event)"
+      >
+        <option>Fútbol</option>
+        <option>Béisbol</option>
+        <option value="Americano">NFL</option>
+      </select></label
+    >
+  }
+  @if (games().length > 1) {
+    <label
+      >Partido de la selección {{ index() + 1
+      }}<select
+        [name]="'selectionGame' + index()"
+        [ngModel]="value().game_id"
+        (ngModelChange)="changeGame($event)"
+        required
+      >
+        <option value="" disabled>Elige el partido</option>
+        @for (g of games(); track g.id) {
+          <option [value]="g.id">{{ g.away }} vs {{ g.home }}</option>
+        }
+      </select></label
+    >
+  }
+  @if (!games().length && showManual()) {
+    <label
+      >Partido {{ index() + 1
+      }}<input
+        [name]="'manualEvent' + index()"
+        [(ngModel)]="value().event_label"
+        required
+        maxlength="120"
+        placeholder="Ej. América vs. Pumas"
+    /></label>
+  }
+  <label
+    >Mercado de la selección {{ index() + 1
+    }}<select
+      [name]="'selectionMarket' + index()"
+      [ngModel]="value().market"
+      (ngModelChange)="changeMarket($event)"
+    >
+      @for (market of markets[value().sport]; track market) {
+        <option [value]="market">
+          {{ market === 'ML' ? 'Moneyline · ganador del partido' : market }}
+        </option>
+      }
+    </select></label
+  >
+  @if (value().market === 'Otro') {
+    <label
+      >Describe el otro mercado<input
+        [name]="'otherDescription' + index()"
+        [(ngModel)]="value().description"
+        required
+        minlength="3"
+        maxlength="200"
+        placeholder="Ej. Jugador marca en cualquier momento" /></label
+    ><small>Se guardará como Otro junto con esta descripción.</small>
+  } @else {
+    <div class="choice-row">
+      <label
+        >{{
+          totals()
+            ? 'Más / menos'
+            : value().market === 'Ambos anotan'
+              ? '¿Ambos anotan?'
+              : 'Tu elección'
+        }}<select [name]="'selectionPick' + index()" [(ngModel)]="value().pick" required>
+          @if (totals()) {
+            <option>Más de</option>
+            <option>Menos de</option>
+          } @else if (value().market === 'Ambos anotan') {
+            <option>Sí</option>
+            <option>No</option>
+          } @else {
+            <option value="Local">{{ game()?.home || 'Local' }}</option>
+            <option value="Visitante">{{ game()?.away || 'Visitante' }}</option>
+            @if (value().market === 'ML' && value().sport === 'Fútbol') {
+              <option>Empate</option>
+            }
+          }
+        </select></label
+      >
+      @if (totals() || handicap()) {
+        <label
+          >Línea<input
+            [name]="'selectionLine' + index()"
+            type="number"
+            [(ngModel)]="value().line"
+            [min]="handicap() ? -10000 : 0"
+            max="10000"
+            step="0.25"
+            required
+            [placeholder]="handicap() ? '-0.5' : '2.5'"
+        /></label>
+      }
+    </div>
+  }
+</div>

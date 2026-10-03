@@ -1,0 +1,24 @@
+<dialog #dialog aria-labelledby="money-title" (cancel)="$event.preventDefault(); dismiss.emit()">
+  <header>
+    <div>
+      <h2 id="money-title">Depósitos y retiros</h2>
+      <p>Registra lo que mueves entre tus casas y tu cuenta.</p>
+    </div>
+    <button class="secondary" autofocus (click)="dismiss.emit()" aria-label="Cerrar movimientos">
+      ✕
+    </button>
+  </header>
+  <div class="tabs">
+    <button [class.selected]="tab() === 'new'" (click)="tab.set('new')">
+      Registrar y confirmar</button
+    ><button [class.selected]="tab() === 'history'" (click)="tab.set('history')">Historial</button>
+  </div>
+  @if (vm.error()) {
+    <p role="alert" class="alert">{{ vm.error() }}</p>
+  }
+  @if (vm.notice()) {
+    <p role="status" class="notice">{{ vm.notice() }}</p>
+  }
+  <div [hidden]="tab() !== 'new'"><app-confirmations-page /></div>
+  <div [hidden]="tab() !== 'history'"><app-transactions-page /></div>
+</dialog>

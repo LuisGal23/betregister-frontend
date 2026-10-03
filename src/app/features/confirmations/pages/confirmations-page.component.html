@@ -1,0 +1,114 @@
+<div class="two-column">
+  <section class="panel">
+    <h2>Registrar movimiento</h2>
+    <p class="panel-subtitle">El saldo se actualizará después de confirmarlo.</p>
+    @if (vm.data().houses.length) {
+      <form ngNativeValidate (ngSubmit)="addMovement()">
+        <label
+          >Casa de apuestas<select name="movementHouse" [(ngModel)]="selectedHouse" required>
+            <option value="" disabled>Selecciona una casa</option>
+            @for (h of vm.data().houses; track h.id) {
+              <option [value]="h.id">{{ h.name }} · {{ h.currency }}</option>
+            }
+          </select></label
+        >
+        <div class="form-grid">
+          <label
+            >Tipo de movimiento<select name="kind" [(ngModel)]="kind">
+              <option value="deposit">Depósito</option>
+              <option value="withdrawal">Retiro</option>
+            </select></label
+          ><label
+            >Importe ({{ inputCurrency() }})<input
+              name="amount"
+              type="number"
+              [(ngModel)]="amount"
+              min="0.01"
+              max="9999999999.99"
+              step="0.01"
+              required
+              placeholder="500.00"
+          /></label>
+        </div>
+        <details class="filter-disclosure">
+          <summary>Saldo inicial y comisiones</summary>
+          <p class="field-help">
+            Para empezar, registra tu saldo inicial como depósito y confírmalo. Registra las
+            cantidades que realmente recibes o retiras, después de comisiones.
+          </p>
+        </details>
+        <button class="primary" [disabled]="vm.busy()">
+          <app-icon name="plus" />Registrar movimiento
+        </button>
+      </form>
+    } @else {
+      <div class="empty-block">
+        <app-icon name="bank" />
+        <p>Añade una casa antes de registrar movimientos.</p>
+        <a class="primary button-link" routerLink="/bank">Añadir casa</a>
+      </div>
+    }
+  </section>
+</div>
+<section class="panel">
+  <div class="section-heading">
+    <div>
+      <h2>Movimientos por confirmar</h2>
+      <p>{{ vm.pendingMovements().length }} registros pendientes</p>
+    </div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Movimiento / casa</th>
+          <th>Fecha</th>
+          <th>Importe original</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of vm.pendingMovements(); track m.id) {
+          <tr>
+            <td>
+              <strong>{{ m.kind === 'deposit' ? 'Depósito' : 'Retiro' }}</strong
+              ><small>{{ m.house }}</small>
+            </td>
+            <td>{{ timestamp(m.created) | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ vm.native(Math.abs(m.amount), m.currency) }}</td>
+            <td>
+              <div class="actions">
+                <button class="primary" [disabled]="vm.busy()" (click)="reviewMovement(m)">
+                  Revisar y confirmar</button
+                ><button
+                  class="secondary"
+                  [disabled]="vm.busy()"
+                  (click)="movements.decide(m.id, 'cancel')"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="empty">Todo al día. No hay movimientos pendientes.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (review(); as selected) {
+  <app-confirm-dialog
+    [title]="selected.title"
+    [message]="selected.message"
+    [amount]="selected.amount"
+    [note]="selected.note"
+    [busy]="vm.busy()"
+    [error]="vm.error()"
+    (confirm)="confirmReview()"
+    (dismiss)="review.set(null)"
+  />
+}

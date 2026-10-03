@@ -1,0 +1,108 @@
+<section class="guidance" aria-label="Gestión por porcentaje fijo">
+  @if (house(); as h) {
+    <div class="house-line">
+      <strong>{{ h.name }}</strong
+      ><span>{{ h.currency }}</span>
+    </div>
+    <dl class="numbers">
+      <div>
+        <dt>Bank disponible</dt>
+        <dd>{{ vm.native(h.balance, h.currency) }}</dd>
+      </div>
+      <div>
+        <dt>En apuestas abiertas</dt>
+        <dd>{{ vm.native(h.pending, h.currency) }}</dd>
+      </div>
+    </dl>
+    <div class="reference" [class.over-reference]="overReference()">
+      <span>Referencia por apuesta · 2%</span>
+      <strong>{{ vm.native(maximum(), h.currency) }}</strong>
+      <small
+        >Se recalcula con el saldo disponible actual de esta casa. Referencia del 1%:
+        {{ vm.native(Math.floor(h.balance * 0.01), h.currency) }}.</small
+      >
+      @if (overReference()) {
+        <p class="over-warning">
+          El importe supera la referencia del 2%. Estás aumentando tu exposición.
+        </p>
+      }
+    </div>
+    @if (amount() > 0) {
+      <div class="risk" [attr.data-level]="risk().level" [class.over-reference]="overReference()">
+        <div>
+          <strong>{{ percent(risk().percent) }}</strong
+          ><span>{{ risk().level }}</span>
+        </div>
+        <p>de tu saldo disponible en {{ h.name }}</p>
+        <p>{{ risk().message }}</p>
+      </div>
+      @if (amount() * 100 > h.balance) {
+        <p class="warning">
+          El importe supera el saldo disponible. Reduce el importe o confirma un depósito.
+        </p>
+      }
+    } @else {
+      <p class="hint">Escribe un importe para ver tu nivel de exposición en tiempo real.</p>
+    }
+    <details class="exposure-details">
+      <summary>Exposición y bank general</summary>
+      <p class="general">
+        Sobre tu bank general: <strong>{{ percent(general()) }}</strong
+        ><small>Disponible + apuestas abiertas de todas tus casas, en la moneda de vista.</small>
+      </p>
+      @if (exposure(); as e) {
+        <dl class="numbers exposure">
+          <div>
+            <dt>Abiertas de hoy + este importe</dt>
+            <dd>{{ percent(e.today) }}</dd>
+          </div>
+          <div>
+            <dt>Total abierto + este importe</dt>
+            <dd>{{ percent(e.total) }}</dd>
+          </div>
+        </dl>
+        <small
+          >Porcentajes sobre el bank de esta casa: disponible + pendiente. Referencia de exposición
+          abierta: 10%.</small
+        >
+        @if (e.total > 10) {
+          <p class="warning">
+            La exposición abierta supera el 10%. Revisa tus apuestas pendientes antes de añadir más
+            importe.
+          </p>
+        }
+      }
+    </details>
+    @if ((h.month_loss_percent ?? 0) >= 10) {
+      <p class="warning">
+        Stop-loss mensual: pérdidas realizadas del {{ percent(h.month_loss_percent ?? null) }} sobre
+        el capital de referencia (inicio de mes + depósitos). Considera detenerte y revisar tu
+        límite.
+      </p>
+    }
+  } @else {
+    <p class="hint">
+      Selecciona una casa de apuestas para ver su saldo, el rango del 1–2% y tu exposición.
+    </p>
+  }
+  <details>
+    <summary>Cómo leer los niveles</summary>
+    <ul>
+      <li><strong>Hasta 2% · Bajo.</strong> Dentro del límite de referencia.</li>
+      <li>
+        <strong>Más de 2% a 5% · Moderado.</strong> Una parte considerable en una sola apuesta.
+      </li>
+      <li>
+        <strong>Más de 5% a 10% · Alto.</strong> Pocas pérdidas pueden reducir mucho el saldo.
+      </li>
+      <li><strong>Más de 10% · Extremo.</strong> Se desaconseja esa concentración.</li>
+    </ul>
+    <p>
+      Si recalculas el importe después de cada pérdida, diez pérdidas seguidas al 2% dejan cerca del
+      82% del saldo inicial; al 10%, cerca del 35%.
+    </p>
+  </details>
+  <p class="footnote">
+    Son referencias de exposición, no una obligación de apostar ni una garantía de resultados.
+  </p>
+</section>

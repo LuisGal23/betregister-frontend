@@ -1,0 +1,226 @@
+<div class="page-heading">
+  <div>
+    <span class="eyebrow">SEGUIMIENTO PERSONAL</span>
+    <h1>Retos</h1>
+    <p>Organiza tus objetivos y vincula tus tickets, paso a paso.</p>
+  </div>
+  <button class="secondary" (click)="reload()" [disabled]="vm.busy()">Actualizar</button>
+</div>
+<details class="filter-disclosure"><summary>Cómo funcionan los retos</summary><p class="info-note">
+  Son registros de seguimiento. El importe inicial es una referencia: no reserva dinero, no hace
+  depósitos ni recomienda reinvertir el retorno. Los resultados de los tickets vinculados actualizan
+  el progreso.
+</p></details>
+<div class="challenge-layout">
+  <details class="panel collapsible" [open]="!service.items().length"><summary>+ Crear un reto</summary>
+    @if (vm.data().houses.length) {
+      <form ngNativeValidate (ngSubmit)="create()">
+        <label
+          >Nombre<input
+            name="title"
+            [(ngModel)]="title"
+            required
+            minlength="3"
+            maxlength="80"
+            placeholder="Ej. Seguimiento de octubre" /></label
+        ><label
+          >Tipo de reto<select name="kind" [(ngModel)]="kind">
+            <option value="ladder">Escalera · secuencia de tickets</option>
+            <option value="target">Objetivo de saldo de referencia</option>
+            <option value="tracking">Seguimiento de un número de apuestas</option>
+          </select></label
+        ><label
+          >Casa<select name="house" [(ngModel)]="house" required>
+            <option value="" disabled>Selecciona una casa</option>
+            @for (h of vm.data().houses; track h.id) {
+              <option [value]="h.id">{{ h.name }} · {{ h.currency }}</option>
+            }
+          </select></label
+        ><label
+          >Importe inicial de referencia ({{ currency() }})<input
+            name="initial"
+            type="number"
+            [(ngModel)]="initial"
+            required
+            min="0.01"
+            max="9999999999.99"
+            step="0.01"
+        /></label>
+        @if (kind !== 'tracking') {
+          <label
+            >Objetivo de referencia ({{ currency() }})<input
+              name="target"
+              type="number"
+              [(ngModel)]="target"
+              required
+              [min]="(initial ?? 0) + 0.01"
+              max="9999999999.99"
+              step="0.01"
+          /></label>
+        }
+        <label
+          >{{
+            kind === 'tracking' ? 'Apuestas cerradas a registrar' : 'Pasos previstos (orientativo)'
+          }}<input
+            name="steps"
+            type="number"
+            [(ngModel)]="steps"
+            required
+            min="1"
+            max="100"
+            step="1" /></label
+        ><button class="primary" [disabled]="vm.busy()">Crear reto</button>
+      </form>
+    } @else {
+      <p>Añade una casa para comenzar.</p>
+      <a routerLink="/bank">Ir a mi bank</a>
+    }
+  </details>
+  <section class="challenge-list">
+    <div class="section-heading">
+      <h2>Tus retos</h2>
+      <label class="check"
+        ><input type="checkbox" [ngModel]="archived()" (ngModelChange)="archived.set($event)" /> Ver
+        archivados</label
+      >
+    </div>
+    @if (loading()) {
+      <p role="status">Cargando retos…</p>
+    } @else if (failed()) {
+      <div class="alert">
+        No se pudieron cargar los retos.<button class="secondary" (click)="reload()">
+          Reintentar
+        </button>
+      </div>
+    } @else {
+      @for (c of rows(); track c.id) {
+        <article class="panel challenge-card">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">{{ kinds[c.kind] }} · {{ c.house }}</span>
+              <h2>{{ c.title }}</h2>
+            </div>
+            <span class="status">{{ statuses[c.status] }}</span>
+          </div>
+          <strong class="challenge-value">{{ vm.native(c.reference, c.currency) }}</strong>
+          <p>
+            Referencia actual · {{ vm.native(c.initial, c.currency) }} iniciales + neto de tickets
+            cerrados
+          </p>
+          <progress
+            [value]="c.progress"
+            max="100"
+            [attr.aria-label]="'Progreso de ' + c.title"
+          ></progress>
+          <p>
+            {{ c.closed }} tickets cerrados · {{ c.steps }} pasos previstos
+            @if (c.kind !== 'tracking') {
+              · Objetivo {{ vm.native(c.target, c.currency) }}
+            }
+            · {{ c.progress.toFixed(0) }}%
+          </p>
+          @if (c.progress >= 100) {
+            <p class="positive">Objetivo de registro alcanzado. Puedes finalizar el reto.</p>
+          }
+          <div class="actions">
+            <button class="primary" (click)="selected.set(c.id); betId = ''">
+              Ver pasos / vincular ticket
+            </button>
+            @if (c.status === 'active') {
+              <button class="secondary" [disabled]="vm.busy()" (click)="status(c, 'paused')">
+                Pausar</button
+              ><button class="secondary" [disabled]="vm.busy()" (click)="status(c, 'completed')">
+                Finalizar
+              </button>
+            } @else {
+              <button class="secondary" [disabled]="vm.busy()" (click)="status(c, 'active')">
+                Reactivar
+              </button>
+            }
+            @if (c.status !== 'archived') {
+              <button class="text-button" [disabled]="vm.busy()" (click)="status(c, 'archived')">
+                Archivar
+              </button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <div class="panel empty-block">
+          <h3>No hay retos {{ archived() ? 'archivados' : 'activos o finalizados' }}</h3>
+          <p>Crea uno y vincula las apuestas que quieras seguir.</p>
+        </div>
+      }
+    }
+  </section>
+</div>
+@if (detail(); as c) {
+  <section class="panel challenge-detail">
+    <div class="section-heading">
+      <div>
+        <h2>{{ c.title }} · pasos</h2>
+        <p>
+          Solo tickets de {{ c.house }}. Pendiente vinculado:
+          {{ vm.native(c.pending, c.currency) }}.
+        </p>
+      </div>
+      <button class="secondary" (click)="selected.set(null)">Cerrar detalle</button>
+    </div>
+    @if (c.status === 'active') {
+      <form class="compact-form" ngNativeValidate (ngSubmit)="link()">
+        <label
+          >Ticket existente<select name="betId" [(ngModel)]="betId" required>
+            <option value="" disabled>Selecciona una apuesta</option>
+            @for (b of available(); track b.id) {
+              <option [value]="b.id">
+                #{{ b.id }} · {{ b.event }} · {{ vm.labels[b.status] }}
+              </option>
+            }
+          </select></label
+        ><button class="primary" [disabled]="vm.busy() || !available().length">Vincular</button
+        ><a class="text-button" routerLink="/bets">Registrar una apuesta</a>
+      </form>
+    }
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Paso</th>
+            <th>Ticket</th>
+            <th>Resultado</th>
+            <th>Neto cerrado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of c.bets; track b.id; let i = $index) {
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ b.event }}</td>
+              <td>{{ vm.labels[b.status] }}</td>
+              <td>
+                {{ b.status === 'pending' ? '—' : vm.native(b.payout - b.stake, c.currency) }}
+              </td>
+              <td>
+                @if (c.status === 'active') {
+                  <button class="text-button" [disabled]="vm.busy()" (click)="unlink(c, b.id)">
+                    Desvincular
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">Todavía no hay tickets vinculados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <p class="field-help">
+      Las anuladas no avanzan el contador; las pendientes no aportan neto hasta cerrar. Corregir un
+      ticket recalcula el reto al actualizar. Vincular o desvincular no cambia su saldo ni
+      resultado. Un ticket puede estar en varios retos: no sumes sus referencias como si fueran
+      dinero separado.
+    </p>
+  </section>
+}

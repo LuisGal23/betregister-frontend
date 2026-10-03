@@ -1,0 +1,19 @@
+<dialog
+  #dialog
+  aria-labelledby="bank-guidance-title"
+  (cancel)="$event.preventDefault(); dismiss.emit()"
+>
+  <header>
+    <span>DETALLE DE EXPOSICIÓN</span
+    ><button
+      autofocus
+      type="button"
+      class="secondary"
+      aria-label="Cerrar detalle de bank"
+      (click)="dismiss.emit()"
+    >
+      Cerrar ×
+    </button>
+  </header>
+  <app-bank-guidance [houseId]="houseId()" [stake]="stake()" />
+</dialog>

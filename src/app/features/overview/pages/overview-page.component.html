@@ -1,0 +1,92 @@
+@for (h of vm.data().houses; track h.id) {
+  @if ((h.month_loss_percent ?? 0) >= 10) {
+    <div class="alert" role="status">
+      Stop-loss · {{ h.name }}: pérdida realizada del mes de {{ h.month_loss_percent?.toFixed(2) }}%
+      sobre el capital al inicio más depósitos del mes. Revisa tu límite antes de seguir.
+    </div>
+  }
+}
+<div class="page-heading">
+  <div>
+    <h1>Resumen</h1>
+    <p>Saldos, resultados y actividad reciente.</p>
+  </div>
+  <div class="quick-actions">
+    <a routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }"
+      ><app-icon name="plus" /> Depositar o retirar</a
+    >
+    <a class="primary button-link" routerLink="/bets"><app-icon name="plus" />Registrar apuesta</a>
+  </div>
+</div>
+<app-charts />
+<div class="two-column equal-columns overview-bottom">
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Últimas apuestas</h2>
+        <p>Tus cinco registros más recientes</p>
+      </div>
+      <a routerLink="/bets" [queryParams]="{ view: 'history' }">Ver todas ↗</a>
+    </div>
+    @if (!overview.recentBets().length) {
+      <div class="empty-block">
+        <app-icon name="bets" />
+        <h3>Sin apuestas registradas</h3>
+        <p>Registra una apuesta para verla aquí.</p>
+        <a class="primary button-link" routerLink="/bets">Registrar apuesta</a>
+      </div>
+    } @else {
+      <div class="recent-list">
+        @for (b of overview.recentBets(); track b.id) {
+          <div class="recent-row">
+            <span class="mini-house">{{ b.house.slice(0, 1) }}</span>
+            <div class="recent-description">
+              <strong>{{ b.event }}</strong
+              ><small>{{ b.house }} · Cuota {{ b.odds }}</small>
+            </div>
+            <div class="recent-result">
+              <strong>{{ vm.money(b.stake, b.currency) }}</strong
+              ><span [class]="'status ' + b.status">{{ vm.labels[b.status] }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </section>
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Por confirmar</h2>
+        <p>Depósitos y retiros pendientes</p>
+      </div>
+      <a routerLink="/confirmations">Revisar ↗</a>
+    </div>
+    @for (m of vm.pendingMovements().slice(0, 4); track m.id) {
+      <div class="recent-row">
+        <span class="movement-icon" [class.withdrawal]="m.kind === 'withdrawal'"
+          ><app-icon name="transactions"
+        /></span>
+        <div class="recent-description">
+          <strong>{{ m.kind === 'deposit' ? 'Depósito' : 'Retiro' }}</strong
+          ><small>{{ m.house }}</small>
+        </div>
+        <div class="recent-result">
+          <strong>{{ vm.native(Math.abs(m.amount), m.currency) }}</strong
+          ><span class="status pending">Pendiente</span>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-block">
+        <app-icon name="check" />
+        <h3>Sin movimientos pendientes</h3>
+        <p>No tienes movimientos pendientes por confirmar.</p>
+      </div>
+    }
+  </section>
+</div>
+
+<app-sport-efficiency />
+
+@if (money()) {
+  <app-money-dialog [initial]="money()" (dismiss)="closeMoney()" />
+}

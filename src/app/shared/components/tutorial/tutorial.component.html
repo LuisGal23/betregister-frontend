@@ -1,0 +1,24 @@
+<section
+  class="tour-card"
+  role="region"
+  aria-label="Tutorial de cómo usar BetRegister"
+  (keydown.escape)="dismiss.emit()"
+>
+  <div class="tour-top">
+    <span>TUTORIAL · {{ index() + 1 }} / {{ steps.length }}</span
+    ><button aria-label="Cerrar tutorial" (click)="dismiss.emit()">✕</button>
+  </div>
+  <h2 #heading tabindex="-1">{{ steps[index()].title }}</h2>
+  <p>{{ steps[index()].text }}</p>
+  <div class="progress" aria-hidden="true">
+    <span [style.width.%]="((index() + 1) / steps.length) * 100"></span>
+  </div>
+  <footer>
+    <button class="secondary" [disabled]="index() === 0" (click)="go(index() - 1)">Anterior</button>
+    @if (index() === steps.length - 1) {
+      <button class="primary" (click)="dismiss.emit()">Terminar</button>
+    } @else {
+      <button class="primary" (click)="go(index() + 1)">Siguiente →</button>
+    }
+  </footer>
+</section>

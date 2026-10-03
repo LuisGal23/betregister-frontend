@@ -1,0 +1,130 @@
+@if (vm.loading()) {
+  <div class="boot">
+    <img width="40" src="favicon.svg" alt="BetRegister" />
+    <p>Preparando tu espacio…</p>
+  </div>
+} @else {
+  @if (publicPage()) {
+    <header class="public-header">
+      <a class="brand" routerLink="/"
+        ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister"
+      /></a>
+      <nav aria-label="Acceso">
+        <a routerLink="/" fragment="como-funciona" class="how-link">Cómo funciona</a
+        ><button
+          class="theme-switch"
+          [attr.aria-label]="theme.dark() ? 'Usar tema claro' : 'Usar tema oscuro'"
+          (click)="theme.toggle()"
+        >
+          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" />
+        </button>
+        @if (vm.authenticated()) {
+          <a class="primary button-link" routerLink="/overview"
+            >Mi resumen <app-icon name="arrow"
+          /></a>
+        } @else {
+          <a class="login-link" routerLink="/login">Iniciar sesión</a
+          ><a class="primary button-link" routerLink="/register">Crear cuenta</a>
+        }
+      </nav>
+    </header>
+  } @else {
+    <a class="skip-link" href="#main-content" (click)="focusMain($event)">Saltar al contenido</a>
+    @if (sidebarOpen()) {
+      <button class="sidebar-scrim" aria-label="Cerrar menú" (click)="closeMenu()"></button>
+    }
+    <aside #sidebar class="sidebar" [class.open]="sidebarOpen()" (keydown.escape)="closeMenu()">
+      <div class="sidebar-brand">
+        <a class="brand" routerLink="/overview"
+          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" /></a
+        ><button class="mobile-close" aria-label="Cerrar menú lateral" (click)="closeMenu()">
+          <app-icon name="close" />
+        </button>
+      </div>
+      <span class="nav-label">MI ESPACIO</span>
+      <nav aria-label="Navegación principal">
+        @for (link of links; track link.path) {
+          <a
+            [routerLink]="'/' + link.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            (click)="closeMenu()"
+            ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
+          >
+        }
+      </nav>
+      <div class="sidebar-bottom">
+        <button #tutorialButton class="theme-row" (click)="tutorial.set(true); closeMenu()">
+          <app-icon name="chat" />Tutorial de cómo usar</button
+        ><button class="theme-row" (click)="theme.toggle()">
+          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" />{{
+            theme.dark() ? 'Tema claro' : 'Tema oscuro'
+          }}
+        </button>
+        <div class="account">
+          <span class="avatar">{{ vm.data().profile.email.slice(0, 2).toUpperCase() }}</span>
+          <div>
+            <strong>Mi cuenta</strong><small>{{ vm.data().profile.email }}</small>
+          </div>
+        </div>
+        <button class="logout" [disabled]="vm.busy()" (click)="auth.logout()">
+          <app-icon name="logout" />Cerrar sesión</button
+        ><small class="adult-label">18+ · Registro responsable</small>
+      </div>
+    </aside>
+    <header class="workspace-header">
+      <div class="workspace-location">
+        <button
+          #menuButton
+          class="mobile-menu"
+          aria-label="Abrir menú"
+          [attr.aria-expanded]="sidebarOpen()"
+          (click)="openMenu()"
+        >
+          <app-icon name="menu" /></button
+        ><span
+          >Mi espacio <b>/</b> <strong>{{ currentTitle() }}</strong></span
+        >
+      </div>
+      <label
+        >Moneda<select
+          aria-label="Moneda de vista"
+          [ngModel]="vm.currency()"
+          (ngModelChange)="bank.savePreferences($event)"
+          [disabled]="vm.busy()"
+        >
+          <option value="MXN">MXN</option>
+          <option value="USD">USD</option>
+        </select></label
+      >
+    </header>
+  }
+  <main
+    id="main-content"
+    tabindex="-1"
+    [class.main-content]="!publicPage()"
+    [class.public-content]="publicPage()"
+    [attr.aria-busy]="vm.busy()"
+  >
+    @if (vm.busy()) {
+      <span class="sync-indicator" role="status">Sincronizando…</span>
+    }
+    @if (vm.authenticated() && vm.error()) {
+      <div class="feedback alert" role="alert">
+        {{ vm.error() }}<button class="text-button" (click)="vm.error.set('')">Cerrar</button>
+      </div>
+    }
+    @if (vm.authenticated() && vm.notice()) {
+      <div class="feedback notice" role="status">
+        {{ vm.notice() }}<button class="text-button" (click)="vm.notice.set('')">Cerrar</button>
+      </div>
+    }
+    <router-outlet (activate)="closeMenu()" />
+  </main>
+  @if (tutorial() && !publicPage()) {
+    <app-tutorial (dismiss)="closeTutorial()" />
+  }
+  <footer [class.private-footer]="!publicPage()">
+    BetRegister <span>Tu registro personal · 18+</span>
+  </footer>
+}

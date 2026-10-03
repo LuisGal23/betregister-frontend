@@ -1,0 +1,25 @@
+<dialog #dialog (cancel)="dismiss.emit()" aria-labelledby="review-title">
+  <form method="dialog" (submit)="$event.preventDefault(); confirm.emit()">
+    <span class="eyebrow">REVISA LOS DATOS</span>
+    <h2 id="review-title">{{ title() }}</h2>
+    <p>{{ message() }}</p>
+    <div class="review-amount">{{ amount() }}</div>
+    <small>{{ note() }}</small>
+    @if (error()) {
+      <div class="alert" role="alert">{{ error() }}</div>
+    }
+    <div class="dialog-actions">
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="busy()"
+        (click)="dismiss.emit()"
+        autofocus
+      >
+        Volver</button
+      ><button class="primary" [disabled]="busy()">
+        {{ busy() ? 'Guardando…' : confirmLabel() }}
+      </button>
+    </div>
+  </form>
+</dialog>

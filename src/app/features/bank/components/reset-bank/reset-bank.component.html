@@ -1,0 +1,20 @@
+<details class="panel collapsible">
+  <summary>Empezar de nuevo</summary>
+  <p>Reinicia tu registro y crea un bank desde cero. Conservas tu cuenta y preferencias.</p>
+  <button type="button" class="secondary negative" (click)="open()">Borrar mi bank y mi historial</button>
+</details>
+<dialog #dialog (cancel)="close($event)" aria-labelledby="reset-title" aria-describedby="reset-description">
+  <form (ngSubmit)="reset()" ngNativeValidate>
+    <h2 id="reset-title">¿Empezar desde cero?</h2>
+    <p id="reset-description">Se eliminarán permanentemente todas tus casas, apuestas (incluso pendientes y ocultas), depósitos, retiros y retos. Tus gráficas y recomendaciones volverán a cero. No se puede deshacer.</p>
+    <p>Esto solo borra registros de BetRegister; no retira dinero de ninguna casa de apuestas.</p>
+    <p>Si necesitas una copia, exporta tus datos desde Mis apuestas antes de continuar.</p>
+    <label>Escribe EMPEZAR DE NUEVO<input name="confirmation" [(ngModel)]="confirmation" autocomplete="off" required [disabled]="busy()" /></label>
+    <label>Tu contraseña<input name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required minlength="10" [disabled]="busy()" /></label>
+    @if (error()) { <p role="alert" class="negative">{{ error() }}</p> }
+    <div class="actions">
+      <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="close()">Cancelar</button>
+      <button class="danger" [disabled]="busy() || confirmation !== 'EMPEZAR DE NUEVO' || password.length < 10">{{ busy() ? 'Borrando…' : 'Borrar todos mis registros' }}</button>
+    </div>
+  </form>
+</dialog>

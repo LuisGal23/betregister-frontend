@@ -1,0 +1,139 @@
+<details open class="picker" (toggle)="toggle($event)">
+  <summary>
+    <small class="step-label">1 · Encuentra tu partido</small>Partidos
+    <span>{{
+      selected().length ? selected().length + ' seleccionado(s)' : 'Elige uno para empezar'
+    }}</span>
+  </summary>
+
+  <div class="sport-tabs" role="group" aria-label="Deporte del calendario">
+    @for (name of ['Fútbol', 'Béisbol', 'Americano']; track name) {
+      <button
+        type="button"
+        [class.active]="sport() === name"
+        [attr.aria-pressed]="sport() === name"
+        (click)="changeSport(name)"
+      >
+        {{ name === 'Americano' ? 'NFL' : name === 'Béisbol' ? 'MLB / KBO' : name }}
+      </button>
+    }
+  </div>
+  <div class="filters">
+    <label
+      >Liga<select
+        [(ngModel)]="league"
+        (ngModelChange)="load()"
+        [ngModelOptions]="{ standalone: true }"
+      >
+        @for (l of options(); track l.id) {
+          <option [value]="l.id">{{ l.name }}{{ l.configured ? '' : ' · requiere clave' }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Fecha de partidos<input
+        type="date"
+        [(ngModel)]="day"
+        (ngModelChange)="load()"
+        [ngModelOptions]="{ standalone: true }"
+    /></label>
+  </div>
+  <input
+    type="search"
+    aria-label="Buscar equipo"
+    placeholder="Buscar equipo…"
+    [ngModel]="query()"
+    (ngModelChange)="query.set($event)"
+    [ngModelOptions]="{ standalone: true }"
+  />
+  <details class="calendar-options">
+    <summary>En vivo y actualización</summary>
+    <small>Horario: {{ vm.data().profile.timezone || 'America/Mexico_City' }}</small>
+    <div class="toolbar">
+      <label class="check"
+        ><input
+          type="checkbox"
+          [ngModel]="onlyLive()"
+          (ngModelChange)="onlyLive.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        Solo en juego</label
+      >
+      <label class="check"
+        ><input
+          type="checkbox"
+          [(ngModel)]="automatic"
+          (ngModelChange)="schedule()"
+          [ngModelOptions]="{ standalone: true }"
+        />
+        Actualización automática</label
+      >
+      <button type="button" class="secondary" [disabled]="loading()" (click)="load()">
+        Actualizar partidos
+      </button>
+    </div>
+    @if (board(); as data) {
+      <p class="source">
+        {{ data.source }} ·
+        {{ data.updated_at ? 'Última consulta: ' + updated(data.updated_at) : 'Sin actualizar' }}
+      </p>
+    }
+  </details>
+  @if (loading()) {
+    <p role="status">Consultando partidos…</p>
+  }
+  @if (error()) {
+    <p role="alert">{{ error() }}</p>
+  }
+  @if (board(); as data) {
+    @if (data.message) {
+      <p class="connection" role="status">{{ data.message }}</p>
+    }
+    <div class="games">
+      @for (game of matches(); track game.id) {
+        <button
+          type="button"
+          class="game"
+          [class.selected]="chosen(game.id)"
+          [attr.aria-pressed]="chosen(game.id)"
+          [attr.aria-label]="
+            (chosen(game.id) ? 'Quitar ' : 'Seleccionar ') + game.away + ' vs ' + game.home
+          "
+          [disabled]="limit() > 1 && selected().length >= limit() && !chosen(game.id)"
+          (click)="choose(game)"
+        >
+          <app-score-card [game]="game" /><span class="choose">{{
+            chosen(game.id) ? '✓ Seleccionado' : 'Seleccionar partido'
+          }}</span>
+        </button>
+      } @empty {
+        @if (!data.message) {
+          <p>
+            No hay partidos para esta fecha y estos filtros. Puedes cambiar de día o registrar el
+            evento manualmente.
+          </p>
+        }
+      }
+    </div>
+  }
+</details>
+@if (selected().length) {
+  <div class="chosen">
+    <strong>Partidos vinculados · {{ selected().length }}/{{ limit() }}</strong
+    ><button type="button" class="text-button" (click)="complete.emit()">Completar ticket →</button>
+    @for (game of selected(); track game.id) {
+      <div>
+        <span
+          >{{ game.away }} vs {{ game.home }}<small>{{ game.league_name }}</small></span
+        ><button
+          type="button"
+          class="text-button"
+          [attr.aria-label]="'Quitar partido ' + game.away + ' vs ' + game.home"
+          (click)="remove(game.id)"
+        >
+          Quitar
+        </button>
+      </div>
+    }
+  </div>
+}

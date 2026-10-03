@@ -1,0 +1,220 @@
+<div class="page-heading">
+  <div>
+    <h1>Tu rendimiento</h1>
+    <p>Explora qué deportes y mercados han tenido mejores resultados en tu registro.</p>
+  </div>
+  <button class="secondary" [disabled]="vm.busy()" (click)="refresh()">Actualizar</button>
+</div>
+<section class="filter-stack" aria-label="Filtros del análisis">
+  <div class="chip-row" role="group" aria-label="Deporte">
+    @for (sport of sports; track sport) {
+      <button
+        [class.active]="insights.sport() === sport"
+        [attr.aria-pressed]="insights.sport() === sport"
+        (click)="chooseSport(sport)"
+      >
+        {{ sportLabel(sport) }}
+      </button>
+    }
+  </div>
+  <div class="tabs" role="group" aria-label="Agrupar resultados">
+    <button [class.selected]="insights.mode() === 'market'" (click)="chooseMode('market')">
+      Por mercado</button
+    ><button [class.selected]="insights.mode() === 'type'" (click)="chooseMode('type')">
+      Por tipo de apuesta
+    </button>
+  </div>
+  @if (insights.mode() === 'market') {
+    <div class="chip-row subfilters" role="group" aria-label="Mercado">
+      <button
+        [class.active]="!insights.market()"
+        (click)="insights.market.set(''); selected.set(null)"
+      >
+        Todos los mercados
+      </button>
+      @for (market of markets(); track market) {
+        <button
+          [class.active]="insights.market() === market"
+          [attr.aria-pressed]="insights.market() === market"
+          (click)="insights.market.set(market); selected.set(null)"
+        >
+          {{ marketLabel(market) }}
+        </button>
+      }
+    </div>
+  }
+  <details>
+    <summary>Más opciones</summary>
+    <div class="chip-row">
+      <button [class.active]="!insights.type()" (click)="insights.type.set('')">
+        Todos los tickets
+      </button>
+      @for (type of ['simple', 'parlay', 'same_game']; track type) {
+        <button [class.active]="insights.type() === type" (click)="insights.type.set(type)">
+          {{ typeLabel(type) }}
+        </button>
+      }
+    </div>
+    <label class="check"
+      ><input
+        type="checkbox"
+        [ngModel]="insights.includeArchived()"
+        (ngModelChange)="insights.includeArchived.set($event); insights.market.set('')"
+      />Incluir casas eliminadas</label
+    >
+    <div class="chip-row" aria-label="Ordenar">
+      @for (sort of ['profit', 'frequency', 'yield']; track sort) {
+        <button [class.active]="insights.sort() === sort" (click)="insights.sort.set($any(sort))">
+          {{ sort === 'profit' ? 'Neto' : sort === 'frequency' ? 'Frecuencia' : 'Yield' }}
+        </button>
+      }
+    </div>
+  </details>
+</section>
+<p class="analysis-caption">
+  <strong>{{ insights.total() }}</strong> tickets · {{ insights.closed() }} cerrados ·
+  <strong>{{ pending() }} pendientes</strong> · Todo el historial
+</p>
+@if (pending()) {
+  <p class="info-note">
+    Los pendientes ya están registrados.
+    <a routerLink="/bets" [queryParams]="{ status: 'pending' }">Resuelve sus resultados</a> para
+    incluirlos en las ganancias.
+  </p>
+}
+@if (insights.unclassified()) {
+  <p class="info-note">
+    {{ insights.unclassified() }} tickets sin mercado preciso.
+    <a routerLink="/bets" [queryParams]="{ view: 'history' }">Editar sus etiquetas</a>.
+  </p>
+}
+@if (insights.missingRate()) {
+  <p class="alert">
+    Falta una tasa de cambio para comparar importes. <a routerLink="/bank">Revisar moneda</a>.
+  </p>
+}
+@if (insights.total()) {
+  <div class="highlights">
+    @if (insights.ranked().best; as best) {
+      <button class="panel highlight" (click)="selected.set(best.key)">
+        <small>MEJOR NETO</small><strong>{{ marketLabel(best.market) }}</strong
+        ><span class="positive">{{ vm.format(best.profit) }}</span
+        ><small>{{ best.sport }} · {{ best.won }} ganadas / {{ best.lost }} perdidas</small>
+      </button>
+    }
+    @if (insights.ranked().worst; as worst) {
+      <button class="panel highlight" (click)="selected.set(worst.key)">
+        <small>MAYOR PÉRDIDA</small><strong>{{ marketLabel(worst.market) }}</strong
+        ><span class="negative">{{ vm.format(worst.profit) }}</span
+        ><small>{{ worst.sport }} · {{ worst.won }} ganadas / {{ worst.lost }} perdidas</small>
+      </button>
+    }
+  </div>
+  <section class="panel results">
+    <div class="section-heading">
+      <h2>{{ insights.mode() === 'market' ? 'Tus mercados' : 'Tus tipos de apuesta' }}</h2>
+      <span>{{ vm.currency() }}</span>
+    </div>
+    @for (group of insights.rows(); track group.key) {
+      <button class="result-row" (click)="selected.set(group.key)">
+        <span
+          ><strong>{{ marketLabel(group.market) }}</strong
+          ><small>{{ group.sport }} · {{ group.total }} tickets</small></span
+        ><span
+          ><strong>{{ group.won }} ganadas · {{ group.lost }} perdidas</strong
+          ><small
+            >{{ group.pending }} pendientes · {{ group.cashout }} cashout ·
+            {{ group.voided }} anuladas</small
+          ></span
+        ><span class="row-net"
+          ><strong
+            [class.positive]="(group.profit ?? 0) > 0"
+            [class.negative]="(group.profit ?? 0) < 0"
+            >{{ group.closed ? vm.format(group.profit) : 'Por resolver' }}</strong
+          ><small>Yield {{ percent(group.yield) }} · Ver tickets →</small></span
+        >
+      </button>
+    }
+  </section>
+  @if (detail(); as group) {
+    <section class="panel evidence" aria-live="polite">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">REGISTROS DEL GRUPO</span>
+          <h2>{{ marketLabel(group.market) }} · {{ group.sport }}</h2>
+          <p>
+            {{ typeLabel(group.type) }} · Últimos {{ detailTickets().length }} de
+            {{ group.total }} tickets. Los registros ocultos del historial también cuentan.
+          </p>
+        </div>
+        <button class="secondary" (click)="selected.set(null)">Cerrar detalle</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Registro</th>
+              <th>Estado</th>
+              <th>Importe original</th>
+              <th>Neto del ticket cerrado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (bet of detailTickets(); track bet.id) {
+              <tr>
+                <td>
+                  {{ bet.event }}
+                  @for (d of bet.selection_details ?? []; track $index) {
+                    @if (d.market === 'Otro') {
+                      <small>Otro: {{ d.description }}</small>
+                    }
+                  }
+                  <small>{{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
+                </td>
+                <td>
+                  <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span>
+                </td>
+                <td>{{ vm.native(bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN') }}</td>
+                <td>
+                  {{
+                    bet.status === 'pending' || bet.status === 'void'
+                      ? '—'
+                      : vm.money(bet.payout - bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN')
+                  }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <a class="text-button" routerLink="/bets" [queryParams]="{ view: 'history' }"
+        >Consultar o clasificar mis apuestas →</a
+      >
+    </section>
+  }
+} @else {
+  <section class="panel empty-block">
+    <h2>Sin tickets en este filtro</h2>
+    <p>Prueba otro deporte o registra tu primera apuesta.</p>
+    <a routerLink="/bets" class="primary button-link">Registrar apuesta</a>
+  </section>
+}
+<details class="method">
+  <summary>Cómo leer estos resultados</summary>
+  <p>
+    Son resultados pasados, no predicciones. Una muestra pequeña puede cambiar mucho. El neto es
+    retorno menos importe apostado; el yield divide ese neto entre el importe de los tickets
+    cerrados. Depósitos y retiros no cuentan como ganancias.
+  </p>
+  <p>
+    En mercados se muestra el resultado completo de los tickets que los incluyen. Un parlay con
+    varios mercados aparece en cada uno: no sumes esas filas ni atribuyas su resultado a una
+    selección individual. Por tipo de apuesta cada ticket cuenta una sola vez. Los tickets ocultos
+    cuentan; las casas eliminadas se incluyen con la opción correspondiente.
+  </p>
+  <p>
+    Los mercados antiguos con unidad explícita se agrupan con los nuevos (por ejemplo Over carreras
+    y Carreras). Los Over/Under genéricos requieren clasificación manual. Cashout y anuladas no
+    cuentan para la tasa de acierto.
+  </p>
+</details>

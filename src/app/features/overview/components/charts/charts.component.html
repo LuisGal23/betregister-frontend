@@ -1,0 +1,321 @@
+<div class="period-controls" role="group" aria-label="Periodo de resultados">
+  @for (tab of analytics.tabs; track tab.value) {
+    <button
+      [class.selected]="analytics.period() === tab.value"
+      [attr.aria-pressed]="analytics.period() === tab.value"
+      (click)="analytics.period.set(tab.value)"
+    >
+      {{ tab.label }}
+    </button>
+  }
+  @if (analytics.period() !== 'all') {
+    <input
+      type="date"
+      aria-label="Fecha del periodo"
+      [ngModel]="analytics.anchor()"
+      (ngModelChange)="analytics.setAnchor($event)"
+    />
+  }
+</div>
+<details class="filter-disclosure">
+  <summary>
+    Filtrar resultados
+    @if (analytics.hasTagFilter() || analytics.includeArchived()) {
+      · Filtros activos
+    }
+  </summary>
+  <div class="period-controls" role="group" aria-label="Filtrar rendimiento por etiquetas">
+    <label
+      >Tipo de apuesta<select
+        [ngModel]="analytics.typeFilter()"
+        (ngModelChange)="analytics.typeFilter.set($event)"
+      >
+        <option value="">Todos</option>
+        <option value="simple">Simple</option>
+        <option value="parlay">Parlay</option>
+        <option value="same_game">Mismo partido</option>
+      </select></label
+    >
+    <label
+      >Deporte<select
+        [ngModel]="analytics.sportFilter()"
+        (ngModelChange)="analytics.sportFilter.set($event)"
+      >
+        <option value="">Todos</option>
+        @for (tag of analytics.sportTags; track tag) {
+          <option [value]="tag">{{ tag }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Liga<select
+        [ngModel]="analytics.leagueFilter()"
+        (ngModelChange)="analytics.leagueFilter.set($event)"
+      >
+        <option value="">Todas</option>
+        @for (tag of analytics.leagueTags; track tag) {
+          <option [value]="tag">{{ tag }}</option>
+        }
+      </select></label
+    >
+    <label
+      >Mercado<select
+        [ngModel]="analytics.marketFilter()"
+        (ngModelChange)="analytics.marketFilter.set($event)"
+      >
+        <option value="">Todos</option>
+        @for (tag of analytics.marketTags; track tag) {
+          <option [value]="tag">{{ tag }}</option>
+        }
+      </select></label
+    >
+    @if (analytics.hasTagFilter()) {
+      <button
+        type="button"
+        (click)="
+          analytics.typeFilter.set('');
+          analytics.sportFilter.set('');
+          analytics.leagueFilter.set('');
+          analytics.marketFilter.set('')
+        "
+      >
+        Quitar filtros
+      </button>
+    }
+    <label class="archive-toggle"
+      ><input
+        type="checkbox"
+        [ngModel]="analytics.includeArchived()"
+        (ngModelChange)="analytics.includeArchived.set($event)"
+      />
+      Incluir casas eliminadas</label
+    >
+  </div>
+  <p class="field-help">
+    Los filtros se aplican a la curva, resultados y métricas. Tu bank y los saldos por casa siguen
+    mostrando el total.
+  </p>
+</details>
+<section class="bank-performance panel">
+  <div class="bank-summary">
+    <button
+      class="detail-trigger"
+      (click)="detail.set('bank')"
+      aria-label="Ver detalles de tu bank"
+    >
+      Tu bank · disponible + pendientes ↗</button
+    ><button
+      class="bank-number detail-trigger"
+      (click)="detail.set('bank')"
+      aria-label="Abrir detalle del saldo"
+    >
+      {{ vm.format(totalBank()) }}</button
+    ><span class="period-profit" [class.negative]="(analytics.profit() ?? 0) < 0"
+      >{{ vm.format(analytics.profit()) }} en el periodo</span
+    >
+    <p>Disponible y pendiente en todas tus casas.</p>
+  </div>
+  <div class="bank-curve">
+    <div class="chart-caption">
+      <h3>Evolución del resultado</h3>
+      <span>Ganancia neta · sin depósitos ni retiros</span>
+    </div>
+    @if (analytics.series(); as series) {
+      <app-profit-chart [series]="series" [period]="analytics.period()" />
+    } @else {
+      <p>Configura el tipo de cambio para combinar los resultados.</p>
+    }
+    <details>
+      <summary>Ver datos de la gráfica</summary>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Movimiento</th>
+              <th>Resultado</th>
+              <th>Acumulado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (point of analytics.series(); track point.id) {
+              @if (point.event) {
+                <tr>
+                  <td>{{ analytics.eventTime(point.time) }}</td>
+                  <td>{{ point.label }}</td>
+                  <td>{{ vm.format(point.change) }}</td>
+                  <td>{{ vm.format(point.value) }}</td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</section>
+<div class="summary-strip">
+  <article>
+    <span>Disponible</span><strong>{{ vm.format(vm.total('balance')) }}</strong>
+  </article>
+  <article>
+    <span>En pendientes</span><strong>{{ vm.format(vm.total('pending')) }}</strong
+    ><a routerLink="/bets" [queryParams]="{ status: 'pending' }"
+      >{{ vm.pendingBets().length }} por resolver</a
+    >
+  </article>
+  <article>
+    <button class="detail-trigger" (click)="detail.set('bets')" aria-label="Ver últimas apuestas">
+      Ganadas / perdidas ↗</button
+    ><strong>{{ analytics.won() }} / {{ analytics.lost() }}</strong
+    ><small>No incluye pendientes, anuladas ni cashout.</small>
+  </article>
+  <article>
+    <span>Tasa de acierto</span
+    ><strong>{{
+      analytics.winRate() === null ? '—' : (analytics.winRate() | number: '1.0-1') + '%'
+    }}</strong>
+    <div
+      class="win-donut"
+      aria-hidden="true"
+      [style.background]="
+        'conic-gradient(var(--accent) ' + (analytics.winRate() ?? 0) + '%, var(--surface-high) 0)'
+      "
+    >
+      <span></span>
+    </div>
+  </article>
+</div>
+@if (showDistribution()) {
+  <section class="panel distribution">
+    <div class="section-heading">
+      <div>
+        <h2>Tu bank por casa</h2>
+        <p>Saldo disponible + importe en apuestas pendientes</p>
+      </div>
+      <a routerLink="/bank">Administrar ↗</a>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Casa</th>
+            <th>Moneda</th>
+            <th>Saldo</th>
+            <th>Proporción</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (house of distribution(); track house.id) {
+            <tr>
+              <td>
+                <strong>{{ house.name }}</strong>
+              </td>
+              <td>{{ house.currency }}</td>
+              <td>{{ vm.format(house.value) }}</td>
+              <td>
+                <div class="house-track"><span [style.width.%]="house.percent"></span></div>
+                <small>{{ house.percent | number: '1.0-1' }}%</small>
+              </td>
+              <td>
+                <div class="actions">
+                  <a
+                    class="secondary button-link"
+                    routerLink="/confirmations"
+                    [queryParams]="{ house: house.id, kind: 'deposit' }"
+                    >Depositar</a
+                  ><a
+                    class="secondary button-link"
+                    routerLink="/confirmations"
+                    [queryParams]="{ house: house.id, kind: 'withdrawal' }"
+                    >Retirar</a
+                  >
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">
+                {{
+                  distribution() === null
+                    ? 'Configura una tasa de cambio para ver los saldos.'
+                    : 'Añade tu primera casa para ver la distribución.'
+                }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+}
+@if (detail(); as kind) {
+  <app-detail-card [kind]="kind" (dismiss)="detail.set(null)" />
+}
+
+<details class="advanced-metrics panel">
+  <summary>Métricas avanzadas de rendimiento</summary>
+  <div class="section-heading">
+    <div>
+      <h2>Rendimiento histórico · etiquetas seleccionadas</h2>
+      <p>
+        Zona horaria: {{ vm.data().profile.timezone }} · Casas
+        {{ analytics.includeArchived() ? 'activas y eliminadas' : 'activas' }}
+      </p>
+    </div>
+  </div>
+  @if (analytics.metrics(); as m) {
+    <div class="metrics">
+      <article class="metric">
+        <span>Yield / total apostado</span
+        ><strong class="metric-value">{{
+          m.yieldTotal === null ? '—' : (m.yieldTotal | number: '1.1-2') + '%'
+        }}</strong>
+      </article>
+      <article class="metric">
+        <span>Cuota promedio · decimal</span
+        ><strong class="metric-value">{{
+          m.averageOdds === null ? '—' : (m.averageOdds | number: '1.2-4')
+        }}</strong>
+      </article>
+      <article class="metric">
+        <span>Total apostado</span
+        ><strong class="metric-value">{{ vm.format(m.totalStaked) }}</strong>
+      </article>
+      <article class="metric">
+        <span>ROI sobre depósitos</span
+        ><strong class="metric-value">{{
+          m.roi === null ? '—' : (m.roi | number: '1.1-2') + '%'
+        }}</strong>
+      </article>
+      <article class="metric">
+        <span>Yield sobre importe liquidado</span
+        ><strong class="metric-value">{{
+          m.yield === null ? '—' : (m.yield | number: '1.1-2') + '%'
+        }}</strong>
+      </article>
+      <article class="metric">
+        <span>Caída máxima de ganancias</span
+        ><strong class="metric-value">{{ vm.format(m.maxDrawdown) }}</strong>
+      </article>
+      <article class="metric">
+        <span>Racha máxima de pérdidas</span
+        ><strong class="metric-value">{{ m.maxLossStreak }}</strong>
+      </article>
+    </div>
+    <p>
+      Por debajo del máximo de ganancias desde:
+      {{ m.lossesSince ? analytics.day(m.lossesSince) : 'sin caída vigente' }}.
+    </p>
+    <p class="field-help">
+      Yield / total apostado = beneficio realizado ÷ importe original de todas las apuestas del
+      filtro (incluye pendientes y anuladas). Cuota promedio: media simple de las cuotas decimales
+      de los tickets, incluida la cuota combinada de cada parlay. ROI = beneficio / depósitos; no se
+      asignan depósitos a etiquetas. Yield sobre importe liquidado = beneficio / importe ya
+      liquidado (incluye cashout parcial). La caída máxima excluye depósitos y retiros.
+    </p>
+  } @else {
+    <p>Configura el tipo de cambio para combinar las métricas.</p>
+  }
+</details>

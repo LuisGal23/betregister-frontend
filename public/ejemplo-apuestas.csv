@@ -1,0 +1,2 @@
+house,currency,event,stake,odds,bet_type,bonus,status,payout,released_stake,partial_payout,created,settled_at,legs
+Casa de ejemplo,MXN,Ejemplo ficticio - apuesta simple,10,2,simple,0,pending,0,0,0,2026-01-15 18:00:00,,[]

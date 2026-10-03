@@ -1,0 +1,199 @@
+<dialog #dialog aria-labelledby="manage-title" (cancel)="$event.preventDefault(); dismiss.emit()">
+  <header>
+    <h2 id="manage-title">
+      {{
+        mode() === 'tags'
+          ? 'Editar mercados'
+          : mode() === 'partial'
+            ? 'Cashout parcial'
+            : mode() === 'legs'
+              ? 'Selecciones del parlay'
+              : 'Corregir apuesta liquidada'
+      }}
+    </h2>
+    <button class="secondary" aria-label="Cerrar tarjeta de apuesta" (click)="dismiss.emit()">
+      ✕
+    </button>
+  </header>
+  <p>{{ bet().event }} · {{ bet().house }}</p>
+  <form ngNativeValidate (ngSubmit)="save()">
+    @if (mode() === 'tags') {
+      <label
+        >Deporte / liga<select
+          name="leagueTag"
+          [ngModel]="leagueTag"
+          (ngModelChange)="setLeague($event)"
+        >
+          @for (tag of leagueTags; track tag) {
+            <option [value]="tag">{{ tag }}</option>
+          }
+        </select></label
+      >
+      @if (details.length) {
+        @for (detail of details; track $index) {
+          <h3>Selección {{ $index + 1 }}</h3>
+          <p>{{ detail.event_label }}</p>
+          <app-selection-editor
+            [value]="detail"
+            [index]="$index"
+            [showManual]="false"
+            [showSport]="!detail.game_id"
+          />
+        }
+      } @else {
+        <label
+          >Mercado<select name="marketTag" [(ngModel)]="marketTag">
+            @for (tag of marketOptions(); track tag) {
+              <option [value]="tag">{{ marketLabel(tag) }}</option>
+            }
+          </select></label
+        >
+      }
+      <p>
+        Las etiquetas agrupan tus resultados. No cambian el saldo ni el resultado de la apuesta.
+      </p>
+    }
+    @if (mode() === 'partial') {
+      <p>
+        Pendiente: {{ vm.native(bet().remaining_stake ?? bet().stake, bet().currency) }}. Captura la
+        parte del importe original que cierras y el dinero recibido. El resto sigue en juego.
+      </p>
+      <label
+        >Importe original que cierras ({{ bet().currency }})<input
+          name="part"
+          type="number"
+          [(ngModel)]="stake"
+          min="0.01"
+          [max]="((bet().remaining_stake ?? bet().stake) - 1) / 100"
+          step="0.01"
+          required
+      /></label>
+      <label
+        >Retorno recibido ({{ bet().currency }})<input
+          name="return"
+          type="number"
+          [(ngModel)]="payout"
+          min="0"
+          step="0.01"
+          required
+      /></label>
+    }
+    @if (mode() === 'correct') {
+      <label
+        >Formato de cuota<select
+          name="oddsFormat"
+          [(ngModel)]="oddsFormat"
+          [disabled]="legs.length > 0"
+        >
+          <option value="decimal">Decimal</option>
+          <option value="american">Americana</option>
+        </select></label
+      >
+      <label>Descripción<input name="event" [(ngModel)]="event" maxlength="300" required /></label>
+      <div class="form-grid">
+        <label
+          >Importe original<input
+            name="stake"
+            type="number"
+            [(ngModel)]="stake"
+            min="0.01"
+            step="0.01"
+            required /></label
+        ><label
+          >Cuota {{ oddsFormat === 'american' ? 'americana' : 'decimal'
+          }}<input
+            name="odds"
+            type="number"
+            [(ngModel)]="odds"
+            [min]="oddsFormat === 'american' ? -999900 : bet().bet_type === 'parlay' ? 1 : 1.0001"
+            [max]="oddsFormat === 'american' ? 999900 : 10000"
+            [step]="oddsFormat === 'american' ? 1 : 0.0001"
+            required
+        /></label>
+      </div>
+      @if (bet().bet_type === 'parlay' || bet().bet_type === 'same_game') {
+        <label
+          >Bono original<input name="bonus" type="number" [(ngModel)]="bonus" min="0" step="0.01"
+        /></label>
+      }
+      <label
+        >Resultado corregido<select name="status" [(ngModel)]="status">
+          <option value="won">Ganada</option>
+          <option value="lost">Perdida</option>
+          <option value="void">Anulada</option>
+          <option value="cashout">Cashout</option>
+        </select></label
+      >
+      @if (status === 'cashout') {
+        <label
+          >Retorno del cierre final (sin cashouts parciales previos)<input
+            name="payout"
+            type="number"
+            [(ngModel)]="payout"
+            min="0"
+            step="0.01"
+            required
+        /></label>
+      }
+      <label
+        >Motivo de la corrección<input
+          name="reason"
+          [(ngModel)]="reason"
+          minlength="3"
+          maxlength="300"
+          required
+      /></label>
+      <p>
+        Se registra un ajuste auditable. La corrección no puede dejar saldo negativo. Los cashouts
+        parciales ya recibidos se conservan.
+      </p>
+    }
+    @if ((mode() === 'correct' || mode() === 'legs') && legs.length) {
+      <h3>Selecciones</h3>
+      <p>
+        Una selección anulada cuenta con cuota 1. El parlay se liquida al resolverse: una pérdida lo
+        pierde; todas anuladas devuelven el importe pendiente.
+      </p>
+      @for (leg of legs; track $index; let i = $index) {
+        <fieldset>
+          <legend>{{ leg.selection }}</legend>
+          <label
+            >Cuota de selección {{ i + 1
+            }}<input
+              [name]="'odds' + i"
+              type="number"
+              [(ngModel)]="leg.odds"
+              [readonly]="mode() === 'legs'"
+              min="1.0001"
+              max="10000"
+              step="0.0001"
+              required /></label
+          ><label
+            >Resultado de selección {{ i + 1
+            }}<select [name]="'leg' + i" [(ngModel)]="leg.status">
+              <option value="pending">Pendiente</option>
+              <option value="won">Ganada</option>
+              <option value="lost">Perdida</option>
+              <option value="void">Anulada</option>
+            </select></label
+          >
+        </fieldset>
+      }
+    }
+    @if (vm.error()) {
+      <div class="alert" role="alert">{{ vm.error() }}</div>
+    }
+    <div class="actions">
+      <button class="secondary" type="button" (click)="dismiss.emit()">Volver</button
+      ><button class="primary" [disabled]="vm.busy()">
+        {{
+          vm.busy()
+            ? 'Guardando…'
+            : mode() === 'tags'
+              ? 'Guardar etiquetas'
+              : 'Guardar y recalcular'
+        }}
+      </button>
+    </div>
+  </form>
+</dialog>

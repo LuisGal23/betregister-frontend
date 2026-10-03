@@ -1,0 +1,536 @@
+<div class="page-heading">
+  <div>
+    <h1>Mis apuestas</h1>
+    <p>Tus apuestas, sus resultados y lo que tienes en juego.</p>
+  </div>
+  <div class="workspace-tabs" role="group" aria-label="Vista de apuestas">
+    <button
+      type="button"
+      [class.active]="workspaceMode() === 'register'"
+      [attr.aria-pressed]="workspaceMode() === 'register'"
+      (click)="workspaceMode.set('register')"
+    >
+      Nueva apuesta</button
+    ><button
+      type="button"
+      [class.active]="workspaceMode() === 'history'"
+      [attr.aria-pressed]="workspaceMode() === 'history'"
+      (click)="workspaceMode.set('history')"
+    >
+      Mis tickets <span>{{ vm.data().bets.length }}</span>
+    </button>
+  </div>
+</div>
+<div class="activity-strip" aria-label="Tu actividad de apuestas">
+  <button (click)="showResult('pending')">
+    <span class="activity-dot pending"></span><strong>{{ activity().pending }}</strong> En juego
+    <span class="activity-arrow">→</span></button
+  ><button (click)="showResult('won')">
+    <span class="activity-dot won"></span><strong>{{ activity().won }}</strong> Ganadas</button
+  ><button (click)="showResult('lost')">
+    <span class="activity-dot lost"></span><strong>{{ activity().lost }}</strong> Perdidas</button
+  ><small>Tu historial visible · todas las fechas</small>
+</div>
+<div [hidden]="workspaceMode() !== 'register'">
+  <div class="bet-workspace">
+    <section class="match-workspace">
+      <app-match-picker
+        [selected]="selectedGames"
+        [limit]="betType === 'parlay' ? 12 : 1"
+        (selection)="chooseGames($event)"
+        (complete)="focusTicket()"
+        (sportChange)="calendarSport($event)"
+      />
+      <div class="manual-note">
+        <strong>¿No encuentras tu partido?</strong>
+        <p>
+          Escríbelo en el campo «Partido» de tu ticket. También puedes registrar apuestas sin
+          vincularlas al calendario.
+        </p>
+      </div>
+    </section>
+    <aside class="ticket-column" id="ticket">
+      <section class="panel ticket-panel">
+        <div class="ticket-heading">
+          <span class="step-label">2 · Completa tu apuesta</span>
+          <h2>
+            Tu ticket
+            <span>{{
+              betType === 'same_game' ? 'Mismo partido' : betType === 'parlay' ? 'Parlay' : 'Simple'
+            }}</span>
+          </h2>
+        </div>
+
+        <div class="bet-types" role="group" aria-label="Tipo de apuesta">
+          @for (type of types; track type.id) {
+            <button
+              type="button"
+              [class.active]="betType === type.id"
+              [attr.aria-pressed]="betType === type.id"
+              (click)="setType(type.id)"
+            >
+              <span class="type-symbol">{{
+                type.id === 'simple' ? '01' : type.id === 'parlay' ? '02' : '03'
+              }}</span
+              ><span
+                ><strong>{{ type.label }}</strong
+                ><small>{{ type.detail }}</small></span
+              >
+            </button>
+          }
+        </div>
+
+        @if (vm.data().houses.length) {
+          <form ngNativeValidate (ngSubmit)="addBet()">
+            <label
+              >Casa de apuestas<select name="betHouse" [(ngModel)]="selectedHouse" required>
+                <option value="" disabled>Selecciona una casa</option>
+                @for (h of vm.data().houses; track h.id) {
+                  <option [value]="h.id">{{ h.name }} · {{ h.currency }}</option>
+                }
+              </select></label
+            >
+            @if (selectedGames.length) {
+              <div class="ticket-games">
+                @for (game of selectedGames; track game.id) {
+                  <p>
+                    <small>{{ game.league_name }}</small
+                    ><strong>{{ game.away }} vs {{ game.home }}</strong>
+                  </p>
+                }
+              </div>
+            }
+            @if (!selectedGames.length) {
+              <div class="form-grid">
+                <label
+                  >Deporte<select
+                    name="ticketSport"
+                    [disabled]="selectedGames.length > 0"
+                    [ngModel]="sportForLeague(leagueTag)"
+                    (ngModelChange)="setSport($event)"
+                  >
+                    <option value="Fútbol">Fútbol</option>
+                    <option value="Béisbol">MLB / KBO</option>
+                    <option value="Americano">NFL</option>
+                    @if (betType === 'parlay' || leagueTag === 'Mixto') {
+                      <option value="Mixto">Mixto</option>
+                    }
+                  </select></label
+                ><label
+                  >Liga<select
+                    name="ticketLeague"
+                    [disabled]="selectedGames.length > 0"
+                    [ngModel]="leagueTag"
+                    (ngModelChange)="setLeague($event)"
+                  >
+                    @for (tag of leagueOptions(); track tag) {
+                      <option [value]="tag">{{ tag }}</option>
+                    }
+                  </select></label
+                >
+              </div>
+            }
+            @for (selection of selections; track $index; let i = $index) {
+              <div class="structured-selection">
+                <div class="selection-title">
+                  <strong>{{
+                    betType === 'simple' ? 'Tu selección' : 'Selección ' + (i + 1)
+                  }}</strong>
+                  @if (selections.length > 2) {
+                    <button
+                      type="button"
+                      class="text-button"
+                      [attr.aria-label]="'Quitar selección ' + (i + 1)"
+                      (click)="removeSelection(i)"
+                    >
+                      Quitar
+                    </button>
+                  }
+                </div>
+                <app-selection-editor
+                  [value]="selection"
+                  [index]="i"
+                  [games]="selectedGames"
+                  [showManual]="betType !== 'same_game' || i === 0"
+                  [showSport]="
+                    !selectedGames.length && betType === 'parlay' && leagueTag === 'Mixto'
+                  "
+                />
+                @if (betType === 'parlay') {
+                  <label
+                    >Cuota decimal de la selección {{ i + 1
+                    }}<input
+                      [name]="'legOdds' + i"
+                      type="number"
+                      [(ngModel)]="legs[i].odds"
+                      (ngModelChange)="updateOdds()"
+                      min="1.0001"
+                      max="10000"
+                      step="0.0001"
+                      required
+                  /></label>
+                }
+              </div>
+            }
+            @if (betType !== 'simple') {
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="selections.length >= 30"
+                (click)="addSelection()"
+              >
+                + Añadir selección
+              </button>
+              <p class="field-help selection-help">
+                {{
+                  betType === 'same_game'
+                    ? 'Usa la cuota total de la casa. Todas las selecciones corresponden al mismo partido.'
+                    : 'La cuota total se calcula con las cuotas de cada selección.'
+                }}
+              </p>
+            }
+            <div class="form-grid">
+              <label
+                >¿Cuánto apostaste? ({{ inputCurrency() }})<input
+                  name="stake"
+                  type="number"
+                  [(ngModel)]="stake"
+                  min="0.01"
+                  max="9999999999.99"
+                  step="0.01"
+                  required
+                  placeholder="100.00" /></label
+              ><label
+                >Cuota {{ oddsFormat === 'american' ? 'americana' : 'decimal'
+                }}<input
+                  name="odds"
+                  type="number"
+                  [(ngModel)]="odds"
+                  [readonly]="betType === 'parlay'"
+                  [min]="oddsFormat === 'american' ? -999900 : 1.0001"
+                  [max]="oddsFormat === 'american' ? 999900 : 10000"
+                  [step]="oddsFormat === 'american' ? 1 : 0.0001"
+                  required
+                  [placeholder]="oddsFormat === 'american' ? '-110' : '1.90'"
+              /></label>
+            </div>
+            <details class="ticket-options">
+              <summary>
+                Opciones de cuota y bonificación
+                @if (bonus) {
+                  · Extra activo
+                }
+              </summary>
+              <label
+                >Formato de cuota<select
+                  name="oddsFormat"
+                  [(ngModel)]="oddsFormat"
+                  (ngModelChange)="odds = null"
+                  [disabled]="betType === 'parlay'"
+                >
+                  <option value="decimal">Decimal · 1.90</option>
+                  <option value="american">Americana · -110 / +150</option>
+                </select></label
+              >
+              @if (betType !== 'simple') {
+                <label
+                  >Bonificación adicional ({{ inputCurrency() }})<input
+                    name="bonus"
+                    type="number"
+                    [(ngModel)]="bonus"
+                    min="0"
+                    max="9999999999.99"
+                    step="0.01"
+                    placeholder="0.00"
+                /></label>
+                <p class="field-help">Dinero extra que se suma al retorno únicamente si gana.</p>
+              }
+            </details>
+            @if (oddsFormat === 'american' && decimalPreview(); as decimal) {
+              <p class="field-help">
+                Equivalente decimal: {{ decimal }}. El retorno usa la cuota americana exacta.
+              </p>
+            }
+            @if (selectedBank(); as house) {
+              <div
+                class="stake-reference"
+                [class.exceeded]="(stake ?? 0) * 100 > Math.floor(house.balance / 50)"
+              >
+                <span
+                  >Disponible <strong>{{ vm.native(house.balance, house.currency) }}</strong></span
+                ><span
+                  >Referencia 2%
+                  <strong>{{
+                    vm.native(Math.floor(house.balance / 50), house.currency)
+                  }}</strong></span
+                >
+                @if ((stake ?? 0) * 100 > Math.floor(house.balance / 50)) {
+                  <small>El importe supera la referencia del 2%.</small>
+                }
+              </div>
+            }
+            <div class="ticket-submit">
+              <div class="ticket-total">
+                <span>Retorno si gana <small>Incluye el importe registrado</small></span
+                ><strong>{{
+                  expectedReturn() === null ? '—' : vm.native(expectedReturn()!, inputCurrency())
+                }}</strong>
+              </div>
+              <button class="primary register-button" [disabled]="vm.busy()">
+                <app-icon name="plus" />{{ vm.busy() ? 'Guardando…' : 'Guardar apuesta' }}
+              </button>
+            </div>
+          </form>
+        } @else {
+          <div class="empty-block">
+            <h3>Añade tu primera casa</h3>
+            <p>Confirma un depósito para comenzar tu registro.</p>
+            <a class="primary button-link" routerLink="/bank">Ir a mi bank</a>
+          </div>
+        }
+      </section>
+    </aside>
+  </div>
+</div>
+<div [hidden]="workspaceMode() !== 'history'">
+  <app-csv-transfer />
+  <section class="panel history-panel">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">TUS REGISTROS</span>
+        <h2>Tus tickets</h2>
+        <p>{{ filteredBets().length }} de {{ vm.data().bets.length }} apuestas</p>
+      </div>
+      <input
+        class="search-input"
+        type="search"
+        aria-label="Buscar apuestas"
+        placeholder="Buscar evento o casa…"
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </div>
+    <div class="history-toolbar">
+      <div class="type-chips" role="group" aria-label="Tipo de apuesta en el historial">
+        @for (option of historyTypes; track option.value) {
+          <button
+            [class.active]="typeFilter() === option.value"
+            [attr.aria-pressed]="typeFilter() === option.value"
+            (click)="typeFilter.set(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        }
+      </div>
+      <label class="history-toggle"
+        ><input type="checkbox" [ngModel]="showHidden()" (ngModelChange)="showHidden.set($event)" />
+        Ver eliminadas</label
+      >
+    </div>
+    <div class="tabs" role="group" aria-label="Filtrar por resultado">
+      @for (tab of tabs; track tab.value) {
+        <button
+          [class.selected]="betFilter() === tab.value"
+          [attr.aria-pressed]="betFilter() === tab.value"
+          (click)="betFilter.set(tab.value)"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Apuesta / casa</th>
+            <th>Apostado</th>
+            <th>Cuota</th>
+            <th>Resultado</th>
+            <th>Resultado neto</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of filteredBets(); track b.id) {
+            <tr>
+              <td class="event-cell">
+                <strong class="ticket-event" [title]="b.event">{{ b.event }}</strong
+                ><small
+                  >{{
+                    b.bet_type === 'same_game'
+                      ? 'Mismo partido'
+                      : b.bet_type === 'parlay'
+                        ? 'Parlay'
+                        : 'Simple'
+                  }}
+                  · {{ b.house }} · {{ timestamp(b.created) | date: 'dd/MM/yyyy HH:mm' }}</small
+                ><small
+                  >{{ b.league_tag || 'Sin clasificar' }} ·
+                  {{ b.market_tag || 'Sin clasificar' }}</small
+                >
+                <details class="ticket-detail">
+                  <summary>Ver detalle</summary>
+                  <p>{{ b.event }}</p>
+                  @for (selection of b.same_game_selections ?? []; track $index) {
+                    <small>↳ {{ selection }}</small>
+                  }
+                  @for (game of b.linked_games ?? []; track game.id) {
+                    <small>{{ game.away }} vs {{ game.home }}</small>
+                  }
+                  <button class="text-button" (click)="management.set({ bet: b, mode: 'tags' })">
+                    Editar mercados
+                  </button>
+                  @if (b.linked_games?.length) {
+                    <button class="text-button" (click)="scoreBet.set(b)">Ver marcadores</button>
+                  }
+                </details>
+              </td>
+              <td data-label="Apostado">
+                {{ vm.native(b.stake, b.currency) }}
+                @if (b.released_stake) {
+                  <small
+                    >Pendiente: {{ vm.native(b.remaining_stake ?? 0, b.currency) }} · Recibido
+                    parcial: {{ vm.native(b.partial_payout ?? 0, b.currency) }}</small
+                  >
+                }
+                @if (b.currency !== vm.currency()) {
+                  <small>≈ {{ vm.money(b.stake, b.currency) }}</small>
+                }
+              </td>
+              <td data-label="Cuota">
+                {{ b.american_odds ? (b.american_odds > 0 ? '+' : '') + b.american_odds : b.odds }}
+                @if (b.american_odds) {
+                  <small>≈ {{ b.odds }} decimal</small>
+                }
+                @if (b.bonus) {
+                  <small>Extra: {{ vm.native(b.bonus, b.currency) }}</small>
+                }
+              </td>
+              <td data-label="Estado">
+                <span [class]="'status ' + b.status">{{ vm.labels[b.status] }}</span>
+              </td>
+              <td data-label="Resultado">
+                @if (b.status === 'pending') {
+                  <details class="row-menu pending-menu">
+                    <summary>Resolver apuesta</summary>
+                    <div class="actions">
+                      @if (b.legs?.length) {
+                        <button
+                          class="secondary"
+                          (click)="management.set({ bet: b, mode: 'legs' })"
+                        >
+                          Resolver selecciones
+                        </button>
+                      }
+                      <button
+                        class="secondary"
+                        (click)="management.set({ bet: b, mode: 'partial' })"
+                      >
+                        Cashout parcial
+                      </button>
+                      @if (!b.legs?.length) {
+                        <button
+                          class="primary"
+                          [disabled]="vm.busy()"
+                          (click)="reviewBet(b, 'won')"
+                        >
+                          Ganada</button
+                        ><button
+                          class="danger-button"
+                          [disabled]="vm.busy()"
+                          (click)="reviewBet(b, 'lost')"
+                        >
+                          Perdida
+                        </button>
+                      }
+                      <button
+                        class="secondary"
+                        [disabled]="vm.busy()"
+                        (click)="reviewBet(b, 'void')"
+                      >
+                        Anulada</button
+                      ><button
+                        class="secondary"
+                        [disabled]="vm.busy()"
+                        (click)="cashoutId = b.id; cashoutAmount = null"
+                      >
+                        Cashout
+                      </button>
+                    </div>
+                    @if (cashoutId === b.id) {
+                      <form
+                        class="compact-form"
+                        ngNativeValidate
+                        (ngSubmit)="reviewBet(b, 'cashout', cashoutAmount ?? 0)"
+                      >
+                        <label
+                          >Retorno total ({{ b.currency }})<input
+                            name="cashout"
+                            type="number"
+                            [(ngModel)]="cashoutAmount"
+                            min="0"
+                            max="9999999999.99"
+                            step="0.01"
+                            required /></label
+                        ><button class="primary" [disabled]="vm.busy()">Revisar</button
+                        ><button type="button" class="secondary" (click)="cashoutId = null">
+                          Volver
+                        </button>
+                      </form>
+                    }
+                  </details>
+                } @else {
+                  <strong
+                    [class.positive]="b.payout >= b.stake"
+                    [class.negative]="b.payout < b.stake"
+                    >{{ vm.native(b.payout - b.stake, b.currency) }}</strong
+                  ><small>Retorno: {{ vm.native(b.payout, b.currency) }}</small>
+                  <details class="row-menu">
+                    <summary>Gestionar apuesta</summary>
+                    <button
+                      class="text-button"
+                      (click)="management.set({ bet: b, mode: 'correct' })"
+                    >
+                      Corregir / anular</button
+                    ><button class="text-button" [disabled]="vm.busy()" (click)="reviewHistory(b)">
+                      {{ b.history_hidden ? 'Restaurar al historial' : 'Eliminar del historial' }}
+                    </button>
+                  </details>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="empty">No hay apuestas para este filtro.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+@if (review(); as selected) {
+  <app-confirm-dialog
+    [title]="selected.title"
+    [message]="selected.message"
+    [amount]="selected.amount"
+    [note]="selected.note"
+    [confirmLabel]="selected.confirmLabel ?? 'Confirmar registro'"
+    [busy]="vm.busy()"
+    [error]="vm.error()"
+    (confirm)="confirmReview()"
+    (dismiss)="review.set(null)"
+  />
+}
+@if (management(); as item) {
+  <app-bet-management [bet]="item.bet" [mode]="item.mode" (dismiss)="management.set(null)" />
+}
+@if (scoreBet(); as bet) {
+  <app-bet-scores [betId]="bet.id" [title]="bet.event" (dismiss)="scoreBet.set(null)" />
+}
+
+<app-bank-assistant
+  [houseId]="selectedHouse"
+  (houseIdChange)="selectedHouse = $event"
+  [stake]="stake"
+  [odds]="decimalPreview()"
+/>

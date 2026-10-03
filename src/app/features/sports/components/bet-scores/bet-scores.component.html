@@ -1,0 +1,14 @@
+<dialog #dialog aria-labelledby="scores-title" (cancel)="$event.preventDefault(); dismiss.emit()">
+  <header><div><span class="eyebrow">SEGUIMIENTO</span><h2 id="scores-title">Marcadores de tu apuesta</h2></div><button type="button" class="secondary" aria-label="Cerrar marcadores" (click)="dismiss.emit()">✕</button></header>
+  <p>{{ title() }}</p>
+  <p class="help">El marcador es informativo y puede llegar con retraso. Confirma el resultado de tu selección y las reglas de tu casa antes de liquidar la apuesta.</p>
+  <div class="toolbar"><label><input type="checkbox" [(ngModel)]="automatic" (ngModelChange)="schedule()" /> Actualizar automáticamente</label><button type="button" class="secondary" [disabled]="loading()" (click)="load()">Actualizar marcadores</button></div>
+  @if (loading()) { <p role="status">Actualizando marcadores…</p> }
+  @if (error()) { <p role="alert">{{ error() }}</p> }
+  @if (result(); as data) {
+    <small>Intervalo de consulta: {{ data.refresh_seconds / 60 }} min. Se pausa al cerrar la tarjeta o dejar la pestaña en segundo plano.</small>
+    @for (message of data.messages; track message) { <p class="help">{{ message }}</p> }
+    <div class="games">@for (game of data.events; track game.id) { <app-score-card [game]="game" /> } @empty { <p>Esta apuesta no tiene partidos vinculados.</p> }</div>
+    <small>Fuentes: MLB Stats API, ESPN (fuente pública no oficial), API-Baseball para KBO.</small>
+  }
+</dialog>

@@ -1,0 +1,174 @@
+<div class="assistant" [class.expanded]="open()">
+  @if (open()) {
+    <section
+      class="assistant-panel"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="assistant-title"
+      (keydown.escape)="close()"
+    >
+      <header>
+        <div>
+          <span class="eyebrow">ANTES DE REGISTRAR</span>
+          <h2 id="assistant-title">Cuida tu bank</h2>
+        </div>
+        <button
+          #closer
+          class="close-assistant"
+          type="button"
+          aria-label="Cerrar asistente de bank"
+          (click)="close()"
+        >
+          <app-icon name="close" />
+        </button>
+      </header>
+      <div class="assistant-tabs" role="group" aria-label="Sistema de gestión">
+        <button
+          type="button"
+          [class.selected]="mode() === 'fixed'"
+          [attr.aria-pressed]="mode() === 'fixed'"
+          (click)="mode.set('fixed')"
+        >
+          Porcentaje fijo</button
+        ><button
+          type="button"
+          [class.selected]="mode() === 'kelly'"
+          [attr.aria-pressed]="mode() === 'kelly'"
+          (click)="mode.set('kelly')"
+        >
+          Kelly fraccional
+        </button>
+      </div>
+      <div class="assistant-scroll">
+        <label
+          >Casa para el cálculo<select
+            name="assistantHouse"
+            [ngModel]="houseId()"
+            (ngModelChange)="houseIdChange.emit($event)"
+          >
+            <option value="" disabled>Selecciona una casa</option>
+            @for (h of vm.data().houses; track h.id) {
+              <option [value]="'' + h.id">{{ h.name }} · {{ h.currency }}</option>
+            }
+          </select></label
+        >
+        @if (mode() === 'fixed') {
+          <app-bank-guidance [houseId]="houseId()" [stake]="stake()" />
+        } @else {
+          <p class="intro">
+            Calcula una fracción del saldo con la cuota y <strong>tu propia estimación</strong> de
+            probabilidad.
+          </p>
+          @if (house(); as h) {
+            <div class="available">
+              <span>Disponible en {{ h.name }}</span
+              ><strong>{{ vm.native(h.balance, h.currency) }}</strong>
+            </div>
+          }
+          <div class="form-grid">
+            <label
+              >Cuota decimal<input
+                type="number"
+                name="kellyOdds"
+                min="1.0001"
+                max="10000"
+                step="0.0001"
+                placeholder="1.90"
+                [ngModel]="kellyOdds()"
+                (ngModelChange)="kellyOdds.set($event)" /></label
+            ><label
+              >Probabilidad estimada (%)<input
+                type="number"
+                name="kellyProbability"
+                min="0"
+                max="100"
+                step="0.1"
+                placeholder="Ej. 55"
+                [ngModel]="probability()"
+                (ngModelChange)="probability.set($event)"
+            /></label>
+          </div>
+          <label
+            >Fracción de Kelly<select
+              name="kellyFraction"
+              [ngModel]="fraction()"
+              (ngModelChange)="fraction.set(+$event)"
+            >
+              <option [ngValue]="0.25">Un cuarto · 25% de Kelly</option>
+              <option [ngValue]="0.5">La mitad · 50% de Kelly</option>
+            </select></label
+          >
+          @if (calculation(); as result) {
+            <div
+              class="kelly-result"
+              [class.over-reference]="result.allocation > 0.02"
+              aria-live="polite"
+            >
+              <span>Importe calculado</span
+              ><strong>{{ vm.native(result.amountMinor, house()!.currency) }}</strong
+              ><small>{{ (result.allocation * 100).toFixed(2) }}% del saldo disponible</small>
+            </div>
+            @if (result.edge <= 0) {
+              <p class="calculation-note">
+                Con esa probabilidad y cuota, el modelo no asigna importe: el valor esperado es cero
+                o negativo.
+              </p>
+            } @else if (result.allocation > 0.02) {
+              <p class="warning">
+                Supera la referencia del 2% de tu saldo. Kelly puede producir importes altos incluso
+                usando una fracción.
+              </p>
+            }
+          } @else {
+            <p class="calculation-note">
+              Selecciona una casa e introduce una cuota mayor que 1 y una probabilidad de 0 a 100%.
+            </p>
+          }
+          <details class="method">
+            <summary>Qué significa y cómo se calcula</summary>
+            <p>
+              Kelly = (probabilidad × cuota − 1) / (cuota − 1). Aplicamos la fracción elegida, un
+              mínimo de cero y redondeo hacia abajo al centavo.
+            </p>
+            <p>
+              La cuota del ticket se precarga en decimal. El cálculo usa un modelo de ganar o
+              perder: no incluye bonos, cashout, empates anulados ni liquidaciones parciales. Para
+              una combinada, la probabilidad debe corresponder a ganar el ticket completo.
+            </p>
+            <a
+              href="https://onlinelibrary.wiley.com/doi/abs/10.1002/j.1538-7305.1956.tb03809.x"
+              target="_blank"
+              rel="noopener"
+              >Fundamento del criterio de Kelly ↗</a
+            >
+          </details>
+          <p class="footnote">
+            Una probabilidad mal estimada cambia mucho el resultado. Tu acierto histórico y la cuota
+            no prueban la probabilidad real. Esta calculadora no cambia tu ticket ni garantiza
+            ganancias.
+          </p>
+        }
+      </div>
+    </section>
+  }
+  <button
+    #launcher
+    class="assistant-launcher"
+    type="button"
+    aria-haspopup="dialog"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="open() ? 'Cerrar asistente de bank' : 'Ve cómo cuidar tu bank'"
+    (click)="open() ? close() : open.set(true)"
+  >
+    <span class="assistant-prompt">{{
+      risk() ? 'Revisa tu exposición' : 'Ve cómo cuidar tu bank'
+    }}</span
+    ><span class="assistant-icon"
+      ><app-icon [name]="open() ? 'close' : 'chat'" /><i
+        [class.risky]="risk()"
+        aria-hidden="true"
+        >{{ risk() ? '!' : 'i' }}</i
+      ></span
+    >
+  </button>
+</div>

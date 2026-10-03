@@ -1,0 +1,193 @@
+<div class="page-heading">
+  <div>
+    <h1>Mi bank</h1>
+    <p>Saldo por casa de apuestas y moneda.</p>
+  </div>
+  <a class="primary button-link" routerLink="/bets"><app-icon name="plus" />Registrar apuesta</a>
+</div>
+<details class="collapsible panel"><summary>Ver evolución y métricas del bank</summary><app-charts [showDistribution]="false" /></details>
+<div class="two-column">
+  <section class="panel">
+    <div class="section-heading">
+      <div>
+        <h2>Mis casas de apuestas</h2>
+        <p>Saldos originales y equivalencias en {{ vm.currency() }}</p>
+      </div>
+      <span class="currency-tag">{{ vm.data().houses.length }} casas</span>
+    </div>
+    <div class="house-list">
+      @for (h of vm.data().houses; track h.id) {
+        <article class="house-card">
+          <div class="house-card-head">
+            <span class="mini-house">{{ h.name.slice(0, 1).toUpperCase() }}</span>
+            <h3>{{ h.name }}</h3>
+            <span class="currency-tag">{{ h.currency }}</span>
+          </div>
+          <span class="house-balance">{{ vm.native(h.balance, h.currency) }}</span
+          ><small
+            >Saldo disponible
+            @if (h.currency !== vm.currency()) {
+              · ≈ {{ vm.money(h.balance, h.currency) }}
+            }
+          </small>
+          <div class="house-details">
+            <span
+              >Pendiente<strong>{{ vm.native(h.pending, h.currency) }}</strong></span
+            ><span
+              >Ganancia neta<strong
+                [class.negative]="h.profit < 0"
+                [class.positive]="h.profit >= 0"
+                >{{ vm.native(h.profit, h.currency) }}</strong
+              ></span
+            >
+          </div>
+          <div class="actions house-actions">
+            <a
+              class="secondary button-link"
+              routerLink="/confirmations"
+              [queryParams]="{ house: h.id, kind: 'deposit' }"
+              >Depositar</a
+            >
+            <a
+              class="secondary button-link"
+              routerLink="/confirmations"
+              [queryParams]="{ house: h.id, kind: 'withdrawal' }"
+              >Retirar</a
+            >
+            <button
+              class="text-button"
+              [disabled]="!canRemove(h) || vm.busy()"
+              (click)="removal.set(h)"
+            >
+              Eliminar
+            </button>
+          </div>
+          @if (!canRemove(h)) {
+            <small>Para eliminar: saldo cero y sin pendientes.</small>
+          }
+        </article>
+      } @empty {
+        <div class="empty-block">
+          <app-icon name="bank" />
+          <h3>Sin casas registradas</h3>
+          <p>Añade tu primera casa de apuestas en el formulario.</p>
+        </div>
+      }
+    </div>
+  </section>
+  <details class="panel collapsible" [open]="!vm.data().houses.length"><summary>+ Añadir casa de apuestas</summary>
+    <p class="panel-subtitle">Elige la moneda con la que operas en esa casa.</p>
+    <form ngNativeValidate (ngSubmit)="addHouse()">
+      <label
+        >Nombre de la casa<input
+          name="houseName"
+          [(ngModel)]="houseName"
+          required
+          maxlength="80"
+          placeholder="Ej. Bet365" /></label
+      ><label
+        >Moneda del saldo<select name="houseCurrency" [(ngModel)]="houseCurrency">
+          <option value="MXN">MXN · Pesos mexicanos</option>
+          <option value="USD">USD · Dólares estadounidenses</option>
+        </select></label
+      >
+      <p class="field-help">
+        La moneda de la casa se conserva en sus apuestas y movimientos. El selector superior cambia
+        las equivalencias del resumen.
+      </p>
+      <button class="primary" [disabled]="vm.busy()"><app-icon name="plus" />Añadir casa</button>
+    </form>
+    <div class="bank-next">
+      <app-icon name="confirmations" />
+      <p>
+        Después de añadir una casa, registra y confirma su saldo inicial como depósito en
+        <a routerLink="/confirmations">Depósitos y retiros</a>.
+      </p>
+    </div>
+  </details>
+</div>
+<details class="panel fx-panel collapsible"><summary>Tipo de cambio · USD / MXN</summary>
+  <div class="section-heading">
+    <div>
+      <h2>Tipo de cambio</h2>
+      <p>Equivalencias para el resumen. No cambia tus registros originales.</p>
+    </div>
+    <span class="currency-tag">USD / MXN</span>
+  </div>
+  <div class="form-grid">
+    <div>
+      <div class="exchange-value">
+        1 USD <span>=</span> {{ vm.rate() === null ? '—' : (vm.rate() | number: '1.2-6') }} MXN
+      </div>
+      <p class="panel-subtitle">
+        {{ vm.rateSource() }}
+        @if (!vm.rateManual() && vm.rateDate()) {
+          · {{ vm.rateDate() | date: 'dd/MM/yyyy' }}
+        }
+      </p>
+      @if (vm.rateError()) {
+        <p class="field-help negative">{{ vm.rateError() }}</p>
+      }
+      <div class="actions">
+        <button class="secondary" [disabled]="vm.rateLoading()" (click)="vm.loadRate()">
+          {{ vm.rateLoading() ? 'Actualizando…' : 'Actualizar referencia' }}
+        </button>
+        @if (vm.rateManual()) {
+          <button class="text-button" [disabled]="vm.busy()" (click)="useAutomatic()">
+            Usar referencia automática
+          </button>
+        }
+      </div>
+    </div>
+    <form ngNativeValidate (ngSubmit)="saveRate()">
+      <label
+        >O usa tu propio tipo de cambio · MXN por 1 USD<input
+          name="manualRate"
+          type="number"
+          [(ngModel)]="manualRate"
+          min="0.000001"
+          max="1000"
+          step="0.000001"
+          required
+          placeholder="Ingresa la tasa de tu casa o banco" /></label
+      ><button class="secondary" [disabled]="vm.busy()">Guardar tipo de cambio manual</button>
+    </form>
+  </div>
+  <p class="field-help fx-disclaimer">
+    Las equivalencias y gráficas usan la tasa indicada para todo el historial; no representan
+    conversiones realizadas ni ganancias por cambio de moneda.
+    <a href="https://frankfurter.dev/" target="_blank" rel="noopener"
+      >Fuente de referencia diaria: Frankfurter ↗</a
+    >
+  </p>
+</details>
+<app-reset-bank />
+
+@if (removal(); as h) {
+  <app-confirm-dialog
+    title="Eliminar casa del bank"
+    [message]="h.name"
+    amount="Saldo: 0"
+    note="Dejará de contar en el resumen y las ganancias de casas activas. Sus apuestas y movimientos permanecerán en el historial."
+    [busy]="vm.busy()"
+    [error]="vm.error()"
+    (confirm)="removeHouse()"
+    (dismiss)="removal.set(null)"
+  />
+}
+
+<details class="panel collapsible"><summary>Zona horaria del registro</summary>
+  <p>Define a qué día y mes pertenece cada resultado.</p>
+  <form (ngSubmit)="saveTimezone()">
+    <label
+      >Zona horaria<select name="timezone" [(ngModel)]="timezone">
+        <option value="America/Mexico_City">Ciudad de México</option>
+        <option value="America/Tijuana">Tijuana</option>
+        <option value="America/Cancun">Cancún</option>
+        <option value="America/Monterrey">Monterrey</option>
+        <option value="America/New_York">Nueva York</option>
+        <option value="UTC">UTC</option>
+      </select></label
+    ><button class="secondary" [disabled]="vm.busy()">Guardar zona horaria</button>
+  </form>
+</details>

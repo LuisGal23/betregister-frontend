@@ -1,0 +1,87 @@
+:host {
+  display: block;
+  margin-top: 24px;
+}
+.efficiency h2 {
+  font-size: 14px;
+}
+.efficiency .section-heading {
+  margin-bottom: 22px;
+}
+.efficiency-rows {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 23px 35px;
+}
+.efficiency-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+.efficiency-label strong {
+  font-weight: 500;
+}
+.efficiency-label span {
+  font-size: 10px;
+  color: var(--muted);
+}
+.efficiency-label small {
+  margin-left: 7px;
+  font-size: 9px;
+  opacity: 0.8;
+}
+.efficiency-track {
+  height: 5px;
+  background: var(--surface-high);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.efficiency-track span {
+  height: 100%;
+  display: block;
+  background: var(--accent);
+  border-radius: 8px;
+  animation: grow 1s ease-out;
+}
+.efficiency-track .low {
+  background: var(--negative);
+}
+.efficiency-track .high {
+  background: var(--positive);
+}
+details {
+  margin-top: 22px;
+  font-size: 10px;
+  color: var(--muted);
+}
+summary {
+  cursor: pointer;
+}
+details p {
+  max-width: 820px;
+  font-size: 11px;
+}
+@keyframes grow {
+  from {
+    width: 0;
+  }
+}
+@media (max-width: 650px) {
+  .efficiency-rows {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .efficiency-label small {
+    display: block;
+    margin: 4px 0 0;
+    text-align: right;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .efficiency-track span {
+    animation: none;
+  }
+}

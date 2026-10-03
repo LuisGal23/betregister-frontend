@@ -1,0 +1,107 @@
+<section class="hero">
+  <div class="hero-copy">
+    <span class="eyebrow">TU HISTORIAL. UNA PERSPECTIVA MÁS CLARA.</span>
+    <h1>Conoce tus números.<br /><em>Cuida tu bank.</em></h1>
+    <p>
+      Reúne tus apuestas, saldos y resultados en un solo lugar. Menos hojas sueltas. Más claridad
+      sobre el dinero que tienes en juego.
+    </p>
+    <div class="hero-actions">
+      <a class="primary button-link" [routerLink]="vm.authenticated() ? '/overview' : '/register'"
+        >{{ vm.authenticated() ? 'Ir a mi resumen' : 'Crear mi cuenta' }}
+        <app-icon name="arrow" /></a
+      ><a class="secondary button-link" href="#como-funciona">Cómo funciona</a>
+    </div>
+    <span class="hero-note">18+ · Registro personal · MXN y USD</span>
+  </div>
+  <div
+    class="product-preview"
+    aria-label="Ejemplo ilustrativo de un registro. No son ganancias reales."
+  >
+    <div class="preview-head">
+      <span><i></i> Mi resumen</span><span>Datos de ejemplo</span>
+    </div>
+    <div class="preview-balance">
+      <small>Bank total</small><strong>$10,000<span>.00 MXN</span></strong>
+      <p>Disponible + apuestas pendientes</p>
+    </div>
+    <svg
+      viewBox="0 0 480 180"
+      role="img"
+      aria-label="Ejemplo de evolución con ganancias y pérdidas"
+    >
+      <defs>
+        <linearGradient id="landingFill" x1="0" y1="0" x2="0" y2="1">
+          <stop stop-color="#29b8f5" stop-opacity=".3" />
+          <stop offset="1" stop-color="#29b8f5" stop-opacity="0" />
+        </linearGradient>
+      </defs>
+      <path d="M0 45H480 M0 90H480 M0 135H480" stroke="currentColor" opacity=".08" />
+      <path
+        d="M0 135 C35 135 30 60 75 70 S120 155 165 105 S215 20 265 60 S325 120 370 75 S430 95 480 35 L480 180H0Z"
+        fill="url(#landingFill)"
+      />
+      <path
+        d="M0 135 C35 135 30 60 75 70 S120 155 165 105 S215 20 265 60 S325 120 370 75 S430 95 480 35"
+        fill="none"
+        stroke="#26b4ee"
+        stroke-width="3"
+      />
+      <circle cx="265" cy="60" r="6" fill="#26b4ee" stroke="white" stroke-width="3" />
+    </svg>
+    <div class="preview-bottom">
+      <div><small>Disponible</small><strong>$9,500</strong></div>
+      <div><small>En juego</small><strong>$500</strong></div>
+      <div class="preview-ring" aria-label="Ejemplo: 65 por ciento de aciertos">
+        <span>65%<small>Aciertos</small></span>
+      </div>
+    </div>
+    <div class="floating-note">
+      <app-icon name="bank" />
+      <div><strong>Tu dinero, a la vista</strong><small>Cada casa con su propio saldo</small></div>
+    </div>
+  </div>
+</section>
+<section id="como-funciona" class="how">
+  <div class="section-intro">
+    <span class="eyebrow">UN REGISTRO QUE SE ENTIENDE</span>
+    <h2>Todo lo importante.<br />Sin perderte entre números.</h2>
+  </div>
+  <div class="feature-grid">
+    <article>
+      <app-icon name="bank" /><span>01</span>
+      <h3>Organiza tu bank</h3>
+      <p>Añade tus casas y registra depósitos y retiros en su moneda original.</p>
+    </article>
+    <article>
+      <app-icon name="bets" /><span>02</span>
+      <h3>Registra tu ticket</h3>
+      <p>
+        Selecciona el partido, el mercado y la cuota. Simples, parlays o combinadas del mismo
+        partido.
+      </p>
+    </article>
+    <article>
+      <app-icon name="trend" /><span>03</span>
+      <h3>Entiende tus resultados</h3>
+      <p>Consulta tu historial, identifica patrones y lleva el seguimiento de tus retos.</p>
+    </article>
+  </div>
+</section>
+<section class="age-notice" id="uso-responsable">
+  <span class="age-mark">18+</span>
+  <div>
+    <h2>El registro empieza por un límite.</h2>
+    <p>
+      Las apuestas son exclusivamente para mayores de 18 años. Puedes perder el dinero apostado.
+      BetRegister es una herramienta de registro: no recibe apuestas ni garantiza ganancias.
+      Establece límites y no uses dinero destinado a gastos esenciales.
+    </p>
+  </div>
+</section>
+<section class="closing">
+  <h2>Tu próxima decisión empieza<br />por entender tu historial.</h2>
+  <a class="primary button-link" [routerLink]="vm.authenticated() ? '/overview' : '/register'"
+    >{{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }} <app-icon name="arrow"
+  /></a>
+</section>

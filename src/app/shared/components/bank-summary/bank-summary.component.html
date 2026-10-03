@@ -1,0 +1,39 @@
+<section class="metrics">
+  <article class="metric featured">
+    <div class="metric-title"><span>Saldo disponible</span><app-icon name="bank" /></div>
+    <strong class="metric-value">{{ vm.format(vm.total('balance')) }}</strong
+    ><span class="metric-foot"
+      >En {{ vm.data().houses.length }}
+      {{ vm.data().houses.length === 1 ? 'casa de apuestas' : 'casas de apuestas' }}</span
+    >
+  </article>
+  <article class="metric">
+    <div class="metric-title"><span>En apuestas pendientes</span><app-icon name="clock" /></div>
+    <strong class="metric-value">{{ vm.format(vm.total('pending')) }}</strong
+    ><span class="metric-foot">{{ vm.pendingBets().length }} apuestas por resolver</span>
+  </article>
+  <article class="metric">
+    <div class="metric-title"><span>Ganancia neta</span><app-icon name="trend" /></div>
+    <strong
+      class="metric-value"
+      [class.positive]="(vm.total('profit') ?? 0) >= 0"
+      [class.negative]="(vm.total('profit') ?? 0) < 0"
+      >{{ vm.format(vm.total('profit')) }}</strong
+    ><span class="metric-foot">Sin depósitos ni retiros</span>
+  </article>
+  <article class="metric">
+    <div class="metric-title"><span>Bank total</span><app-icon name="overview" /></div>
+    <strong class="metric-value">{{ vm.format(totalBank()) }}</strong
+    ><span class="metric-foot">Disponible + apuestas pendientes</span>
+  </article>
+</section>
+@if (vm.rate() !== null) {
+  <div class="fx-caption">
+    <span class="live-dot"></span> Vista en {{ vm.currency() }} · 1 USD =
+    {{ vm.rate() | number: '1.2-6' }} MXN · {{ vm.rateSource() }}
+    @if (!vm.rateManual() && vm.rateDate()) {
+      <span> · {{ vm.rateDate() | date: 'dd/MM/yyyy' }}</span>
+    }
+    <a routerLink="/bank">Ajustar</a>
+  </div>
+}

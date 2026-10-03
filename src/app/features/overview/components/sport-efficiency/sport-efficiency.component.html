@@ -1,0 +1,48 @@
+<section class="panel efficiency">
+  <div class="section-heading">
+    <div>
+      <h2>Eficiencia por deporte</h2>
+      <p>Aciertos · todo el historial de casas activas</p>
+    </div>
+    <a routerLink="/insights">Ver análisis ↗</a>
+  </div>
+  <div class="efficiency-rows">
+    @for (row of rows(); track row.name) {
+      <div class="efficiency-row">
+        <div class="efficiency-label">
+          <strong>{{ row.name }}</strong
+          ><span
+            >{{ row.rate === null ? 'Sin resultados' : row.rate.toFixed(0) + '% de aciertos' }}
+            <small>{{ row.total ? row.won + ' / ' + row.total + ' tickets' : '' }}</small></span
+          >
+        </div>
+        <div
+          class="efficiency-track"
+          role="progressbar"
+          [attr.aria-label]="'Aciertos de ' + row.name"
+          [attr.aria-valuenow]="row.rate"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuetext]="
+            row.rate === null ? 'Sin resultados' : row.rate.toFixed(1) + ' por ciento'
+          "
+        >
+          <span
+            [style.width.%]="row.rate ?? 0"
+            [class.low]="row.rate !== null && row.rate < 50"
+            [class.high]="row.rate !== null && row.rate >= 65"
+          ></span>
+        </div>
+      </div>
+    }
+  </div>
+  <details>
+    <summary>Cómo interpretar estos porcentajes</summary>
+    <p>
+      Ganadas / (ganadas + perdidas). No incluye pendientes, anuladas ni cashout. Cada ticket cuenta
+      una vez; los parlays con varios deportes van a Mixtos. Se incluyen tickets ocultos del
+      historial. Este porcentaje describe resultados de tickets completos, no rentabilidad ni
+      probabilidades futuras.
+    </p>
+  </details>
+</section>

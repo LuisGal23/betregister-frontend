@@ -1,0 +1,11 @@
+dialog { width:min(720px,calc(100vw - 32px)); max-height:85dvh; overflow:auto; border:1px solid var(--border); border-radius:18px; background:var(--surface); color:var(--text); padding:24px; }
+dialog::backdrop { background:#05090dcc; backdrop-filter:blur(4px); }
+header,.toolbar { display:flex; justify-content:space-between; align-items:center; gap:14px; }
+header h2 { margin:6px 0; font-size:21px; }
+.eyebrow,small,.help { color:var(--muted); font-size:11px; line-height:1.6; }
+.toolbar { flex-wrap:wrap; margin:20px 0 12px; }
+label { display:flex; align-items:center; gap:8px; margin:0; font-size:12px; }
+input { width:auto; }
+.games { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0; }
+p { font-size:13px; line-height:1.6; }
+@media(max-width:600px) { .games { grid-template-columns:minmax(0,1fr); } dialog { padding:18px; } }

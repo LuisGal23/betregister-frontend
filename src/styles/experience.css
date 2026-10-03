@@ -1,0 +1,158 @@
+/* Shared visual rhythm: readable labels, quiet surfaces and clear actions. */
+:root {
+  --muted: #63758b;
+  --border: #dfe7f0;
+  --bg: #f3f6fb;
+  --accent-soft: #e8f5ff;
+}
+:root[data-theme='dark'] {
+  --muted: #a4b2c8;
+  --border: #2a3a50;
+  --bg: #101827;
+  --accent-soft: #1c3449;
+}
+body {
+  font-size: 14px;
+  line-height: 1.5;
+}
+label {
+  font-size: 13px;
+  font-weight: 550;
+}
+input,
+select,
+textarea {
+  font-size: 14px;
+  min-height: 44px;
+  border-radius: 10px;
+  background: var(--surface);
+}
+input[type='checkbox'] {
+  min-height: 0;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+.page-heading {
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.page-heading h1 {
+  font-size: 30px;
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+.page-heading p {
+  font-size: 14px;
+  max-width: 650px;
+  line-height: 1.6;
+}
+.panel {
+  border-radius: 16px;
+  box-shadow: 0 4px 18px #152b4504;
+}
+.panel h2 {
+  font-size: 18px;
+  line-height: 1.4;
+}
+.panel-subtitle,
+.section-heading p {
+  font-size: 13px;
+}
+.primary,
+.secondary,
+.danger-button {
+  min-height: 42px;
+  font-size: 13px;
+  border-radius: 10px;
+}
+.text-button,
+.section-heading a {
+  font-size: 13px;
+}
+.table-wrap {
+  border-radius: 12px;
+}
+th {
+  font-size: 12px;
+  background: color-mix(in srgb, var(--bg) 70%, var(--surface));
+  padding: 14px 16px;
+}
+td {
+  font-size: 13px;
+  padding: 20px 16px;
+  line-height: 1.6;
+}
+td small {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.status {
+  font-size: 11px;
+  border-radius: 20px;
+  padding: 6px 10px;
+  white-space: nowrap;
+}
+.tabs {
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.tabs button {
+  font-size: 13px;
+  min-height: 40px;
+}
+.filter-disclosure > summary,
+.collapsible > summary {
+  font-size: 13px;
+  padding: 8px 0;
+}
+summary {
+  cursor: pointer;
+}
+.empty-block {
+  padding: 36px 20px;
+}
+.empty-block p {
+  font-size: 14px;
+}
+.info-note,
+.alert,
+.notice {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.metric-value {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.6px;
+}
+.step-label {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  font-weight: 650;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+@media (max-width: 600px) {
+  .page-heading h1 {
+    font-size: 27px;
+  }
+  .page-heading p {
+    font-size: 13px;
+  }
+  .panel {
+    padding: 18px;
+  }
+  .page-heading {
+    margin-bottom: 22px;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+  td {
+    padding: 16px 12px;
+  }
+}

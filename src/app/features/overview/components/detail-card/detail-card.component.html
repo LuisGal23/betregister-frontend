@@ -1,0 +1,105 @@
+<dialog
+  #dialog
+  aria-labelledby="detail-title"
+  (cancel)="$event.preventDefault(); dismiss.emit()"
+  (click)="backdrop($event)"
+>
+  <div class="card-content">
+    <header>
+      <div>
+        <span class="eyebrow">TU REGISTRO</span>
+        <h2 id="detail-title">
+          {{ kind() === 'bank' ? 'Detalle de tu bank' : 'Últimas apuestas' }}
+        </h2>
+      </div>
+      <button class="secondary" aria-label="Cerrar detalles" (click)="dismiss.emit()">✕</button>
+    </header>
+    @if (kind() === 'bank') {
+      <div class="bank-total">
+        <span>Bank actual · {{ vm.currency() }}</span
+        ><strong>{{ vm.format(total()) }}</strong>
+        <p>Disponible más el importe de las apuestas pendientes.</p>
+      </div>
+      <div class="totals">
+        <div>
+          Disponible<strong>{{ vm.format(vm.total('balance')) }}</strong>
+        </div>
+        <div>
+          En juego<strong>{{ vm.format(vm.total('pending')) }}</strong>
+        </div>
+        <div>
+          Ganancia histórica activa<strong [class.negative]="(vm.total('profit') ?? 0) < 0">{{
+            vm.format(vm.total('profit'))
+          }}</strong>
+        </div>
+      </div>
+      <h3>Desglose por casa</h3>
+      @for (house of vm.data().houses; track house.id) {
+        <article class="house">
+          <div>
+            <strong>{{ house.name }}</strong
+            ><small>{{ house.currency }}</small>
+          </div>
+          <div>
+            <small>Disponible</small><strong>{{ vm.native(house.balance, house.currency) }}</strong>
+          </div>
+          <div>
+            <small>Pendiente</small><strong>{{ vm.native(house.pending, house.currency) }}</strong>
+          </div>
+        </article>
+      } @empty {
+        <p>Aún no tienes casas activas.</p>
+      }
+      <p class="help">
+        Casas activas · {{ vm.pendingBets().length }} apuestas pendientes ·
+        {{ vm.pendingMovements().length }} movimientos por confirmar. Las equivalencias usan tu tipo
+        de cambio actual.
+      </p>
+      <a class="primary button-link" routerLink="/bank" (click)="dismiss.emit()"
+        >Administrar mi bank ↗</a
+      >
+    } @else {
+      <div class="list-heading">
+        <p>
+          Por fecha de registro, de todas las fechas. Incluye apuestas pendientes y casas
+          eliminadas.
+        </p>
+        <label
+          >Mostrar<select [ngModel]="limit()" (ngModelChange)="limit.set(+$event)">
+            <option [ngValue]="5">Últimas 5</option>
+            <option [ngValue]="10">Últimas 10</option>
+          </select></label
+        >
+      </div>
+      @for (bet of recent(); track bet.id) {
+        <article class="bet">
+          <div>
+            <strong>{{ bet.event }}</strong
+            ><small>{{ bet.house }} · {{ bet.bet_type === 'parlay' ? 'Parlay' : 'Simple' }}</small
+            ><small>Registrada: {{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
+          </div>
+          <div class="result">
+            <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span
+            ><strong>{{ vm.native(bet.stake, bet.currency) }}</strong>
+            @if (bet.status !== 'pending') {
+              <small
+                [class.positive]="bet.payout > bet.stake"
+                [class.negative]="bet.payout < bet.stake"
+                >Neto: {{ vm.native(bet.payout - bet.stake, bet.currency) }}</small
+              >
+            }
+          </div>
+        </article>
+      } @empty {
+        <p>Aún no has registrado apuestas.</p>
+      }
+      <a
+        class="primary button-link"
+        routerLink="/bets"
+        [queryParams]="{ view: 'history' }"
+        (click)="dismiss.emit()"
+        >Ver historial completo ↗</a
+      >
+    }
+  </div>
+</dialog>

@@ -1,0 +1,386 @@
+.period-controls {
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.period-controls label {
+  font-size: 10px;
+  margin-bottom: 6px;
+}
+.period-controls select {
+  font-size: 11px;
+  min-height: 32px;
+  padding: 7px 10px;
+  margin-top: 4px;
+}
+.period-controls button {
+  font-size: 11px;
+  padding: 8px 11px;
+}
+.period-controls input {
+  font-size: 11px;
+  min-height: 32px;
+}
+.archive-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto !important;
+}
+.archive-toggle input {
+  width: auto;
+  margin: 0;
+}
+.field-help {
+  font-size: 10px;
+  margin: 4px 0 20px;
+}
+.bank-performance {
+  display: grid;
+  grid-template-columns: 30% minmax(0, 1fr);
+  padding: 0;
+  background: #102c22;
+  color: #e9fff5;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.bank-summary {
+  padding: 28px 24px;
+  border-right: 1px solid #295143;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+.detail-trigger {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  text-align: left;
+  justify-content: start;
+  font-size: 11px;
+}
+.bank-number {
+  font-size: clamp(24px, 3vw, 35px);
+  font-weight: 650;
+  letter-spacing: -1px;
+  white-space: nowrap;
+  margin: 20px 0 12px;
+}
+.period-profit {
+  font-size: 11px;
+  color: #65e5bd;
+  background: #174f3a;
+  padding: 7px 10px;
+  border-radius: 20px;
+}
+.bank-summary p {
+  font-size: 10px;
+  line-height: 1.6;
+  color: #9ac4b2;
+  margin: 44px 0 0;
+}
+.bank-curve {
+  padding: 22px 22px 12px;
+  align-self: center;
+  min-width: 0;
+}
+.bank-curve summary {
+  font-size: 10px;
+  color: #8cae9e;
+  cursor: pointer;
+}
+.bank-curve details {
+  margin-top: 10px;
+}
+.bank-curve th,
+.bank-curve td {
+  color: #e9fff5;
+  background: transparent;
+  font-size: 10px;
+}
+.summary-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  background: var(--surface);
+  margin: 0 0 22px;
+}
+.summary-strip article {
+  padding: 22px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.summary-strip article:last-child {
+  border: 0;
+}
+.summary-strip span,
+.summary-strip small,
+.summary-strip button {
+  color: var(--muted);
+  font-size: 10px;
+}
+.summary-strip strong {
+  display: block;
+  font-size: 21px;
+  margin: 10px 0;
+}
+.summary-strip small {
+  display: block;
+  line-height: 1.5;
+}
+.summary-strip a {
+  font-size: 10px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.win-bar {
+  height: 7px;
+  background: var(--negative);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.win-bar i {
+  height: 100%;
+  display: block;
+  background: var(--accent);
+}
+.house-track {
+  width: 130px;
+  height: 6px;
+  border-radius: 4px;
+  background: var(--surface-high);
+  overflow: hidden;
+}
+.house-track span {
+  height: 100%;
+  display: block;
+  background: var(--accent);
+}
+.distribution {
+  margin-bottom: 22px;
+}
+.distribution .section-heading {
+  margin-bottom: 14px;
+}
+.distribution th,
+.distribution td {
+  font-size: 11px;
+}
+.distribution .button-link {
+  padding: 7px 11px;
+  min-height: 30px;
+  font-size: 10px;
+}
+.advanced-metrics {
+  margin-top: 22px;
+}
+.advanced-metrics summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+.advanced-metrics .section-heading {
+  margin-top: 22px;
+}
+.advanced-metrics p {
+  font-size: 11px;
+}
+.advanced-metrics .metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 750px) {
+  .bank-performance {
+    grid-template-columns: 1fr;
+  }
+  .bank-summary {
+    border: 0;
+    border-bottom: 1px solid #295143;
+    padding: 22px;
+  }
+  .bank-summary p {
+    margin-top: 18px;
+  }
+  .bank-curve {
+    padding: 18px 12px;
+  }
+  .summary-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+  .summary-strip article {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-strip strong {
+    font-size: 18px;
+  }
+  .advanced-metrics .metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+  .archive-toggle {
+    margin-left: 0 !important;
+  }
+}
+
+.bank-performance {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  grid-template-columns: 31% minmax(0, 1fr);
+  margin-top: 16px;
+}
+.bank-summary {
+  background: linear-gradient(140deg, #159fef, #087fd5);
+  color: white;
+  border: 0;
+  padding: 28px;
+  border-radius: 12px;
+}
+.bank-summary p {
+  color: #d9efff;
+  margin-top: auto;
+  padding-top: 28px;
+  font-size: 10px;
+}
+.bank-number {
+  font-size: clamp(23px, 2.7vw, 36px);
+  letter-spacing: -1.2px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.period-profit {
+  background: #ffffff24;
+  color: white;
+  font-size: 10px;
+}
+.period-profit.negative {
+  background: #6e183b40;
+  color: #fff;
+}
+.bank-curve {
+  padding: 22px 26px 14px;
+  align-self: stretch;
+}
+.chart-caption h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.chart-caption span {
+  font-size: 9px;
+  color: var(--muted);
+  display: block;
+  margin-top: 6px;
+}
+.bank-curve summary {
+  color: var(--muted);
+  font-size: 9px;
+}
+.bank-curve th,
+.bank-curve td {
+  color: var(--text);
+}
+.summary-strip {
+  border: 0;
+  background: transparent;
+  gap: 16px;
+}
+.summary-strip article {
+  border: 1px solid var(--border) !important;
+  border-radius: 11px;
+  padding: 20px;
+  background: var(--surface);
+  position: relative;
+  overflow: hidden;
+}
+.summary-strip strong {
+  font-size: 22px;
+}
+.summary-strip small {
+  font-size: 9px;
+}
+.summary-strip article:last-child {
+  padding-right: 78px;
+}
+.win-donut {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  padding: 6px;
+  position: absolute;
+  right: 15px;
+  top: 26px;
+  transform: rotate(-70deg);
+}
+.win-donut span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.filter-disclosure .field-help {
+  margin-bottom: 0;
+}
+.period-controls button {
+  border: 0;
+  padding: 8px 12px;
+}
+.period-controls input {
+  border-radius: 6px;
+}
+.distribution .section-heading p {
+  font-size: 10px;
+}
+.advanced-metrics {
+  box-shadow: none;
+}
+@media (max-width: 1050px) {
+  .summary-strip {
+    grid-template-columns: 1fr 1fr;
+  }
+  .bank-performance {
+    grid-template-columns: 34% minmax(0, 1fr);
+  }
+  .bank-summary {
+    padding: 22px;
+  }
+  .bank-curve {
+    padding: 20px 16px;
+  }
+}
+@media (max-width: 650px) {
+  .bank-performance {
+    grid-template-columns: 1fr;
+  }
+  .bank-summary {
+    padding: 22px;
+  }
+  .bank-summary p {
+    padding-top: 13px;
+  }
+  .bank-number {
+    font-size: 31px;
+  }
+  .bank-curve {
+    padding: 22px 14px;
+  }
+  .summary-strip {
+    gap: 10px;
+  }
+  .summary-strip article {
+    padding: 16px;
+  }
+  .summary-strip strong {
+    font-size: 18px;
+  }
+  .win-donut {
+    width: 42px;
+    height: 42px;
+    right: 10px;
+    top: 32px;
+    padding: 5px;
+  }
+  .summary-strip article:last-child {
+    padding-right: 54px;
+  }
+}

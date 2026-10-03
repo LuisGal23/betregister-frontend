@@ -1,0 +1,97 @@
+@for (animation of [graph().path]; track animation) {
+  <div class="plot">
+    <div class="axis">
+      <span>{{ vm.format(graph().max) }}</span
+      ><span>{{ vm.format(graph().min) }}</span>
+    </div>
+    <svg
+      viewBox="0 0 600 224"
+      role="group"
+      aria-label="Ganancia acumulada. Selecciona un punto para ver el detalle."
+      (pointerleave)="active.set(null)"
+    >
+      <defs>
+        <linearGradient
+          [id]="gradientId"
+          gradientUnits="userSpaceOnUse"
+          x1="0"
+          y1="0"
+          x2="0"
+          y2="224"
+        >
+          <stop offset="0" stop-color="#28b9f3" />
+          <stop [attr.offset]="graph().zero / 224" stop-color="#28b9f3" />
+          <stop [attr.offset]="graph().zero / 224" stop-color="#e35672" />
+          <stop offset="1" stop-color="#e35672" />
+        </linearGradient>
+      </defs>
+      <path d="M24 36H576 M24 84H576 M24 132H576 M24 180H576" class="grid" />
+      <line x1="24" x2="576" [attr.y1]="graph().zero" [attr.y2]="graph().zero" class="zero" />
+      <path [attr.d]="graph().area" fill="var(--chart-fill)" opacity=".12" />
+      <path
+        class="trace"
+        [attr.d]="animation"
+        pathLength="1"
+        fill="none"
+        [attr.stroke]="'url(#' + gradientId + ')'"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <circle class="traveler" r="5" fill="var(--accent)" aria-hidden="true">
+        <animateMotion dur="3.2s" [attr.path]="animation" fill="freeze" calcMode="paced" />
+      </circle>
+      @for (point of points(); track point.id) {
+        <circle
+          class="point"
+          [attr.cx]="point.x"
+          [attr.cy]="point.y"
+          r="5"
+          [attr.fill]="color(point.change)"
+          [attr.stroke]="color(point.change)"
+          stroke-width="12"
+          stroke-opacity="0"
+          tabindex="0"
+          role="button"
+          [attr.aria-label]="
+            label(point.time, true) +
+            '. ' +
+            point.label +
+            '. Cambio: ' +
+            vm.format(point.change) +
+            '. Acumulado: ' +
+            vm.format(point.value)
+          "
+          (pointerenter)="active.set(point.id)"
+          (focus)="active.set(point.id)"
+          (blur)="active.set(null)"
+          (click)="active.set(point.id)"
+          (keydown.enter)="active.set(point.id)"
+          (keydown.space)="$event.preventDefault(); active.set(point.id)"
+        >
+          <title>
+            {{ label(point.time, true) }} · {{ point.label }} · {{ vm.format(point.change) }}
+          </title>
+        </circle>
+      }
+      @for (tick of ticks(); track tick.x) {
+        <text [attr.x]="tick.x" y="212" text-anchor="middle" fill="var(--muted)" font-size="10">
+          {{ tick.text }}
+        </text>
+      }
+    </svg>
+  </div>
+}
+<div class="point-detail" aria-live="polite">
+  @if (selected(); as point) {
+    <span>{{ label(point.time, true) }} · {{ point.label }}</span
+    ><strong [style.color]="color(point.value)"
+      >{{ description(point.value) }}: {{ vm.format(point.value) }}</strong
+    ><small
+      >Resultado de este movimiento:
+      <b [style.color]="color(point.change)">{{ vm.format(point.change) }}</b></small
+    >
+  } @else {
+    <span>Pasa el cursor, toca un punto o usa Tab para ver su resultado.</span>
+  }
+</div>

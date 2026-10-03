@@ -1,0 +1,81 @@
+.tour-card {
+  position: fixed;
+  bottom: 24px;
+  left: 240px;
+  width: min(400px, calc(100vw - 32px));
+  z-index: 100;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 16px 60px #07182b33;
+  animation: enter 0.25s ease-out;
+}
+.tour-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--accent);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+.tour-top button {
+  background: none;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+.tour-card h2 {
+  font-size: 19px;
+  line-height: 1.35;
+  margin: 14px 0;
+}
+.tour-card p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+.progress {
+  height: 3px;
+  background: var(--border);
+  margin: 20px 0;
+}
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s;
+}
+footer {
+  display: flex;
+  justify-content: space-between;
+}
+footer button {
+  font-size: 12px;
+}
+@media (max-width: 800px) {
+  .tour-card {
+    left: 16px;
+    bottom: 16px;
+    max-height: 70dvh;
+    overflow: auto;
+  }
+}
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tour-card {
+    animation: none;
+  }
+  .progress span {
+    transition: none;
+  }
+}

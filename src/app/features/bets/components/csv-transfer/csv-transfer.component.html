@@ -1,0 +1,55 @@
+<details class="panel">
+  <summary>Importar o exportar CSV</summary>
+  <div class="actions">
+    <a class="secondary button-link" href="/api/export/bets.csv">Exportar apuestas</a
+    ><a class="secondary button-link" href="/api/export/ledger.csv">Exportar libro de movimientos</a
+    ><a class="secondary button-link" href="/ejemplo-apuestas.csv" download>Archivo de ejemplo</a>
+  </div>
+  <p>
+    Importa apuestas a casas que ya existen en tu cuenta y tienen fondos para cubrirlas. Se validan
+    todas las filas; si hay errores, no se importa ninguna. Los duplicados se rechazan.
+  </p>
+  <label
+    >Archivo CSV de apuestas<input
+      type="file"
+      accept=".csv,text/csv"
+      (change)="choose($event)"
+      [disabled]="vm.busy()"
+  /></label>
+  @if (reading()) {
+    <p role="status">Leyendo archivo…</p>
+  }
+  @if (localError()) {
+    <p role="alert" class="negative">{{ localError() }}</p>
+  }
+  <div class="actions">
+    <button class="secondary" [disabled]="!content || vm.busy() || reading()" (click)="run(true)">
+      Validar archivo</button
+    ><button
+      class="primary"
+      [disabled]="!report()?.valid || !report()?.dry_run || vm.busy()"
+      (click)="run(false)"
+    >
+      Importar {{ report()?.rows ?? 0 }} apuestas
+    </button>
+  </div>
+  @if (report(); as r) {
+    <p role="status">
+      {{ r.rows }} filas ·
+      {{
+        r.imported
+          ? r.imported + ' importadas'
+          : r.valid
+            ? 'Validación correcta. Revisa el archivo antes de importar.'
+            : 'Corrige los errores y vuelve a elegir el archivo.'
+      }}
+    </p>
+    @if (r.errors.length) {
+      <ul>
+        @for (error of r.errors; track $index) {
+          <li class="negative">Línea {{ error.line }}: {{ error.message }}</li>
+        }
+      </ul>
+    }
+  }
+</details>
