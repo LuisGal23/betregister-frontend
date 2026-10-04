@@ -66,10 +66,10 @@
   </section>
 
   <form ngNativeValidate class="auth-card" (ngSubmit)="submit()">
-    <h2>{{ registering() ? 'Crear cuenta' : 'Iniciar sesión' }}</h2>
+    <h2>{{ auth.verification() ? 'Verifica tu correo' : registering() ? 'Crear cuenta' : 'Iniciar sesión' }}</h2>
     <p class="auth-sub">
       {{
-        registering() ? 'Introduce tu correo y elige una contraseña.' : 'Accede a tus registros.'
+        auth.verification() ? 'Enviamos un código a ' + email + '. Revisa también la carpeta de spam.' : registering() ? 'Introduce tu correo y elige una contraseña.' : 'Accede a tus registros.'
       }}
     </p>
 
@@ -77,6 +77,19 @@
       <div class="alert" role="alert">{{ vm.error() }}</div>
     }
 
+    @if (vm.notice()) { <p role="status">{{ vm.notice() }}</p> }
+    @if (auth.verification()) {
+      <label>
+        <span>Código de 8 dígitos</span>
+        <input name="verificationCode" type="text" inputmode="numeric" autocomplete="one-time-code"
+          [(ngModel)]="code" required pattern="[0-9]{8}" minlength="8" maxlength="8" placeholder="00000000" />
+      </label>
+      <p class="auth-sub">El código vence en 10 minutos y solo puede usarse una vez. No lo compartas.</p>
+      <button type="button" class="text-button" [disabled]="vm.busy() || waitSeconds() > 0" (click)="auth.resend()">
+        {{ waitSeconds() > 0 ? 'Reenviar en ' + waitSeconds() + ' s' : 'Reenviar código' }}
+      </button>
+      <button type="button" class="text-button" [disabled]="vm.busy()" (click)="back()">Volver y cambiar correo</button>
+    } @else {
     <label>
       <span>Correo electrónico</span>
       <input
@@ -131,19 +144,22 @@
       </label>
     }
 
+    }
     <p class="age-reminder">18+ · Solo para mayores de edad. Las apuestas implican riesgo de perder dinero.</p>
     <button class="primary auth-submit" [disabled]="vm.busy()">
       <span>{{
-        vm.busy() ? 'Guardando…' : registering() ? 'Crear cuenta' : 'Iniciar sesión'
+        vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? 'Enviar código' : 'Iniciar sesión'
       }}</span>
       <app-icon name="arrow" />
     </button>
 
+    @if (!auth.verification()) {
     <div class="auth-switch">
       <span>{{ registering() ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta?' }}</span>
       <button type="button" class="text-button" [disabled]="vm.busy()" (click)="toggle()">
         {{ registering() ? 'Inicia sesión' : 'Crear cuenta nueva' }}
       </button>
     </div>
+    }
   </form>
 </div>
