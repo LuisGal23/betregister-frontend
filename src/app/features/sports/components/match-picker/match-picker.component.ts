@@ -33,6 +33,8 @@ export class MatchPickerComponent implements OnDestroy {
   private timer?: ReturnType<typeof setTimeout>;
   private version = 0;
   private destroyed = false;
+  private lastKey = '';
+  private nextRefresh = 0;
   options = computed(() => this.leagues().filter((l) => l.sport === this.sport()));
   matches = computed(() =>
     (this.board()?.events ?? []).filter(
@@ -65,7 +67,11 @@ export class MatchPickerComponent implements OnDestroy {
     void this.load();
   }
   async load() {
-    if (!this.day || !this.league) return;
+    if (!this.day || !this.league || this.destroyed) return;
+    const key = `${this.league}:${this.day}`;
+    if (key === this.lastKey && this.loading()) return;
+    if (key === this.lastKey && this.board() && Date.now() < this.nextRefresh) { this.schedule(); return; }
+    this.lastKey = key;
     clearTimeout(this.timer);
     const version = ++this.version;
     this.loading.set(true);
@@ -73,7 +79,8 @@ export class MatchPickerComponent implements OnDestroy {
     this.board.set(null);
     try {
       const result = await this.service.events(this.league, this.day);
-      if (!this.destroyed && version === this.version)
+      if (!this.destroyed && version === this.version) {
+        this.nextRefresh = Date.now() + result.refresh_seconds * 1000;
         this.board.set({
           ...result,
           events: result.events.map((game) => ({
@@ -82,6 +89,7 @@ export class MatchPickerComponent implements OnDestroy {
             updated_at: result.updated_at,
           })),
         });
+      }
     } catch (error) {
       if (!this.destroyed && version === this.version)
         this.error.set(

@@ -16,12 +16,13 @@ export class BetScoresComponent implements AfterViewInit, OnDestroy {
   automatic = true;
   private timer?: ReturnType<typeof setTimeout>;
   private destroyed = false;
+  private nextRefresh = 0;
   private opener = document.activeElement as HTMLElement | null;
   ngAfterViewInit() { this.dialog().nativeElement.showModal(); void this.load(); }
   async load() {
-    if (this.loading()) return;
+    if (this.destroyed || this.loading() || (this.result() && Date.now() < this.nextRefresh)) return;
     clearTimeout(this.timer); this.loading.set(true); this.error.set('');
-    try { const result = await this.service.scores(this.betId()); if (!this.destroyed) this.result.set(result); }
+    try { const result = await this.service.scores(this.betId()); if (!this.destroyed) { this.result.set(result); this.nextRefresh = Date.now() + result.refresh_seconds * 1000; } }
     catch (error) { if (!this.destroyed) { this.result.set(null); this.error.set(error instanceof Error ? error.message : 'No se pudieron actualizar los marcadores.'); } }
     finally { if (!this.destroyed) { this.loading.set(false); this.schedule(); } }
   }
