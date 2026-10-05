@@ -24,6 +24,27 @@ export class ChallengesPageComponent implements OnInit {
   target: number | null = null;
   steps = 5;
   betId = '';
+  minOdds: number | null = null;
+  maxOdds: number | null = null;
+  maxStake: number | null = null;
+  ruleSport = '';
+  projectionOdds = 1.8;
+  projectionPoints(c: Challenge) {
+    const steps = this.projection(c);
+    if (steps === null || steps === 0) return '';
+    const count = Math.min(steps, 30),
+      top = Math.max(c.reference, c.target);
+    return Array.from(
+      { length: count + 1 },
+      (_, i) =>
+        `${20 + (i / count) * 360},${150 - (Math.min(top, c.reference * Math.pow(this.projectionOdds, i)) / top) * 130}`,
+    ).join(' ');
+  }
+  projection(c: Challenge) {
+    if (c.reference <= 0 || !Number.isFinite(this.projectionOdds) || this.projectionOdds <= 1)
+      return null;
+    return Math.max(0, Math.ceil(Math.log(c.target / c.reference) / Math.log(this.projectionOdds)));
+  }
   kinds: Record<string, string> = {
     ladder: 'Escalera',
     target: 'Objetivo de saldo',
@@ -70,6 +91,12 @@ export class ChallengesPageComponent implements OnInit {
           initial: this.initial,
           target: this.kind === 'tracking' ? this.initial : this.target,
           steps: this.steps,
+          rules: {
+            min_odds: this.minOdds,
+            max_odds: this.maxOdds,
+            max_stake: this.maxStake,
+            sport: this.ruleSport,
+          },
         }),
       )
     ) {

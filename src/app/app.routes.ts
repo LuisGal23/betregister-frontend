@@ -34,6 +34,26 @@ export const routes: Routes = [
       import('./features/bank/pages/bank-page.component').then((m) => m.BankPageComponent),
   },
   {
+    path: 'tickets',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/bets/pages/bets-page.component').then((m) => m.BetsPageComponent),
+  },
+  {
+    path: 'history',
+    canActivate: [authGuard],
+    data: { history: true },
+    loadComponent: () =>
+      import('./features/bets/pages/bets-page.component').then((m) => m.BetsPageComponent),
+  },
+  {
+    path: 'settings',
+    canActivate: [authGuard],
+    data: { settings: true },
+    loadComponent: () =>
+      import('./features/bank/pages/bank-page.component').then((m) => m.BankPageComponent),
+  },
+  {
     path: 'bets',
     canActivate: [authGuard],
     loadComponent: () =>

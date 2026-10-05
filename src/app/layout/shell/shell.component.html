@@ -33,7 +33,14 @@
     @if (sidebarOpen()) {
       <button class="sidebar-scrim" aria-label="Cerrar menú" (click)="closeMenu()"></button>
     }
-    <aside #sidebar class="sidebar" [class.open]="sidebarOpen()" (keydown.escape)="closeMenu()">
+    <aside
+      id="workspace-menu"
+      #sidebar
+      (keydown)="trapMenu($event)"
+      class="sidebar"
+      [class.open]="sidebarOpen()"
+      (keydown.escape)="closeMenu()"
+    >
       <div class="sidebar-brand">
         <a class="brand" routerLink="/overview"
           ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" /></a
@@ -99,7 +106,42 @@
       >
     </header>
   }
+  @if (!publicPage()) {
+    <nav
+      class="bottom-navigation"
+      aria-label="Navegación móvil"
+      [attr.inert]="sidebarOpen() ? '' : null"
+    >
+      @for (link of mobileLinks; track link.path) {
+        <a
+          [routerLink]="'/' + link.path"
+          routerLinkActive="active"
+          ariaCurrentWhenActive="page"
+          [class.create-ticket]="link.path === 'tickets'"
+        >
+          <app-icon [name]="link.icon" /><span>{{
+            link.path === 'history'
+              ? 'Historial'
+              : link.path === 'tickets'
+                ? 'Nuevo ticket'
+                : link.label
+          }}</span>
+        </a>
+      }
+      <button
+        (click)="openMenu()"
+        aria-controls="workspace-menu"
+        [attr.aria-expanded]="sidebarOpen()"
+        [class.active]="
+          path() === '/insights' || path() === '/challenges' || path() === '/settings'
+        "
+      >
+        <app-icon name="menu" /><span>Más</span>
+      </button>
+    </nav>
+  }
   <main
+    [attr.inert]="sidebarOpen() ? '' : null"
     id="main-content"
     tabindex="-1"
     [class.main-content]="!publicPage()"

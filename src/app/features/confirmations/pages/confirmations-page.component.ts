@@ -48,8 +48,8 @@ export class ConfirmationsPageComponent {
   reviewMovement(m: Movement) {
     this.vm.error.set('');
     this.review.set({
-      title: m.kind === 'deposit' ? 'Confirmar depósito' : 'Confirmar retiro',
-      message: `${m.house} · ${m.kind === 'deposit' ? 'El depósito se sumará a' : 'El retiro se descontará de'} tu saldo.`,
+      title: 'Confirmar ' + this.vm.labels[m.kind].toLowerCase(),
+      message: `${m.house} · ${m.amount > 0 ? 'El importe se sumará a' : 'El importe se descontará de'} tu saldo.`,
       amount: this.vm.native(Math.abs(m.amount), m.currency),
       note: 'Confirma cuando se refleje en la casa de apuestas. Este registro no transfiere dinero.',
       execute: () => this.movements.decide(m.id, 'confirm'),

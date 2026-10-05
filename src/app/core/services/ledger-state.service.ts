@@ -53,6 +53,11 @@ export class LedgerState {
     () => this.rate() === null && this.data().houses.some((h) => h.currency !== this.currency()),
   );
   labels: Record<string, string> = {
+    deposit: 'Depósito',
+    withdrawal: 'Retiro',
+    bonus: 'Bono',
+    fee: 'Comisión',
+    tax: 'Impuesto',
     pending: 'Pendiente',
     won: 'Ganada',
     lost: 'Perdida',
@@ -63,7 +68,9 @@ export class LedgerState {
   };
 
   private initialization?: Promise<void>;
-  init() { return this.initialization ??= this.initialize(); }
+  init() {
+    return (this.initialization ??= this.initialize());
+  }
   private async initialize() {
     try {
       await this.refresh();

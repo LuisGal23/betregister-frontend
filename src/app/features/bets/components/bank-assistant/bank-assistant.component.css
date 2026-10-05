@@ -230,3 +230,9 @@
   background: color-mix(in srgb, var(--negative) 7%, var(--surface));
   border: 1px solid color-mix(in srgb, var(--negative) 25%, var(--border));
 }
+
+@media (max-width: 760px) {
+  .assistant {
+    bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+  }
+}

@@ -110,4 +110,39 @@
   }
 }
 
-.two-column{grid-template-columns:minmax(0,1fr);gap:0}.two-column>details{margin-top:0}.two-column>details form{max-width:600px}.house-list{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}.house-card{background:var(--surface);padding:20px}.house-balance{font-weight:600}.collapsible .bank-next{margin-top:15px}.fx-panel{margin-top:18px}
+.two-column {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0;
+}
+.two-column > details {
+  margin-top: 0;
+}
+.two-column > details form {
+  max-width: 600px;
+}
+.house-list {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+.house-card {
+  background: var(--surface);
+  padding: 20px;
+}
+.house-balance {
+  font-weight: 600;
+}
+.collapsible .bank-next {
+  margin-top: 15px;
+}
+.fx-panel {
+  margin-top: 18px;
+}
+
+.unit-rebalance {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.unit-rebalance input {
+  width: auto;
+  margin: 0;
+}

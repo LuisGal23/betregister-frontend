@@ -17,6 +17,9 @@
             >Tipo de movimiento<select name="kind" [(ngModel)]="kind">
               <option value="deposit">Depósito</option>
               <option value="withdrawal">Retiro</option>
+              <option value="bonus">Bono acreditado</option>
+              <option value="fee">Comisión</option>
+              <option value="tax">Impuesto</option>
             </select></label
           ><label
             >Importe ({{ inputCurrency() }})<input
@@ -33,8 +36,10 @@
         <details class="filter-disclosure">
           <summary>Saldo inicial y comisiones</summary>
           <p class="field-help">
-            Para empezar, registra tu saldo inicial como depósito y confírmalo. Registra las
-            cantidades que realmente recibes o retiras, después de comisiones.
+            Registra el depósito o retiro bruto y las comisiones o impuestos por separado, sin
+            duplicarlos. Las comisiones e impuestos reducen el neto; los bonos acreditados aumentan
+            el saldo, pero no cuentan como ganancias de apuestas. No registres bonos sujetos a
+            requisitos como dinero disponible.
           </p>
         </details>
         <button class="primary" [disabled]="vm.busy()">
@@ -45,7 +50,7 @@
       <div class="empty-block">
         <app-icon name="bank" />
         <p>Añade una casa antes de registrar movimientos.</p>
-        <a class="primary button-link" routerLink="/bank">Añadir casa</a>
+        <a class="primary button-link" routerLink="/settings">Añadir casa</a>
       </div>
     }
   </section>
@@ -71,7 +76,7 @@
         @for (m of vm.pendingMovements(); track m.id) {
           <tr>
             <td>
-              <strong>{{ m.kind === 'deposit' ? 'Depósito' : 'Retiro' }}</strong
+              <strong>{{ vm.labels[m.kind] }}</strong
               ><small>{{ m.house }}</small>
             </td>
             <td>{{ timestamp(m.created) | date: 'dd/MM/yyyy HH:mm' }}</td>

@@ -194,7 +194,9 @@
 .ticket-options label {
   font-size: 12px;
 }
-.ticket-submit { padding-bottom: 4px; }
+.ticket-submit {
+  padding-bottom: 4px;
+}
 .ticket-total {
   display: flex;
   align-items: center;
@@ -454,4 +456,12 @@
   .ticket-panel {
     max-height: 80dvh;
   }
+}
+
+.bet-workspace.quick-mode {
+  grid-template-columns: minmax(0, 780px);
+  justify-content: center;
+}
+.quick-mode .ticket-column {
+  width: 100%;
 }

@@ -6,13 +6,17 @@
   </div>
   <button class="secondary" (click)="reload()" [disabled]="vm.busy()">Actualizar</button>
 </div>
-<details class="filter-disclosure"><summary>Cómo funcionan los retos</summary><p class="info-note">
-  Son registros de seguimiento. El importe inicial es una referencia: no reserva dinero, no hace
-  depósitos ni recomienda reinvertir el retorno. Los resultados de los tickets vinculados actualizan
-  el progreso.
-</p></details>
+<details class="filter-disclosure">
+  <summary>Cómo funcionan los retos</summary>
+  <p class="info-note">
+    Son registros de seguimiento. El importe inicial es una referencia: no reserva dinero, no hace
+    depósitos ni recomienda reinvertir el retorno. Los resultados de los tickets vinculados
+    actualizan el progreso.
+  </p>
+</details>
 <div class="challenge-layout">
-  <details class="panel collapsible" [open]="!service.items().length"><summary>+ Crear un reto</summary>
+  <details class="panel collapsible" [open]="!service.items().length">
+    <summary>+ Crear un reto</summary>
     @if (vm.data().houses.length) {
       <form ngNativeValidate (ngSubmit)="create()">
         <label
@@ -68,8 +72,47 @@
             required
             min="1"
             max="100"
-            step="1" /></label
-        ><button class="primary" [disabled]="vm.busy()">Crear reto</button>
+            step="1"
+        /></label>
+        <details class="filter-disclosure">
+          <summary>Reglas opcionales</summary>
+          <label
+            >Cuota mínima<input
+              type="number"
+              name="minOdds"
+              min="1.0001"
+              max="10000"
+              step="0.0001"
+              [(ngModel)]="minOdds"
+          /></label>
+          <label
+            >Cuota máxima<input
+              type="number"
+              name="maxOdds"
+              [min]="minOdds ?? 1.0001"
+              max="10000"
+              step="0.0001"
+              [(ngModel)]="maxOdds"
+          /></label>
+          <label
+            >Importe máximo por ticket<input
+              type="number"
+              name="maxStake"
+              min="0.01"
+              max="9999999999.99"
+              step="0.01"
+              [(ngModel)]="maxStake"
+          /></label>
+          <label
+            >Deporte<select name="ruleSport" [(ngModel)]="ruleSport">
+              <option value="">Cualquiera</option>
+              <option>Fútbol</option>
+              <option>Béisbol</option>
+              <option value="Americano">NFL</option>
+            </select></label
+          >
+        </details>
+        <button class="primary" [disabled]="vm.busy()">Crear reto</button>
       </form>
     } @else {
       <p>Añade una casa para comenzar.</p>
@@ -121,6 +164,14 @@
           </p>
           @if (c.progress >= 100) {
             <p class="positive">Objetivo de registro alcanzado. Puedes finalizar el reto.</p>
+          }
+          @if (c.rules; as rules) {
+            <p class="field-help">
+              Cuotas: {{ rules.min_odds ?? 'sin mínimo' }} a {{ rules.max_odds ?? 'sin máximo' }} ·
+              Máximo por ticket:
+              {{ rules.max_stake ? vm.format(+rules.max_stake, c.currency) : 'sin límite' }} ·
+              {{ rules.sport || 'Cualquier deporte' }}
+            </p>
           }
           <div class="actions">
             <button class="primary" (click)="selected.set(c.id); betId = ''">
@@ -177,9 +228,52 @@
             }
           </select></label
         ><button class="primary" [disabled]="vm.busy() || !available().length">Vincular</button
-        ><a class="text-button" routerLink="/bets">Registrar una apuesta</a>
+        ><a
+          class="text-button"
+          routerLink="/tickets"
+          [queryParams]="{ challenge: c.id, house: c.house_id }"
+          >Registrar una apuesta</a
+        >
       </form>
     }
+    @if (c.kind !== 'tracking') {
+      <details class="filter-disclosure">
+        <summary>Simular pasos hasta el objetivo</summary>
+        <label
+          >Cuota decimal promedio<input
+            type="number"
+            min="1.01"
+            max="10000"
+            step="0.01"
+            [(ngModel)]="projectionOdds"
+        /></label>
+        <p>
+          {{
+            projection(c) === null
+              ? 'Sin base positiva para calcular'
+              : projection(c) + ' victorias consecutivas estimadas'
+          }}
+        </p>
+        <svg
+          viewBox="0 0 400 170"
+          style="max-width: 500px; width: 100%"
+          role="img"
+          aria-label="Proyección hipotética de reinversión, hasta 30 pasos"
+        >
+          <polyline
+            [attr.points]="projectionPoints(c)"
+            fill="none"
+            stroke="var(--accent)"
+            stroke-width="3"
+          />
+        </svg>
+        <p class="field-help">
+          Escenario matemático que reinvierte todo el saldo de referencia y supone ganar cada paso.
+          No estima probabilidades ni recomienda apostar ese importe.
+        </p>
+      </details>
+    }
+    <p class="field-help">{{ c.rules_note }}</p>
     <div class="table-wrap">
       <table>
         <thead>

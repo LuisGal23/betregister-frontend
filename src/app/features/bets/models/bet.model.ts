@@ -9,6 +9,7 @@ export interface BetLeg {
   status: 'pending' | 'won' | 'lost' | 'void';
 }
 export interface Bet {
+  closing_odds?: string | null;
   american_odds?: number | null;
   league_tag?: string;
   sport_tag?: string;
@@ -37,6 +38,7 @@ export interface Bet {
   settled_at: string | null;
 }
 export interface CreateBet {
+  challenge_id?: number;
   odds_format?: 'decimal' | 'american';
   league_tag?: string;
   market_tag?: string;

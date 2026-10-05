@@ -131,3 +131,21 @@
     grid-row: 1;
   }
 }
+
+.market-bar {
+  display: block;
+  width: 100%;
+  height: 5px;
+  background: var(--surface-high);
+  border-radius: 4px;
+  margin-top: 9px;
+}
+.market-bar i {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--positive);
+}
+.market-bar i.loss {
+  background: var(--negative);
+}

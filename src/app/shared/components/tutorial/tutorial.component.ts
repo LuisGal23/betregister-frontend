@@ -22,10 +22,10 @@ export class TutorialComponent implements AfterViewInit {
     {
       route: '/overview',
       title: 'Todo empieza en tu resumen',
-      text: 'Aquí ves tu bank, resultados y evolución. Cambia Día, Semana o Mes para explorar la gráfica. Los filtros avanzados están en «Filtrar resultados».',
+      text: 'Aquí ves tu bank, resultados y evolución. Cambia Día, 7 días, 30 días o Este año para explorar la gráfica. Los filtros avanzados están en «Filtrar resultados».',
     },
     {
-      route: '/bank',
+      route: '/settings',
       title: 'Organiza tu dinero por casa',
       text: 'Añade tus casas en «Añadir casa». Cada una tiene su saldo y moneda. Para retirar una casa de tu lista debe quedar en cero y sin operaciones pendientes.',
     },
@@ -35,22 +35,22 @@ export class TutorialComponent implements AfterViewInit {
       text: 'Abre «Depositar o retirar». En esa tarjeta registras movimientos, los confirmas cuando se reflejen en tu casa y consultas el historial. El registro no transfiere dinero.',
     },
     {
-      route: '/bets',
+      route: '/tickets',
       title: 'Elige partidos y arma tu ticket',
       text: 'Selecciona deporte, competición y fecha a la izquierda. Añade partidos y completa tu ticket a la derecha: simple, parlay o combinada del mismo partido. Usa el scroll del ticket si tiene varias selecciones.',
     },
     {
-      route: '/bets',
+      route: '/tickets',
       title: 'Clasifica cada selección',
       text: 'Indica su mercado y línea: goles, córners, carreras, puntos o moneyline. Usa «Otro» solo cuando no exista tu mercado. Estas etiquetas alimentan tu análisis.',
     },
     {
-      route: '/bets',
+      route: '/tickets',
       title: 'Consulta cómo cuidar tu bank',
       text: 'El icono flotante de conversación abre el asistente. Compara tu importe con el 2% disponible de la casa o prueba Kelly fraccional con tu propia probabilidad. Ningún cálculo garantiza ganancias.',
     },
     {
-      route: '/bets?view=history',
+      route: '/history',
       title: 'Actualiza tus resultados',
       text: 'En «Mis tickets», abre «Resolver apuesta» para registrar ganada, perdida, anulada o cashout. Los marcadores en vivo son informativos: los resultados del ticket se confirman manualmente.',
     },
@@ -62,7 +62,7 @@ export class TutorialComponent implements AfterViewInit {
     {
       route: '/challenges',
       title: 'Lleva tus retos por separado',
-      text: 'Crea un reto y vincula tickets ya registrados para seguir su progreso. No duplica tus movimientos ni cambia el bank. Puedes repetir este recorrido desde el menú.',
+      text: 'Crea un reto y vincula tickets ya registrados para seguir su progreso. No duplica tus movimientos ni cambia el bank. Puedes repetir este recorrido desde el menú «Más» en móvil o el menú lateral en escritorio.',
     },
   ];
   ngAfterViewInit() {

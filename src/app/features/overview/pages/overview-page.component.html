@@ -15,44 +15,82 @@
     <a routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }"
       ><app-icon name="plus" /> Depositar o retirar</a
     >
-    <a class="primary button-link" routerLink="/bets"><app-icon name="plus" />Registrar apuesta</a>
+    <a class="primary button-link" routerLink="/tickets"
+      ><app-icon name="plus" />Registrar apuesta</a
+    >
   </div>
 </div>
-<app-charts />
+<section class="headline-kpis" aria-label="Resultados generales de casas activas">
+  <article class="panel">
+    <span>Bank real</span><strong>{{ vm.format(kpis().bank) }}</strong
+    ><small>Disponible + pendiente</small>
+  </article>
+  <article class="panel">
+    <span>Yield</span><strong>{{ percent(kpis().yield) }}</strong
+    ><small>Neto / importe liquidado</small>
+  </article>
+  <article class="panel">
+    <span>ROI</span><strong>{{ percent(kpis().roi) }}</strong
+    ><small>Neto / depósitos históricos</small>
+  </article>
+  <article class="panel">
+    <span>Acierto</span><strong>{{ percent(vm.winRate()) }}</strong
+    ><small>{{ vm.won() }} ganadas · {{ vm.lost() }} perdidas</small>
+  </article>
+  <article class="panel">
+    <span>Neto de este mes</span
+    ><strong
+      [class.negative]="(kpis().month ?? 0) < 0"
+      [class.positive]="(kpis().month ?? 0) > 0"
+      >{{ vm.format(kpis().month) }}</strong
+    ><small>Sin depósitos ni retiros</small>
+  </article>
+</section>
+<div class="overview-main">
+  <div><app-charts /></div>
+  <aside class="pending-rail">
+    <section class="panel">
+      <div class="section-heading">
+        <div>
+          <h2>Apuestas abiertas</h2>
+          <p>Hasta cinco tickets pendientes</p>
+        </div>
+        <a routerLink="/history">Ver todas ↗</a>
+      </div>
+      @if (!vm.pendingBets().slice(0, 5).length) {
+        <div class="empty-block">
+          <app-icon name="bets" />
+          <h3>No tienes apuestas pendientes</h3>
+          <p>Registra una apuesta para verla aquí.</p>
+          <a class="primary button-link" routerLink="/tickets">Registrar apuesta</a>
+        </div>
+      } @else {
+        <div class="recent-list">
+          @for (b of vm.pendingBets().slice(0, 5); track b.id) {
+            <div class="recent-row">
+              <span class="mini-house">{{ b.house.slice(0, 1) }}</span>
+              <div class="recent-description">
+                <strong>{{ b.event }}</strong
+                ><small>{{ b.house }} · Cuota {{ b.odds }}</small>
+              </div>
+              <div class="recent-result">
+                <strong>{{ vm.money(b.stake, b.currency) }}</strong
+                ><span [class]="'status ' + b.status">Esperando resultado</span>
+                @if (b.linked_games?.length) {
+                  <button class="text-button" (click)="scoreBet.set(b)">
+                    Consultar marcador →
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+  </aside>
+</div>
+
 <div class="two-column equal-columns overview-bottom">
-  <section class="panel">
-    <div class="section-heading">
-      <div>
-        <h2>Últimas apuestas</h2>
-        <p>Tus cinco registros más recientes</p>
-      </div>
-      <a routerLink="/bets" [queryParams]="{ view: 'history' }">Ver todas ↗</a>
-    </div>
-    @if (!overview.recentBets().length) {
-      <div class="empty-block">
-        <app-icon name="bets" />
-        <h3>Sin apuestas registradas</h3>
-        <p>Registra una apuesta para verla aquí.</p>
-        <a class="primary button-link" routerLink="/bets">Registrar apuesta</a>
-      </div>
-    } @else {
-      <div class="recent-list">
-        @for (b of overview.recentBets(); track b.id) {
-          <div class="recent-row">
-            <span class="mini-house">{{ b.house.slice(0, 1) }}</span>
-            <div class="recent-description">
-              <strong>{{ b.event }}</strong
-              ><small>{{ b.house }} · Cuota {{ b.odds }}</small>
-            </div>
-            <div class="recent-result">
-              <strong>{{ vm.money(b.stake, b.currency) }}</strong
-              ><span [class]="'status ' + b.status">{{ vm.labels[b.status] }}</span>
-            </div>
-          </div>
-        }
-      </div>
-    }
-  </section>
   <section class="panel">
     <div class="section-heading">
       <div>
@@ -67,7 +105,7 @@
           ><app-icon name="transactions"
         /></span>
         <div class="recent-description">
-          <strong>{{ m.kind === 'deposit' ? 'Depósito' : 'Retiro' }}</strong
+          <strong>{{ vm.labels[m.kind] }}</strong
           ><small>{{ m.house }}</small>
         </div>
         <div class="recent-result">
@@ -89,4 +127,8 @@
 
 @if (money()) {
   <app-money-dialog [initial]="money()" (dismiss)="closeMoney()" />
+}
+
+@if (scoreBet(); as b) {
+  <app-bet-scores [betId]="b.id" [title]="b.event" (dismiss)="scoreBet.set(null)" />
 }

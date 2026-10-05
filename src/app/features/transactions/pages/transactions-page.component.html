@@ -45,6 +45,24 @@
       </button>
     }
   </div>
+  <div class="form-grid">
+    <label
+      >Casa<select [ngModel]="house()" (ngModelChange)="house.set($event)">
+        <option value="">Todas</option>
+        @for (h of vm.data().houses; track h.id) {
+          <option [value]="h.id">{{ h.name }}</option>
+        }
+      </select></label
+    >
+    <label>Desde<input type="date" [ngModel]="from()" (ngModelChange)="from.set($event)" /></label
+    ><label
+      >Hasta<input
+        type="date"
+        [min]="from()"
+        [ngModel]="until()"
+        (ngModelChange)="until.set($event)"
+    /></label>
+  </div>
   <div class="table-wrap">
     <table>
       <thead>
@@ -60,7 +78,7 @@
         @for (m of filteredMovements(); track m.id) {
           <tr>
             <td>
-              <strong>{{ m.kind === 'deposit' ? 'Depósito' : 'Retiro' }}</strong
+              <strong>{{ vm.labels[m.kind] }}</strong
               ><small>{{ m.house }}</small>
             </td>
             <td>{{ timestamp(m.created) | date: 'dd/MM/yyyy HH:mm' }}</td>

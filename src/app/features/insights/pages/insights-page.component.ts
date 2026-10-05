@@ -1,3 +1,4 @@
+import { AdvancedAnalysisComponent } from '../components/advanced-analysis/advanced-analysis.component';
 import { insightCategories, matchesInsightTags } from '../models/market-insights';
 import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
@@ -8,11 +9,12 @@ import { MARKET_TAGS, marketLabel } from '../../bets/models/bet-tags';
 import { timestamp } from '../../../shared/utils/date.utils';
 @Component({
   selector: 'app-insights-page',
-  imports: [FormsModule, RouterLink, DatePipe],
+  imports: [AdvancedAnalysisComponent, FormsModule, RouterLink, DatePipe],
   templateUrl: './insights-page.component.html',
   styleUrl: './insights-page.component.css',
 })
 export class InsightsPageComponent {
+  tab = signal('efficiency');
   insights = inject(InsightsService);
   vm = this.insights.vm;
   sports = ['', 'Fútbol', 'Béisbol', 'Americano', 'Mixto', 'Otro', 'Sin clasificar'];
@@ -48,6 +50,8 @@ export class InsightsPageComponent {
     this.insights.type.set('');
     this.selected.set(null);
   }
+  barMax = computed(() => Math.max(1, ...this.insights.rows().map((g) => Math.abs(g.profit ?? 0))));
+  Math = Math;
   pending = computed(() => this.insights.bets().filter((b) => b.status === 'pending').length);
   sportLabel(value: string) {
     return value === 'Americano' ? 'NFL' : value || 'Todos';

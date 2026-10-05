@@ -384,3 +384,61 @@
     padding-right: 54px;
   }
 }
+
+:host {
+  display: block;
+  container-type: inline-size;
+}
+.bank-number {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+@container (max-width:700px) {
+  .bank-performance {
+    grid-template-columns: 1fr;
+  }
+  .bank-summary {
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 20px;
+  }
+  .bank-number {
+    margin: 12px 0;
+  }
+  .summary-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.distribution-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+  padding: 18px;
+}
+.distribution-cards article {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 0;
+}
+.distribution-cards h3 {
+  margin: 0;
+  font-size: 13px;
+}
+.distribution-value {
+  display: block;
+  font-size: 21px;
+  margin: 16px 0;
+  overflow-wrap: anywhere;
+}
+.distribution-cards small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin: 9px 0 14px;
+}
+.distribution-cards .section-heading {
+  padding: 0;
+  border: 0;
+}

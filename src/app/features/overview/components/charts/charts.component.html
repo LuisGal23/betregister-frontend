@@ -17,6 +17,22 @@
     />
   }
 </div>
+<div class="period-controls" role="group" aria-label="Unidad de la gráfica">
+  <button [class.selected]="!unitView()" (click)="unitView.set(false)">Dinero</button
+  ><button
+    [class.selected]="unitView()"
+    [disabled]="!units.value(vm.currency())"
+    (click)="unitView.set(true)"
+  >
+    Unidades
+  </button>
+</div>
+@if (unitView()) {
+  <p class="field-help">
+    Curva normalizada con la unidad actual: {{ vm.format(units.value(vm.currency())) }}. No
+    representa unidades históricas de cada ticket.
+  </p>
+}
 <details class="filter-disclosure">
   <summary>
     Filtrar resultados
@@ -121,7 +137,11 @@
       <span>Ganancia neta · sin depósitos ni retiros</span>
     </div>
     @if (analytics.series(); as series) {
-      <app-profit-chart [series]="series" [period]="analytics.period()" />
+      <app-profit-chart
+        [series]="displaySeries() ?? []"
+        [period]="analytics.period()"
+        [unitLabel]="unitView() && units.value(vm.currency()) ? 'U' : ''"
+      />
     } @else {
       <p>Configura el tipo de cambio para combinar los resultados.</p>
     }
@@ -160,7 +180,7 @@
   </article>
   <article>
     <span>En pendientes</span><strong>{{ vm.format(vm.total('pending')) }}</strong
-    ><a routerLink="/bets" [queryParams]="{ status: 'pending' }"
+    ><a routerLink="/history" [queryParams]="{ status: 'pending' }"
       >{{ vm.pendingBets().length }} por resolver</a
     >
   </article>
@@ -195,58 +215,39 @@
       </div>
       <a routerLink="/bank">Administrar ↗</a>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Casa</th>
-            <th>Moneda</th>
-            <th>Saldo</th>
-            <th>Proporción</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (house of distribution(); track house.id) {
-            <tr>
-              <td>
-                <strong>{{ house.name }}</strong>
-              </td>
-              <td>{{ house.currency }}</td>
-              <td>{{ vm.format(house.value) }}</td>
-              <td>
-                <div class="house-track"><span [style.width.%]="house.percent"></span></div>
-                <small>{{ house.percent | number: '1.0-1' }}%</small>
-              </td>
-              <td>
-                <div class="actions">
-                  <a
-                    class="secondary button-link"
-                    routerLink="/confirmations"
-                    [queryParams]="{ house: house.id, kind: 'deposit' }"
-                    >Depositar</a
-                  ><a
-                    class="secondary button-link"
-                    routerLink="/confirmations"
-                    [queryParams]="{ house: house.id, kind: 'withdrawal' }"
-                    >Retirar</a
-                  >
-                </div>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">
-                {{
-                  distribution() === null
-                    ? 'Configura una tasa de cambio para ver los saldos.'
-                    : 'Añade tu primera casa para ver la distribución.'
-                }}
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="distribution-cards">
+      @for (house of distribution(); track house.id) {
+        <article>
+          <div class="section-heading">
+            <h3>{{ house.name }}</h3>
+            <span class="currency-tag">{{ house.currency }}</span>
+          </div>
+          <strong class="distribution-value">{{ vm.format(house.value) }}</strong>
+          <div class="house-track"><span [style.width.%]="house.percent"></span></div>
+          <small>{{ house.percent | number: '1.0-1' }}% del bank general</small>
+          <div class="actions">
+            <a
+              class="secondary button-link"
+              routerLink="/confirmations"
+              [queryParams]="{ house: house.id, kind: 'deposit' }"
+              >Depositar</a
+            ><a
+              class="secondary button-link"
+              routerLink="/confirmations"
+              [queryParams]="{ house: house.id, kind: 'withdrawal' }"
+              >Retirar</a
+            >
+          </div>
+        </article>
+      } @empty {
+        <p>
+          {{
+            distribution() === null
+              ? 'Configura una tasa de cambio para ver los saldos.'
+              : 'Añade tu primera casa para ver la distribución.'
+          }}
+        </p>
+      }
     </div>
   </section>
 }

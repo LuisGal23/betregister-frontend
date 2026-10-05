@@ -1,8 +1,8 @@
 @for (animation of [graph().path]; track animation) {
   <div class="plot">
     <div class="axis">
-      <span>{{ vm.format(graph().max) }}</span
-      ><span>{{ vm.format(graph().min) }}</span>
+      <span>{{ format(graph().max) }}</span
+      ><span>{{ format(graph().min) }}</span>
     </div>
     <svg
       viewBox="0 0 600 224"
@@ -58,9 +58,9 @@
             '. ' +
             point.label +
             '. Cambio: ' +
-            vm.format(point.change) +
+            format(point.change) +
             '. Acumulado: ' +
-            vm.format(point.value)
+            format(point.value)
           "
           (pointerenter)="active.set(point.id)"
           (focus)="active.set(point.id)"
@@ -70,7 +70,7 @@
           (keydown.space)="$event.preventDefault(); active.set(point.id)"
         >
           <title>
-            {{ label(point.time, true) }} · {{ point.label }} · {{ vm.format(point.change) }}
+            {{ label(point.time, true) }} · {{ point.label }} · {{ format(point.change) }}
           </title>
         </circle>
       }
@@ -86,10 +86,10 @@
   @if (selected(); as point) {
     <span>{{ label(point.time, true) }} · {{ point.label }}</span
     ><strong [style.color]="color(point.value)"
-      >{{ description(point.value) }}: {{ vm.format(point.value) }}</strong
+      >{{ description(point.value) }}: {{ format(point.value) }}</strong
     ><small
       >Resultado de este movimiento:
-      <b [style.color]="color(point.change)">{{ vm.format(point.change) }}</b></small
+      <b [style.color]="color(point.change)">{{ format(point.change) }}</b></small
     >
   } @else {
     <span>Pasa el cursor, toca un punto o usa Tab para ver su resultado.</span>

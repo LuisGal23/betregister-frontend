@@ -1,5 +1,5 @@
 import type { Currency } from '../../../shared/models/currency.model';
-export type MovementKind = 'deposit' | 'withdrawal';
+export type MovementKind = 'deposit' | 'withdrawal' | 'bonus' | 'fee' | 'tax';
 export type MovementStatus = 'pending' | 'confirmed' | 'cancelled';
 export interface Movement {
   id: number;

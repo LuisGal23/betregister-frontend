@@ -1,3 +1,4 @@
+import { UnitsService } from '../../../../core/services/units.service';
 import { ProfitChartComponent } from '../profit-chart/profit-chart.component';
 import { DetailCardComponent } from '../detail-card/detail-card.component';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,15 @@ import { OverviewService } from '../../services/overview.service';
   styleUrl: './charts.component.css',
 })
 export class ChartsComponent {
+  units = inject(UnitsService);
+  unitView = signal(false);
+  displaySeries = computed(() => {
+    const series = this.analytics.series(),
+      unit = this.units.value(this.vm.currency());
+    return this.unitView() && unit && unit > 0
+      ? (series?.map((p) => ({ ...p, value: p.value / unit, change: p.change / unit })) ?? null)
+      : series;
+  });
   detail = signal<'bank' | 'bets' | null>(null);
   showDistribution = input(true);
   vm = inject(LedgerState);

@@ -1,5 +1,8 @@
+import { UnitsService } from '../../../core/services/units.service';
+import { ApiService } from '../../../core/services/api.service';
+import { TransactionsPageComponent } from '../../transactions/pages/transactions-page.component';
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ResetBankComponent } from '../components/reset-bank/reset-bank.component';
 import { DatePipe, DecimalPipe } from '@angular/common';
@@ -14,6 +17,7 @@ import type { Currency } from '../../../shared/models/currency.model';
   selector: 'app-bank-page',
   imports: [
     RouterLink,
+    TransactionsPageComponent,
     FormsModule,
     ResetBankComponent,
     DatePipe,
@@ -26,8 +30,33 @@ import type { Currency } from '../../../shared/models/currency.model';
   styleUrl: './bank-page.component.css',
 })
 export class BankPageComponent {
+  settingsOnly = !!inject(ActivatedRoute).snapshot.data['settings'];
+  movementTotal(house: number, kind: string) {
+    return this.vm
+      .data()
+      .movements.filter((m) => m.house_id === house && m.kind === kind && m.status === 'confirmed')
+      .reduce((s, m) => s + Math.abs(m.amount), 0);
+  }
   vm = inject(LedgerState);
   readonly Math = Math;
+  units = inject(UnitsService);
+  api = inject(ApiService);
+  unitMode = this.vm.data().profile.units?.mode ?? 'fixed';
+  unitValue = Number(this.vm.data().profile.units?.value ?? 100);
+  unitCurrency = this.vm.data().profile.units?.currency ?? this.vm.currency();
+  unitDynamic = this.vm.data().profile.units?.dynamic ?? false;
+  saveUnits() {
+    return this.vm.mutate(
+      () =>
+        this.api.request('/preferences/units', {
+          mode: this.unitMode,
+          value: this.unitValue,
+          currency: this.unitCurrency,
+          dynamic: this.unitDynamic,
+        }),
+      'Unidad guardada.',
+    );
+  }
 
   private bank = inject(BankService);
   removal = signal<House | null>(null);

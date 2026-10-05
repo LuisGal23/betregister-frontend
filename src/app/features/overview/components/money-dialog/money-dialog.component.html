@@ -1,7 +1,7 @@
 <dialog #dialog aria-labelledby="money-title" (cancel)="$event.preventDefault(); dismiss.emit()">
   <header>
     <div>
-      <h2 id="money-title">Depósitos y retiros</h2>
+      <h2 id="money-title">Movimientos del bank</h2>
       <p>Registra lo que mueves entre tus casas y tu cuenta.</p>
     </div>
     <button class="secondary" autofocus (click)="dismiss.emit()" aria-label="Cerrar movimientos">

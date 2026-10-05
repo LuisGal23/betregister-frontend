@@ -1,3 +1,5 @@
+import { ChallengesService } from '../../challenges/services/challenges.service';
+import { UnitsService } from '../../../core/services/units.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SelectionEditorComponent } from '../components/selection-editor/selection-editor.component';
 import {
@@ -13,7 +15,7 @@ import type { GameReference } from '../../sports/models/sports.model';
 import { CsvTransferComponent } from '../components/csv-transfer/csv-transfer.component';
 import { BetManagementComponent } from '../components/bet-management/bet-management.component';
 import { Component, ElementRef, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { LedgerState } from '../../../core/services/ledger-state.service';
@@ -49,14 +51,35 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../m
   styleUrl: './bets-page.component.css',
 })
 export class BetsPageComponent {
+  historyRoute = !!inject(ActivatedRoute).snapshot.data['history'];
+  router = inject(Router);
+  quickMode = signal(false);
+  challengeService = inject(ChallengesService);
+  challengeId = inject(ActivatedRoute).snapshot.queryParamMap.get('challenge') ?? '';
+  challengeError = signal(false);
+  async loadChallenges() {
+    this.challengeError.set(false);
+    try {
+      await this.challengeService.load();
+    } catch {
+      this.challengeError.set(true);
+    }
+  }
   constructor() {
+    if (!this.historyRoute) void this.loadChallenges();
     inject(ActivatedRoute)
       .queryParamMap.pipe(takeUntilDestroyed())
       .subscribe((p) => {
         this.workspaceMode.set(
-          p.has('status') || p.get('view') === 'history' ? 'history' : 'register',
+          this.historyRoute || p.has('status') || p.get('view') === 'history'
+            ? 'history'
+            : 'register',
         );
-        this.betFilter.set(p.get('status') === 'pending' ? 'pending' : 'all');
+        this.betFilter.set(
+          ['pending', 'won', 'lost', 'void', 'cashout'].includes(p.get('status') ?? '')
+            ? (p.get('status') as BetStatus)
+            : 'all',
+        );
       });
   }
   private element = inject<ElementRef<HTMLElement>>(ElementRef);
@@ -67,7 +90,9 @@ export class BetsPageComponent {
   readonly Math = Math;
 
   private bets = inject(BetsService);
-  selectedHouse = this.vm.data().houses.length === 1 ? String(this.vm.data().houses[0].id) : '';
+  selectedHouse =
+    inject(ActivatedRoute).snapshot.queryParamMap.get('house') ??
+    (this.vm.data().houses.length === 1 ? String(this.vm.data().houses[0].id) : '');
   historyTypes = [
     { value: 'all', label: 'Todos' },
     { value: 'simple', label: 'Simples' },
@@ -83,6 +108,7 @@ export class BetsPageComponent {
     };
   });
   showResult(status: BetStatus) {
+    void this.router.navigate(['/history'], { queryParams: { status } });
     this.workspaceMode.set('history');
     this.betFilter.set(status);
     this.typeFilter.set('all');
@@ -212,7 +238,34 @@ export class BetsPageComponent {
   betType: 'simple' | 'parlay' | 'same_game' = 'simple';
   bonus: number | null = 0;
   odds: number | null = null;
-  stake: number | null = null;
+  units = inject(UnitsService);
+  stakeMode: 'money' | 'units' = 'money';
+  stakeInput: number | null = null;
+  get stake(): number | null {
+    if (this.stakeInput === null) return null;
+    const unit = this.units.value(this.inputCurrency());
+    return this.stakeMode === 'money'
+      ? this.stakeInput
+      : unit && unit > 0
+        ? Math.round(this.stakeInput * unit * 100) / 100
+        : null;
+  }
+  set stake(value: number | null) {
+    this.stakeInput = value;
+    this.stakeMode = 'money';
+  }
+  setStakeMode(mode: 'money' | 'units') {
+    const amount = this.stake,
+      unit = this.units.value(this.inputCurrency());
+    this.stakeMode = mode;
+    this.stakeInput =
+      mode === 'money'
+        ? amount
+        : amount !== null && unit && unit > 0
+          ? Math.round((amount / unit) * 10000) / 10000
+          : null;
+  }
+
   cashoutId: number | null = null;
   cashoutAmount: number | null = null;
   betFilter = signal<BetStatus | 'all'>(
@@ -319,6 +372,7 @@ export class BetsPageComponent {
     }
     if (
       await this.bets.create({
+        challenge_id: this.challengeId ? Number(this.challengeId) : undefined,
         selection_details: this.selections,
         odds_format: this.oddsFormat,
         league_tag: this.leagueTag,

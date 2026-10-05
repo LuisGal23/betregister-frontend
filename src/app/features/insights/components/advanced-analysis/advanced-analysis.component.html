@@ -1,0 +1,171 @@
+@if (mode() === 'clv') {
+  <section class="panel">
+    <h2>¿Conseguiste una cuota mejor que el cierre?</h2>
+    <p>
+      Solo tickets simples. Captura la cuota decimal de cierre del mismo mercado, selección, línea y
+      casa. Un cierre diferente no es comparable.
+    </p>
+    <div class="analysis-summary">
+      <strong>{{ percent(beaten()) }}</strong
+      ><span
+        >con cuota jugada superior al cierre · {{ points().length }} comparaciones manuales</span
+      >
+    </div>
+    @if (points().length) {
+      <svg
+        viewBox="0 0 410 415"
+        role="img"
+        aria-label="Cuota jugada horizontal y cuota de cierre vertical. Debajo de la diagonal, la cuota jugada fue mayor."
+      >
+        <path d="M35 35V365H365 M35 365L365 35" fill="none" stroke="var(--border)" />
+        @for (p of points(); track p.bet.id) {
+          <circle
+            [attr.cx]="coord(p.x)"
+            [attr.cy]="400 - coord(p.y)"
+            r="5"
+            [attr.fill]="
+              p.clv > 0 ? 'var(--positive)' : p.clv < 0 ? 'var(--negative)' : 'var(--muted)'
+            "
+          >
+            <title>
+              #{{ p.bet.id }} {{ p.bet.event }} · Jugada {{ p.x }} · Cierre {{ p.y }} · CLV
+              {{ percent(p.clv) }}
+            </title>
+          </circle>
+        }
+        <text x="35" y="388">1</text>
+        <text x="355" y="388">{{ extent().toFixed(2) }}</text>
+        <text x="115" y="409">Cuota jugada →</text>
+        <text x="36" y="20">Cuota de cierre ↑ · {{ extent().toFixed(2) }}</text>
+      </svg>
+    } @else {
+      <p class="empty">Todavía no has registrado cuotas de cierre.</p>
+    }
+    <p class="field-help">
+      CLV = (cuota jugada / cuota de cierre − 1) × 100. Es una comparación descriptiva, sin ajuste
+      del margen de la casa. Ningún porcentaje garantiza rentabilidad.
+    </p>
+  </section>
+  <section class="panel">
+    <h2>Cuotas de cierre manuales</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Jugada</th>
+            <th>Cierre</th>
+            <th>CLV</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (b of comparable(); track b.id) {
+            <tr>
+              <td>#{{ b.id }} · {{ b.event }}</td>
+              <td>{{ b.odds }}</td>
+              <td>{{ b.closing_odds ?? 'Sin captura' }}</td>
+              <td>{{ b.closing_odds ? percent((+b.odds / +b.closing_odds - 1) * 100) : '—' }}</td>
+              <td><button class="secondary" (click)="begin(b)">Editar</button></td>
+            </tr>
+            @if (editing() === b.id) {
+              <tr>
+                <td colspan="5">
+                  <form ngNativeValidate (ngSubmit)="save(b.id)" class="closing-form">
+                    <label
+                      >Cuota decimal al cierre<input
+                        type="number"
+                        name="closing"
+                        min="1.0001"
+                        max="10000"
+                        step="0.0001"
+                        [(ngModel)]="closing"
+                        placeholder="Deja vacío para quitarla" /></label
+                    ><button class="primary" [disabled]="vm.busy()">Guardar</button
+                    ><button type="button" class="secondary" (click)="editing.set(null)">
+                      Cancelar
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr>
+              <td colspan="5">No hay tickets simples con estos filtros.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+} @else if (mode() === 'patterns') {
+  <section class="panel">
+    <h2>Patrones de tu historial</h2>
+    <p>
+      Se calculan con tus tickets cerrados y los filtros activos. Son observaciones, no predicciones
+      ni un diagnóstico de tu conducta.
+    </p>
+    <div class="analysis-grid">
+      @for (
+        item of [
+          { label: 'Parlays de más de 4 selecciones', data: longParlays() },
+          { label: 'Apuestas simples', data: singles() },
+        ];
+        track item.label
+      ) {
+        <article>
+          <h3>{{ item.label }}</h3>
+          <strong [class.negative]="(item.data.yield ?? 0) < 0"
+            >{{ percent(item.data.yield) }} yield</strong
+          >
+          <p>{{ item.data.count }} tickets · {{ vm.format(item.data.profit) }} netos</p>
+          @if (item.data.count < 20) {
+            <small>Muestra pequeña: evita sacar conclusiones todavía.</small>
+          }
+        </article>
+      }
+      <article>
+        <h3>Horario de las pérdidas</h3>
+        <strong>{{ percent(late().percent) }}</strong>
+        <p>
+          {{ late().count }} de {{ late().total }} tickets con pérdida se registraron entre 22:00 y
+          02:00, en tu zona horaria.
+        </p>
+        <small>La frecuencia por sí sola no demuestra que el horario sea la causa.</small>
+      </article>
+    </div>
+  </section>
+} @else {
+  <section class="panel">
+    <h2>Rendimiento por cuota</h2>
+    <div class="analysis-grid">
+      @for (b of bands(); track b.label) {
+        <article>
+          <h3>{{ b.label }}</h3>
+          <strong [class.negative]="(b.yield ?? 0) < 0" [class.positive]="(b.yield ?? 0) > 0"
+            >{{ percent(b.yield) }} yield</strong
+          >
+          <p>{{ b.count }} cerradas · {{ percent(b.win) }} acierto</p>
+        </article>
+      }
+    </div>
+  </section>
+  <details class="panel collapsible">
+    <summary>Mapa de deporte, liga y mercado</summary>
+    <p class="field-help">
+      Neto del ticket completo en cada mercado que contiene. Las celdas de parlays se solapan: no
+      sumes sus importes.
+    </p>
+    <div class="heat-grid">
+      @for (cell of heat(); track cell.label) {
+        <article [class.loss]="(cell.profit ?? 0) < 0" [class.gain]="(cell.profit ?? 0) > 0">
+          <span>{{ cell.label }}</span
+          ><strong>{{ vm.format(cell.profit) }}</strong
+          ><small>{{ cell.count }} tickets · {{ percent(cell.yield) }} yield</small>
+        </article>
+      } @empty {
+        <p>Sin apuestas cerradas para estos filtros.</p>
+      }
+    </div>
+  </details>
+}

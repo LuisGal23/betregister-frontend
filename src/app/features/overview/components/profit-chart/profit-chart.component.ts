@@ -14,6 +14,10 @@ export class ProfitChartComponent {
   gradientId = `profit-colors-${++ProfitChartComponent.counter}`;
   series = input.required<EventPoint[]>();
   period = input<string>('month');
+  unitLabel = input('');
+  format(value: number) {
+    return this.unitLabel() ? value.toFixed(2) + ' U' : this.vm.format(value);
+  }
   vm = inject(LedgerState);
   active = signal<string | null>(null);
   graph = computed(() => {

@@ -19,7 +19,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
     IconComponent,
   ],
   templateUrl: './shell.component.html',
-  styleUrl: './shell.component.css',
+  styleUrls: ['./shell.component.css', './mobile-navigation.css'],
 })
 export class ShellComponent implements OnInit {
   vm = inject(LedgerState);
@@ -43,10 +43,31 @@ export class ShellComponent implements OnInit {
   links = [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
     { path: 'bank', label: 'Mi bank', icon: 'bank' },
-    { path: 'bets', label: 'Mis apuestas', icon: 'bets' },
-    { path: 'insights', label: 'Recomendaciones', icon: 'trend' },
+    { path: 'tickets', label: 'Crear ticket', icon: 'plus' },
+    { path: 'history', label: 'Mis apuestas', icon: 'bets' },
+    { path: 'insights', label: 'Análisis', icon: 'trend' },
     { path: 'challenges', label: 'Retos', icon: 'flag' },
+    { path: 'settings', label: 'Ajustes y casas', icon: 'settings' },
   ];
+  mobileLinks = this.links.slice(0, 4);
+  private menuTrigger: HTMLElement | null = null;
+  trapMenu(event: KeyboardEvent) {
+    if (!this.sidebarOpen() || event.key !== 'Tab') return;
+    const items = Array.from(
+      this.sidebar()!.nativeElement.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), select',
+      ),
+    ).filter((e) => e.getClientRects().length);
+    const first = items[0],
+      last = items.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  }
   currentTitle = computed(
     () => this.links.find((l) => '/' + l.path === this.path())?.label ?? 'Mi espacio',
   );
@@ -66,11 +87,12 @@ export class ShellComponent implements OnInit {
     void this.vm.init();
   }
   openMenu() {
+    this.menuTrigger = document.activeElement as HTMLElement;
     this.sidebarOpen.set(true);
     setTimeout(
       () =>
         this.sidebar()
-          ?.nativeElement.querySelector<HTMLAnchorElement>('a[aria-current="page"]')
+          ?.nativeElement.querySelector<HTMLAnchorElement>('a[aria-current="page"], .mobile-close')
           ?.focus(),
       0,
     );
@@ -78,6 +100,6 @@ export class ShellComponent implements OnInit {
   closeMenu() {
     const wasOpen = this.sidebarOpen();
     this.sidebarOpen.set(false);
-    if (wasOpen) this.menuButton()?.nativeElement.focus();
+    if (wasOpen) (this.menuTrigger ?? this.menuButton()?.nativeElement)?.focus();
   }
 }
