@@ -28,6 +28,8 @@ export class ChallengesPageComponent implements OnInit {
   maxOdds: number | null = null;
   maxStake: number | null = null;
   ruleSport = '';
+  ruleType = '';
+  maxPerDay: number | null = null;
   projectionOdds = 1.8;
   projectionPoints(c: Challenge) {
     const steps = this.projection(c);
@@ -96,6 +98,8 @@ export class ChallengesPageComponent implements OnInit {
             max_odds: this.maxOdds,
             max_stake: this.maxStake,
             sport: this.ruleSport,
+            bet_type: this.ruleType,
+            max_per_day: this.maxPerDay,
           },
         }),
       )

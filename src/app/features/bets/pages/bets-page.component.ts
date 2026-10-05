@@ -1,3 +1,5 @@
+import { ScreenshotImportComponent, type ScreenshotDraft } from '../components/screenshot-import/screenshot-import.component';
+import { TicketProtectionComponent } from '../components/ticket-protection/ticket-protection.component';
 import { ChallengesService } from '../../challenges/services/challenges.service';
 import { UnitsService } from '../../../core/services/units.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -34,7 +36,7 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../m
 @Component({
   selector: 'app-bets-page',
   imports: [
-    RouterLink,
+    RouterLink, ScreenshotImportComponent, TicketProtectionComponent,
     SelectionEditorComponent,
     FormsModule,
     DatePipe,
@@ -53,7 +55,7 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../m
 export class BetsPageComponent {
   historyRoute = !!inject(ActivatedRoute).snapshot.data['history'];
   router = inject(Router);
-  quickMode = signal(false);
+  quickMode = signal(true);
   challengeService = inject(ChallengesService);
   challengeId = inject(ActivatedRoute).snapshot.queryParamMap.get('challenge') ?? '';
   challengeError = signal(false);
@@ -196,6 +198,7 @@ export class BetsPageComponent {
   ] as const;
   setType(type: 'simple' | 'parlay' | 'same_game') {
     this.betType = type;
+    this.totalOddsMode=false;
     this.odds = null;
     if (type === 'simple') this.selections = this.selections.slice(0, 1);
     else if (this.selections.length < 2)
@@ -233,6 +236,22 @@ export class BetsPageComponent {
             }[league] ?? 'Fútbol Europeo'),
       );
     }
+  }
+  totalOddsMode = false;
+  publicRecord = false;
+  eventStart = '';
+  importWarnings = '';
+  applyScreenshot(r:ScreenshotDraft){
+    this.quickMode.set(true);this.selectedGames=[];this.betType=r.bet_type??(r.selections.length>1?'parlay':'simple');
+    this.totalOddsMode=this.betType==='parlay';this.oddsFormat='decimal';this.odds=r.odds;this.stake=r.stake;this.bonus=r.bonus??0;
+    this.selections=r.selections.map(s=>s.detail ? {...s.detail,line:s.detail.line===null?null:Number(s.detail.line)} : {...newSelection(s.sport??'Fútbol'),market:'Otro',description:(s.market??'').slice(0,200),event_label:(s.event??'').slice(0,120)});
+    this.legs=r.selections.map(s=>({selection:s.market??'',odds:s.odds??0,status:'pending'}));
+    const sports=[...new Set(this.selections.map(s=>s.sport))];
+    this.leagueTag=sports.length>1?'Mixto':sports[0]==='Béisbol'?'MLB':sports[0]==='Americano'?'NFL':'Fútbol Europeo';
+    const house=this.vm.data().houses.find(h=>h.name.toLowerCase()===r.house?.toLowerCase()&&h.currency===r.currency);
+    this.selectedHouse=house?String(house.id):'';
+    this.importWarnings='Borrador leído por IA. Confirma la liga (puede ser MLB/KBO u otra), moneda, mercado y periodo. Revisa cada selección antes de guardar.';
+    this.focusTicket();
   }
   event = '';
   betType: 'simple' | 'parlay' | 'same_game' = 'simple';
@@ -330,7 +349,7 @@ export class BetsPageComponent {
   }
   updateOdds() {
     if (this.betType !== 'parlay') this.selectedGames = this.selectedGames.slice(0, 1);
-    if (this.betType === 'parlay') {
+    if (this.betType === 'parlay' && !this.totalOddsMode) {
       this.oddsFormat = 'decimal';
       this.odds = Math.round(this.legs.reduce((n, leg) => n * Number(leg.odds), 1) * 10000) / 10000;
     }
@@ -372,6 +391,8 @@ export class BetsPageComponent {
     }
     if (
       await this.bets.create({
+        public_record: this.publicRecord,
+        event_start: this.publicRecord && this.eventStart ? new Date(this.eventStart).toISOString() : undefined,
         challenge_id: this.challengeId ? Number(this.challengeId) : undefined,
         selection_details: this.selections,
         odds_format: this.oddsFormat,
@@ -379,7 +400,7 @@ export class BetsPageComponent {
         market_tag: this.marketTag,
         same_game_selections: this.betType === 'same_game' ? this.sameGameSelections : [],
         games: this.selectedGames.map((g) => g.id),
-        legs: this.betType === 'parlay' ? this.legs : [],
+        legs: this.betType === 'parlay' && !this.totalOddsMode ? this.legs : [],
         house_id: Number(this.selectedHouse),
         event: this.event,
         odds: this.odds,
@@ -393,6 +414,7 @@ export class BetsPageComponent {
       );
       this.sameGameSelections = ['', ''];
       this.event = '';
+      this.publicRecord=false;this.eventStart='';this.importWarnings='';
       this.marketTag = 'Sin clasificar';
       this.selectedGames = [];
       this.bonus = 0;

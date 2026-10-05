@@ -5,6 +5,7 @@
   </div>
   <a class="primary button-link" routerLink="/tickets"><app-icon name="plus" />Registrar apuesta</a>
 </div>
+@if(settingsOnly){<app-smart-settings />}
 @if (!settingsOnly) {
   <details class="panel collapsible">
     <summary>Unidades de apuesta · {{ vm.format(units.value(vm.currency())) }} por U</summary>

@@ -108,6 +108,9 @@
               ><strong>{{ vm.native(result.amountMinor, house()!.currency) }}</strong
               ><small>{{ (result.allocation * 100).toFixed(2) }}% del saldo disponible</small>
             </div>
+            <p [class.positive]="result.edge > 0" [class.negative]="result.edge < 0"><strong>{{result.edge > 0 ? '+EV' : result.edge < 0 ? '−EV' : 'EV neutro'}} · {{(result.edge*100).toFixed(2)}}%</strong> por unidad apostada, según tu probabilidad estimada.</p>
+            @if(unitAmount()!==null){<p>Kelly fraccional: {{unitAmount()!.toFixed(2)}} U de referencia.</p>}
+            <p class="field-help">Es un cálculo hipotético, no un máximo seguro. No estima la probabilidad por ti.</p>
             @if (result.edge <= 0) {
               <p class="calculation-note">
                 Con esa probabilidad y cuota, el modelo no asigna importe: el valor esperado es cero

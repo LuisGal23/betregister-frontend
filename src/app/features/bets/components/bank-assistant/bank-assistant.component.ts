@@ -1,3 +1,4 @@
+import { UnitsService } from '../../../../core/services/units.service';
 import {
   Component,
   computed,
@@ -22,6 +23,8 @@ import { fractionalKelly } from '../../../../shared/utils/kelly.utils';
 })
 export class BankAssistantComponent {
   vm = inject(LedgerState);
+  units = inject(UnitsService);
+  unitAmount(){const value=this.units.value(this.house()?.currency ?? 'MXN');return value ? (this.calculation()?.amountMinor??0)/100/value : null;}
   houseId = input('');
   houseIdChange = output<string>();
   stake = input<number | null>(null);

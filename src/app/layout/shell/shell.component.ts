@@ -38,7 +38,7 @@ export class ShellComponent implements OnInit {
   sidebarOpen = signal(false);
   path = signal(this.router.url.split('?')[0]);
   publicPage = computed(
-    () => ['/', '/login', '/register'].includes(this.path()) || !this.vm.authenticated(),
+    () => (['/', '/login', '/register'].includes(this.path()) || this.path().startsWith('/p/')) || !this.vm.authenticated(),
   );
   links = [
     { path: 'overview', label: 'Resumen', icon: 'overview' },

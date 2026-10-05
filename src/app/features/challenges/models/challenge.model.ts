@@ -1,6 +1,8 @@
 import type { Currency } from '../../../shared/models/currency.model';
 export interface Challenge {
   rules?: {
+    bet_type?: string;
+    max_per_day?: number | null;
     min_odds?: string | null;
     max_odds?: string | null;
     max_stake?: string | null;

@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
+  {path:'p/:token',loadComponent:()=>import('./features/public-record/public-record.component').then(m=>m.PublicRecordComponent)},
   {
     path: '',
     pathMatch: 'full',

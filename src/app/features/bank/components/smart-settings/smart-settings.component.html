@@ -1,0 +1,15 @@
+<section class="smart-settings">
+@if(loading()){<p role="status">Cargando protección y privacidad…</p>}@else{
+<details class="panel"><summary>Anti-Tilt · pausas de registro</summary>
+<p>Protección voluntaria: al activarla, tres pérdidas consecutivas registradas en menos de dos horas o intentar superar el 20% diario activan una pausa. No bloquea a la casa de apuestas.</p>
+
+<form (ngSubmit)="save('protection')"><label class="check"><input type="checkbox" name="enabled" [(ngModel)]="enabled" [disabled]="locked()" /> Activar protección automática</label><label>Duración<select name="hours" [(ngModel)]="hours" [disabled]="locked()"><option [ngValue]="6">6 horas</option><option [ngValue]="12">12 horas</option></select></label><button class="secondary" [disabled]="busy() || locked() || !protection()">Guardar protección</button></form>
+@if(locked()){<p role="status">Pausa hasta {{protection()!.until*1000|date:'short'}}. No puede acortarse ni desactivarse durante ese periodo.</p>}
+<small>El límite diario acumula todos los importes registrados, sin descontar ganadas, anuladas o cashouts. Base por moneda fijada al primer intento del día; se usa tu zona horaria. La importación CSV queda deshabilitada mientras esta protección esté activa.</small></details>
+<details class="panel"><summary>Perfil público · tickets sellados</summary><p>Publicación opcional de tickets elegidos al crearlos. Se verá evento, selecciones, importe, cuota, hora de registro y resultados. No se publica tu correo ni el bank.</p>
+<form ngNativeValidate (ngSubmit)="save('profile')"><label>Nombre público<input name="publicName" [(ngModel)]="name" minlength="2" maxlength="60" required /></label><label class="check"><input type="checkbox" name="publicEnabled" [(ngModel)]="publicEnabled" /> Hacer accesible mi perfil mediante enlace</label><button class="secondary" [disabled]="busy() || !profile()">Guardar perfil</button></form>
+@if(profile()?.enabled){<a [href]="link()" target="_blank" rel="noopener">Abrir mi perfil público ↗</a><p class="url">{{link()}}</p>}
+<p>Los tickets publicados no admiten edición, ocultación ni reinicio del bank. Puedes desactivar el enlace. Inicio y resultados son declarados: el sello no verifica a la casa ni acredita todo tu historial o una rentabilidad futura.</p></details>}
+@if(error()){<p role="alert">{{error()}}</p><button class="secondary" (click)="load()">Reintentar carga</button>}
+@if(message()){<p role="status">{{message()}}</p>}
+</section>

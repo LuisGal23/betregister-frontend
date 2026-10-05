@@ -1,0 +1,6 @@
+<section class="protection" aria-label="Pausa de registro">
+@if(locked()){<p role="status"><strong>Pausa activa</strong> hasta {{protection()!.until*1000 | date:'short'}}. {{protection()!.reason}} Puedes consultar y resolver tickets, pero el servidor rechazará nuevos registros.</p>}
+@if(warning()){<p class="warning">{{warning()}}</p>}
+@if(error()){<p role="alert">{{error()}}</p><button type="button" class="text-button" (click)="load()">Reintentar</button>}
+<div><button type="button" class="secondary" [disabled]="busy() || locked()" (click)="pause()">Necesito una pausa · 6 h</button><a routerLink="/settings">Configurar Anti-Tilt</a></div>
+<small>La pausa solo afecta a BetRegister; no bloquea apuestas ni dinero en otras plataformas.</small></section>

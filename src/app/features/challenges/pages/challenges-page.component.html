@@ -76,6 +76,9 @@
         /></label>
         <details class="filter-disclosure">
           <summary>Reglas opcionales</summary>
+          <label>Tipo permitido<select name="ruleType" [(ngModel)]="ruleType"><option value="">Cualquiera</option><option value="simple">Solo simples</option><option value="parlay">Solo parlays</option><option value="same_game">Solo mismo partido</option></select></label>
+          <label>Pasos máximos por día<input type="number" name="maxPerDay" [(ngModel)]="maxPerDay" min="1" max="100" step="1" /></label>
+          <p class="field-help">Las reglas quedan fijas. Con límite diario no se pueden quitar pasos para recuperar cupo.</p>
           <label
             >Cuota mínima<input
               type="number"
@@ -170,7 +173,7 @@
               Cuotas: {{ rules.min_odds ?? 'sin mínimo' }} a {{ rules.max_odds ?? 'sin máximo' }} ·
               Máximo por ticket:
               {{ rules.max_stake ? vm.format(+rules.max_stake, c.currency) : 'sin límite' }} ·
-              {{ rules.sport || 'Cualquier deporte' }}
+              {{ rules.sport || 'Cualquier deporte' }} · Tipo: {{ rules.bet_type || 'cualquiera' }} · Pasos/día: {{ rules.max_per_day ?? 'sin límite' }}
             </p>
           }
           <div class="actions">

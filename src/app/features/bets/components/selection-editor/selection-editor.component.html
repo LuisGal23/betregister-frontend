@@ -1,4 +1,5 @@
 <div class="selection-editor">
+  @if(value().source_text){<p class="info-note">Texto leído: {{value().source_text}}. Confirma que los campos coincidan; usa Otro si incluye jugador, periodo o una condición específica.</p>}
   @if (showSport()) {
     <label
       >Deporte de la selección {{ index() + 1

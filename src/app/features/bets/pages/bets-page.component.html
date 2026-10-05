@@ -32,11 +32,12 @@
   ><small>Tu historial visible · todas las fechas</small>
 </div>
 @if (workspaceMode() === 'register') {
+  <app-screenshot-import (draft)="applyScreenshot($event)" />
   <div>
-    <div class="tabs" role="group" aria-label="Modo de registro">
+    @if(vm.data().profile.sports_enabled){<div class="tabs" role="group" aria-label="Modo de registro">
       <button
-        [class.selected]="!quickMode()"
-        [attr.aria-pressed]="!quickMode()"
+        [class.selected]="!quickMode() && vm.data().profile.sports_enabled"
+        [attr.aria-pressed]="!quickMode() && vm.data().profile.sports_enabled"
         (click)="quickMode.set(false)"
       >
         Buscar partido</button
@@ -48,8 +49,9 @@
         Registro rápido · manual
       </button>
     </div>
+    }
     <div class="bet-workspace" [class.quick-mode]="quickMode()">
-      @if (!quickMode()) {
+      @if (!quickMode() && vm.data().profile.sports_enabled) {
         <section class="match-workspace">
           <app-match-picker
             [selected]="selectedGames"
@@ -178,7 +180,7 @@
                       !selectedGames.length && betType === 'parlay' && leagueTag === 'Mixto'
                     "
                   />
-                  @if (betType === 'parlay') {
+                  @if (betType === 'parlay' && !totalOddsMode) {
                     <label
                       >Cuota decimal de la selección {{ i + 1
                       }}<input
@@ -211,6 +213,8 @@
                   }}
                 </p>
               }
+              @if(betType === 'parlay'){<label class="check"><input type="checkbox" name="totalOddsMode" [(ngModel)]="totalOddsMode" (ngModelChange)="updateOdds()" /> Usar la cuota total del boleto</label>}
+              @if(importWarnings){<p class="info-note">{{importWarnings}}</p>}
               <div class="tabs" role="group" aria-label="Importe del ticket">
                 <button
                   type="button"
@@ -255,7 +259,7 @@
                     name="odds"
                     type="number"
                     [(ngModel)]="odds"
-                    [readonly]="betType === 'parlay'"
+                    [readonly]="betType === 'parlay' && !totalOddsMode"
                     [min]="oddsFormat === 'american' ? -999900 : 1.0001"
                     [max]="oddsFormat === 'american' ? 999900 : 10000"
                     [step]="oddsFormat === 'american' ? 1 : 0.0001"
@@ -357,6 +361,8 @@
                     }}</strong>
                   </p>
                 }
+                <details class="filter-disclosure"><summary>Publicar este ticket sellado</summary><p>Opcional. Se publicarán evento, selecciones, importe, cuota y resultado. Necesitas activar tu perfil en Ajustes. No podrás editar u ocultar este ticket.</p><label class="check"><input type="checkbox" name="publicRecord" [(ngModel)]="publicRecord" /> Publicarlo en mi perfil</label>@if(publicRecord){<label>Inicio del primer partido (hora local de este dispositivo)<input type="datetime-local" name="eventStart" [(ngModel)]="eventStart" required /></label><small>Fecha declarada por ti; no validada por una API.</small>}</details>
+                <app-ticket-protection [league]="leagueTag" [betType]="betType" />
                 <button class="primary register-button" [disabled]="vm.busy()">
                   <app-icon name="plus" />{{ vm.busy() ? 'Guardando…' : 'Guardar apuesta' }}
                 </button>
@@ -440,7 +446,7 @@
             @for (b of filteredBets(); track b.id) {
               <tr>
                 <td class="event-cell">
-                  <strong class="ticket-event" [title]="b.event">{{ b.event }}</strong
+                  <strong class="ticket-event" [title]="b.event">{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</strong
                   ><small
                     >{{
                       b.bet_type === 'same_game'
@@ -456,7 +462,7 @@
                   >
                   <details class="ticket-detail">
                     <summary>Ver detalle</summary>
-                    <p>{{ b.event }}</p>
+                    <p>{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</p>
                     @for (selection of b.same_game_selections ?? []; track $index) {
                       <small>↳ {{ selection }}</small>
                     }

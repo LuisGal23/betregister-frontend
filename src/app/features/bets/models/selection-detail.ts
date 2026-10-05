@@ -1,4 +1,4 @@
-export interface SelectionDetail { sport:string; market:string; pick:string; line:number|null; description:string; game_id:string; event_label:string }
+export interface SelectionDetail { source_text?:string; sport:string; market:string; pick:string; line:number|null; description:string; game_id:string; event_label:string }
 export const SELECTION_MARKETS: Record<string,string[]> = {'Fútbol':['Goles','Córners','Tarjetas','ML','Hándicap asiático','Hándicap','Ambos anotan','Otro'],'Béisbol':['Carreras','ML','Hándicap','Otro'],'Americano':['Puntos','ML','Hándicap','Otro']};
 export function newSelection(sport='Fútbol'): SelectionDetail { const valid=Object.keys(SELECTION_MARKETS).includes(sport)?sport:'Fútbol'; return {sport:valid,market:SELECTION_MARKETS[valid][0],pick:'Más de',line:null,description:'',game_id:'',event_label:''}; }
 export function selectionText(d:SelectionDetail) { return d.market==='Otro' ? 'Otro: '+d.description.trim() : [d.market==='ML'?'Moneyline':d.market,d.pick,d.line===null?'':String(d.line)].filter(Boolean).join(' · '); }

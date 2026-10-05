@@ -65,7 +65,7 @@
               <td>#{{ b.id }} · {{ b.event }}</td>
               <td>{{ b.odds }}</td>
               <td>{{ b.closing_odds ?? 'Sin captura' }}</td>
-              <td>{{ b.closing_odds ? percent((+b.odds / +b.closing_odds - 1) * 100) : '—' }}</td>
+              <td>{{ b.closing_odds ? percent((+b.odds / +b.closing_odds - 1) * 100) : '—' }} @if(b.closing_odds && +b.odds > +b.closing_odds){<small class="positive">Cuota superior al cierre declarado</small>}</td>
               <td><button class="secondary" (click)="begin(b)">Editar</button></td>
             </tr>
             @if (editing() === b.id) {

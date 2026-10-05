@@ -1,0 +1,8 @@
+<main class="public-record"><a routerLink="/">BetRegister</a>
+@if(busy()){<p role="status">Cargando registro público…</p>}
+@if(error()){<p role="alert">{{error()}}</p><button class="secondary" (click)="load(offset)">Reintentar</button>}
+@if(page();as p){<h1>{{p.name}}</h1><span class="badge">Registro sellado en BetRegister</span><p class="notice">{{p.notice}}</p><p>{{p.total}} tickets públicos · resultados declarados manualmente</p>
+@for(c of ['MXN','USD'];track c){@if(p.totals[c].count){<p>{{c}} · {{p.totals[c].count}} tickets · Neto liquidado: {{p.totals[c].profit/100|number:'1.2-2'}}</p>}}
+@for(b of p.tickets;track b.id){<article class="panel"><header><strong>{{b.event}}</strong><span>{{labels[b.status]}}</span></header><p>{{b.bet_type}} · {{b.currency}} {{b.stake/100|number:'1.2-2'}} · Cuota {{b.odds}} · Retorno {{b.payout/100|number:'1.2-2'}}</p><small>Registrado: {{b.registered_at|date:'medium'}} · Inicio declarado: {{b.declared_start|date:'medium'}}</small><details><summary>Historial de resultados</summary>@for(r of b.results;track $index){<p>{{r.at|date:'medium'}} · {{labels[r.status]}} · Retorno acumulado {{r.payout/100|number:'1.2-2'}}</p>}@empty{<p>Aún sin resultado declarado.</p>}</details></article>}@empty{<p>No hay tickets publicados.</p>}
+<nav aria-label="Páginas del perfil"><button class="secondary" [disabled]="busy()||offset===0" (click)="load(offset-50)">Anterior</button><button class="secondary" [disabled]="busy()||offset+50>=p.total" (click)="load(offset+50)">Siguiente</button></nav>}
+<p>18+ · Este sitio registra información; no recibe apuestas ni verifica resultados con las casas.</p></main>

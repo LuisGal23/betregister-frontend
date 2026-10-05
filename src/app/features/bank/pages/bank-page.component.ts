@@ -1,3 +1,4 @@
+import { SmartSettingsComponent } from '../components/smart-settings/smart-settings.component';
 import { UnitsService } from '../../../core/services/units.service';
 import { ApiService } from '../../../core/services/api.service';
 import { TransactionsPageComponent } from '../../transactions/pages/transactions-page.component';
@@ -16,7 +17,7 @@ import type { Currency } from '../../../shared/models/currency.model';
 @Component({
   selector: 'app-bank-page',
   imports: [
-    RouterLink,
+    RouterLink, SmartSettingsComponent,
     TransactionsPageComponent,
     FormsModule,
     ResetBankComponent,

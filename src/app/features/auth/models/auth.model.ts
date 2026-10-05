@@ -11,6 +11,7 @@ export interface UnitPreferences {
   base?: Partial<Record<Currency, number>>;
 }
 export interface Profile {
+  sports_enabled?: boolean;
   units?: UnitPreferences | null;
   timezone?: string;
   email: string;
