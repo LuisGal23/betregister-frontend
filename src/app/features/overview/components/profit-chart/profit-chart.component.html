@@ -19,10 +19,10 @@
           x2="0"
           y2="224"
         >
-          <stop offset="0" stop-color="#28b9f3" />
-          <stop [attr.offset]="graph().zero / 224" stop-color="#28b9f3" />
-          <stop [attr.offset]="graph().zero / 224" stop-color="#e35672" />
-          <stop offset="1" stop-color="#e35672" />
+          <stop offset="0" stop-color="var(--positive)" />
+          <stop [attr.offset]="graph().zero / 224" stop-color="var(--positive)" />
+          <stop [attr.offset]="graph().zero / 224" stop-color="var(--negative)" />
+          <stop offset="1" stop-color="var(--negative)" />
         </linearGradient>
       </defs>
       <path d="M24 36H576 M24 84H576 M24 132H576 M24 180H576" class="grid" />

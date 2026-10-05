@@ -1,7 +1,7 @@
 <div class="page-heading">
   <div>
-    <h1>{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Crear ticket' }}</h1>
-    <p>Tus apuestas, sus resultados y lo que tienes en juego.</p>
+    <h1>{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Registrar ticket' }}</h1>
+    <p>Anota tus tickets y resultados. Las apuestas se realizan fuera de BetRegister.</p>
   </div>
   <div class="workspace-tabs" role="group" aria-label="Vista de apuestas">
     <button
@@ -10,7 +10,7 @@
       [attr.aria-pressed]="workspaceMode() === 'register'"
       routerLink="/tickets"
     >
-      Nueva apuesta</button
+      Registrar ticket</button
     ><button
       type="button"
       [class.active]="workspaceMode() === 'history'"
@@ -50,7 +50,7 @@
       </button>
     </div>
     }
-    <div class="bet-workspace" [class.quick-mode]="quickMode()">
+    <div class="bet-workspace" [class.quick-mode]="quickMode() || !vm.data().profile.sports_enabled">
       @if (!quickMode() && vm.data().profile.sports_enabled) {
         <section class="match-workspace">
           <app-match-picker
@@ -72,7 +72,7 @@
       <aside class="ticket-column" id="ticket">
         <section class="panel ticket-panel">
           <div class="ticket-heading">
-            <span class="step-label">2 · Completa tu apuesta</span>
+            <span class="step-label">REGISTRO PERSONAL</span>
             <h2>
               Tu ticket
               <span>{{
@@ -361,7 +361,7 @@
                     }}</strong>
                   </p>
                 }
-                <details class="filter-disclosure"><summary>Publicar este ticket sellado</summary><p>Opcional. Se publicarán evento, selecciones, importe, cuota y resultado. Necesitas activar tu perfil en Ajustes. No podrás editar u ocultar este ticket.</p><label class="check"><input type="checkbox" name="publicRecord" [(ngModel)]="publicRecord" /> Publicarlo en mi perfil</label>@if(publicRecord){<label>Inicio del primer partido (hora local de este dispositivo)<input type="datetime-local" name="eventStart" [(ngModel)]="eventStart" required /></label><small>Fecha declarada por ti; no validada por una API.</small>}</details>
+                
                 <app-ticket-protection [league]="leagueTag" [betType]="betType" />
                 <button class="primary register-button" [disabled]="vm.busy()">
                   <app-icon name="plus" />{{ vm.busy() ? 'Guardando…' : 'Guardar apuesta' }}

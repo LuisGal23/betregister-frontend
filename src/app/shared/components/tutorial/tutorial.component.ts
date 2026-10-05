@@ -32,7 +32,7 @@ export class TutorialComponent implements AfterViewInit {
     {
       route: '/overview',
       title: 'Registra depósitos y retiros',
-      text: 'Abre «Depositar o retirar». En esa tarjeta registras movimientos, los confirmas cuando se reflejen en tu casa y consultas el historial. El registro no transfiere dinero.',
+      text: 'Abre «Registrar movimiento». En esa tarjeta registras movimientos, los confirmas cuando se reflejen en tu casa y consultas el historial. El registro no transfiere dinero.',
     },
     {
       route: '/tickets',

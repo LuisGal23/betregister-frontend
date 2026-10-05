@@ -55,7 +55,7 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../m
 export class BetsPageComponent {
   historyRoute = !!inject(ActivatedRoute).snapshot.data['history'];
   router = inject(Router);
-  quickMode = signal(true);
+  quickMode = signal(false);
   challengeService = inject(ChallengesService);
   challengeId = inject(ActivatedRoute).snapshot.queryParamMap.get('challenge') ?? '';
   challengeError = signal(false);

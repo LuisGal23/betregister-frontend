@@ -123,7 +123,7 @@
             link.path === 'history'
               ? 'Historial'
               : link.path === 'tickets'
-                ? 'Nuevo ticket'
+                ? 'Registrar'
                 : link.label
           }}</span>
         </a>
@@ -167,6 +167,6 @@
     <app-tutorial (dismiss)="closeTutorial()" />
   }
   <footer [class.private-footer]="!publicPage()">
-    BetRegister <span>Tu registro personal · 18+</span>
+    BetRegister <span>Registro personal · 18+</span><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/support">Soporte</a><a routerLink="/delete-account">Eliminar cuenta</a>
   </footer>
 }

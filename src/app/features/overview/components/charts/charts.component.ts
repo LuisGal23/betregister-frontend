@@ -36,5 +36,5 @@ export class ChartsComponent {
   });
   circumference = 2 * Math.PI * 64;
   distribution = inject(OverviewService).distribution;
-  colors = ['#7454e8', '#ad9af4', '#667ce3', '#c4bbf8'];
+  colors = ['#b5d719', '#ffb323', '#9281f4', '#ff5a68'];
 }

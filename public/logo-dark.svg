@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 48" width="210" height="48" role="img" aria-label="BetRegister" xmlns:c2pa="http://c2pa.org/manifest">
-  <style>text { fill: #eef0ff; } @media (prefers-color-scheme: dark) { text { fill: #eef0ff; } }</style><rect x="1" y="1" width="46" height="46" rx="13" fill="#078fcd" stroke="#078fcd" stroke-width="1.5"/>
-  <path d="M12 36h24" stroke="#3bc4fa" stroke-width="2" stroke-linecap="round"/>
+  <style>text { fill: #eef0ff; } @media (prefers-color-scheme: dark) { text { fill: #eef0ff; } }</style><rect x="1" y="1" width="46" height="46" rx="13" fill="#d2f51a" stroke="#d2f51a" stroke-width="1.5"/>
+  <path d="M12 36h24" stroke="#526307" stroke-width="2" stroke-linecap="round"/>
   <polyline points="12,30 19,23 25,27 36,14" fill="none" stroke="#b8acff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
   <circle cx="36" cy="14" r="3.4" fill="#b8acff"/>
   <text x="60" y="31" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="24" font-weight="600" letter-spacing="-0.6" fill="#e8ecea">BetRegister</text>

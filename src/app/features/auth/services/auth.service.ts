@@ -39,7 +39,8 @@ export class AuthService {
   private async complete() {
     this.verification.set(null);
     await this.state.refresh();
-    await this.router.navigateByUrl('/overview');
+    const destination=this.router.parseUrl(this.router.url).queryParams['returnTo']==='/delete-account'?'/delete-account':'/overview';
+    await this.router.navigateByUrl(destination);
   }
   logout() {
     return this.state.run(async () => {

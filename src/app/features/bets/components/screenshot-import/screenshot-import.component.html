@@ -1,10 +1,11 @@
-<details class="smart-import panel"><summary>📷 Crear desde una captura</summary>
+<details class="smart-import panel"><summary>{{configured() ? 'Leer una captura · opcional' : '🔒 Lectura de capturas · próximamente'}}</summary>
 <p>Sube tu boleto y revisa el borrador. No registra ni liquida apuestas automáticamente.</p>
-@if(configured()===false){<p role="status">La IA aún no está configurada. El administrador debe agregar OPENAI_API_KEY en el servidor. Puedes usar el formulario manual.</p>}
-<label>Captura del ticket<input type="file" accept="image/png,image/jpeg,image/webp" (change)="choose($event)" [disabled]="busy()" /></label>
+@if(configured()===false){<p role="status">La IA aún no está configurada. Puedes seleccionar un partido y registrar sus datos manualmente.</p>}
+@if(configured()){<label>Captura del ticket<input type="file" accept="image/png,image/jpeg,image/webp" (change)="choose($event)" [disabled]="busy()" /></label>
 <p class="field-help">Hasta 2 MB. Recorta el boleto y oculta nombre, cuenta, saldo, códigos QR y otros datos personales.</p>
 <label class="consent"><input type="checkbox" [(ngModel)]="consent" [disabled]="busy()" /> Acepto enviar esta captura a OpenAI para leer el ticket. BetRegister no guarda la imagen; se aplican las condiciones de tratamiento del proveedor.</label>
 <button class="secondary" type="button" (click)="read()" [disabled]="!image || !consent || busy() || configured()!==true">{{busy()?'Leyendo captura…':'Leer captura'}}</button>
+}
 @if(error()){<p role="alert">{{error()}}</p>}
 @if(result();as r){<section aria-label="Borrador de la captura"><h3>Revisa lo detectado</h3><p>{{r.house || 'Casa sin identificar'}} · {{r.currency || 'Moneda por confirmar'}} · Importe: {{r.stake ?? 'No legible'}} · Cuota: {{r.odds ?? 'No legible'}}</p>
 @for(s of r.selections;track $index){<div class="extracted"><strong>{{s.event || 'Completa el partido'}}</strong><span>{{s.market || 'Completa la selección'}} · {{s.odds ?? 'Sin cuota individual'}}</span></div>}

@@ -145,6 +145,9 @@
     }
 
     }
+    @if(registering() && !auth.verification()){
+    <label class="legal-check"><input type="checkbox" name="adult" [(ngModel)]="adult" required /> Confirmo que tengo 18 años o más.</label>
+    <label class="legal-check"><input type="checkbox" name="accepted" [(ngModel)]="accepted" required /><span>Acepto los <a routerLink="/terms" target="_blank">Términos de uso</a> y he leído el <a routerLink="/privacy" target="_blank">Aviso de privacidad</a>.</span></label>}
     <p class="age-reminder">18+ · Solo para mayores de edad. Las apuestas implican riesgo de perder dinero.</p>
     <button class="primary auth-submit" [disabled]="vm.busy()">
       <span>{{

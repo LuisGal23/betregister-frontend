@@ -38,12 +38,12 @@ export class ShellComponent implements OnInit {
   sidebarOpen = signal(false);
   path = signal(this.router.url.split('?')[0]);
   publicPage = computed(
-    () => (['/', '/login', '/register'].includes(this.path()) || this.path().startsWith('/p/')) || !this.vm.authenticated(),
+    () => (['/', '/login', '/register','/terms','/privacy','/delete-account','/support'].includes(this.path()) || this.path().startsWith('/p/')) || !this.vm.authenticated(),
   );
   links = [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
     { path: 'bank', label: 'Mi bank', icon: 'bank' },
-    { path: 'tickets', label: 'Crear ticket', icon: 'plus' },
+    { path: 'tickets', label: 'Registrar ticket', icon: 'plus' },
     { path: 'history', label: 'Mis apuestas', icon: 'bets' },
     { path: 'insights', label: 'Análisis', icon: 'trend' },
     { path: 'challenges', label: 'Retos', icon: 'flag' },

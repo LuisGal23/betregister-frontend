@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed, OnDestroy } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import { AuthService } from '../services/auth.service';
@@ -7,7 +7,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-auth',
-  imports: [FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent, RouterLink],
   templateUrl: './auth-page.component.html',
   styleUrl: './auth-page.component.css',
 })
@@ -20,6 +20,8 @@ export class AuthPageComponent implements OnDestroy {
   now = signal(Date.now());
   waitSeconds = computed(() => Math.max(0, Math.ceil((this.auth.resendAt() - this.now()) / 1000)));
   private clock = setInterval(() => this.now.set(Date.now()), 1000);
+  accepted=false;
+  adult=false;
   email = '';
   password = '';
   confirmPassword = '';
@@ -42,7 +44,7 @@ export class AuthPageComponent implements OnDestroy {
       this.vm.error.set('Las contraseñas no coinciden.');
       return;
     }
-    await this.auth.login({ email: this.email, password: this.password }, this.registering());
+    await this.auth.login({ email: this.email, password: this.password, terms_accepted:this.accepted, age_confirmed:this.adult }, this.registering());
     if (this.vm.authenticated() || this.auth.verification()) {
       this.password = '';
       this.confirmPassword = '';

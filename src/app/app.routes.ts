@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
+  ...[['terms','terms'],['privacy','privacy'],['delete-account','delete'],['support','support']].map(([path,kind])=>({path,data:{kind},loadComponent:()=>import('./features/legal/legal-page.component').then(m=>m.LegalPageComponent)})),
   {path:'p/:token',loadComponent:()=>import('./features/public-record/public-record.component').then(m=>m.PublicRecordComponent)},
   {
     path: '',

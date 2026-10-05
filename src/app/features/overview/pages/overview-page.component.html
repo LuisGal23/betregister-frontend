@@ -13,16 +13,16 @@
   </div>
   <div class="quick-actions">
     <a routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }"
-      ><app-icon name="plus" /> Depositar o retirar</a
+      ><app-icon name="plus" /> Registrar movimiento</a
     >
     <a class="primary button-link" routerLink="/tickets"
-      ><app-icon name="plus" />Registrar apuesta</a
+      ><app-icon name="plus" />Registrar ticket</a
     >
   </div>
 </div>
 <section class="headline-kpis" aria-label="Resultados generales de casas activas">
   <article class="panel">
-    <span>Bank real</span><strong>{{ vm.format(kpis().bank) }}</strong
+    <span>Bank registrado</span><strong>{{ vm.format(kpis().bank) }}</strong
     ><small>Disponible + pendiente</small>
   </article>
   <article class="panel">
@@ -52,7 +52,7 @@
     <section class="panel">
       <div class="section-heading">
         <div>
-          <h2>Apuestas abiertas</h2>
+          <h2>Tickets pendientes</h2>
           <p>Hasta cinco tickets pendientes</p>
         </div>
         <a routerLink="/history">Ver todas ↗</a>
@@ -62,7 +62,7 @@
           <app-icon name="bets" />
           <h3>No tienes apuestas pendientes</h3>
           <p>Registra una apuesta para verla aquí.</p>
-          <a class="primary button-link" routerLink="/tickets">Registrar apuesta</a>
+          <a class="primary button-link" routerLink="/tickets">Registrar ticket</a>
         </div>
       } @else {
         <div class="recent-list">

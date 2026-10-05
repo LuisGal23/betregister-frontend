@@ -1,10 +1,10 @@
 import { Injectable, signal } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class ThemeService {
-  dark = signal(false);
+  dark = signal(true);
   constructor() {
     try {
-      this.dark.set(localStorage.getItem('betregister-theme') === 'dark');
+      this.dark.set(localStorage.getItem('betregister-theme-v2') !== 'light');
     } catch {}
     this.apply();
   }
@@ -15,7 +15,7 @@ export class ThemeService {
   private apply() {
     document.documentElement.dataset['theme'] = this.dark() ? 'dark' : 'light';
     try {
-      localStorage.setItem('betregister-theme', this.dark() ? 'dark' : 'light');
+      localStorage.setItem('betregister-theme-v2', this.dark() ? 'dark' : 'light');
     } catch {}
   }
 }

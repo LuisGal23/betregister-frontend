@@ -1,5 +1,7 @@
 import type { Currency } from '../../../shared/models/currency.model';
 export interface Credentials {
+  terms_accepted?: boolean;
+  age_confirmed?: boolean;
   email: string;
   password: string;
 }

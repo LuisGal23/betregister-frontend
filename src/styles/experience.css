@@ -1,16 +1,4 @@
 /* Shared visual rhythm: readable labels, quiet surfaces and clear actions. */
-:root {
-  --muted: #63758b;
-  --border: #dfe7f0;
-  --bg: #f3f6fb;
-  --accent-soft: #e8f5ff;
-}
-:root[data-theme='dark'] {
-  --muted: #a4b2c8;
-  --border: #2a3a50;
-  --bg: #101827;
-  --accent-soft: #1c3449;
-}
 body {
   font-size: 14px;
   line-height: 1.5;
