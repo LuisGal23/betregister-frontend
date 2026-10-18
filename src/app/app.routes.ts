@@ -116,11 +116,23 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'challenges',
+    path: 'community',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/challenges/pages/challenges-page.component').then(
-        (m) => m.ChallengesPageComponent,
+      import('./features/community/pages/community-page/community-page.component').then(
+        (m) => m.CommunityPageComponent,
+      ),
+  },
+  {
+    path: 'tipsters',
+    redirectTo: 'community',
+  },
+  {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/profile/pages/profile-page/profile-page.component').then(
+        (m) => m.ProfilePageComponent,
       ),
   },
   { path: '**', redirectTo: '' },

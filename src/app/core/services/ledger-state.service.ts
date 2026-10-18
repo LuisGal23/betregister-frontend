@@ -25,7 +25,20 @@ export class LedgerState {
     const timer = setTimeout(() => this.notice.set(''), 5000);
     onCleanup(() => clearTimeout(timer));
   });
-  data = signal<Dashboard>(emptyDashboard());
+
+  private loadInitialDashboard(): Dashboard {
+    const dash = emptyDashboard();
+    try {
+      const savedProfile = localStorage.getItem('betregister_user_profile');
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile);
+        dash.profile = { ...dash.profile, ...parsed };
+      }
+    } catch {}
+    return dash;
+  }
+
+  data = signal<Dashboard>(this.loadInitialDashboard());
   currency = computed(() => this.data().profile.display_currency);
   rateDate = this.exchange.rateDate;
   rateLoading = this.exchange.rateLoading;
@@ -84,10 +97,18 @@ export class LedgerState {
   }
   reset() {
     this.authenticated.set(false);
-    this.data.set(emptyDashboard());
+    this.data.set(this.loadInitialDashboard());
   }
   async refresh() {
-    this.data.set(await this.api.request<Dashboard>('/dashboard'));
+    const dash = await this.api.request<Dashboard>('/dashboard');
+    try {
+      const savedProfile = localStorage.getItem('betregister_user_profile');
+      if (savedProfile) {
+        const parsed = JSON.parse(savedProfile);
+        dash.profile = { ...dash.profile, ...parsed };
+      }
+    } catch {}
+    this.data.set(dash);
     this.authenticated.set(true);
   }
   async run(work: () => Promise<void>): Promise<boolean> {

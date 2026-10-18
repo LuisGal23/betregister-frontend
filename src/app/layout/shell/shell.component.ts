@@ -10,6 +10,8 @@ import { BankService } from '../../features/bank/services/bank.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { CreateTicketModalComponent } from '../../features/bets/components/create-ticket-modal/create-ticket-modal.component';
 import { TicketModalService } from '../../features/bets/services/ticket-modal.service';
+import { TranslationService } from '../../core/services/translation.service';
+
 @Component({
   selector: 'app-shell',
   imports: [
@@ -26,6 +28,7 @@ import { TicketModalService } from '../../features/bets/services/ticket-modal.se
 export class ShellComponent implements OnInit {
   vm = inject(LedgerState);
   theme = inject(ThemeService);
+  i18n = inject(TranslationService);
   auth = inject(AuthService);
   bank = inject(BankService);
   ticketModal = inject(TicketModalService);
@@ -43,18 +46,29 @@ export class ShellComponent implements OnInit {
   publicPage = computed(
     () => (['/', '/login', '/register','/terms','/privacy','/delete-account','/support'].includes(this.path()) || this.path().startsWith('/p/')) || !this.vm.authenticated(),
   );
-  links = [
+  links = computed(() => [
+    { path: 'overview', label: this.i18n.t().myOverview, icon: 'overview' },
+    { path: 'matches', label: this.i18n.t().matches, icon: 'calendar' },
+    { path: 'match-analysis', label: this.i18n.t().oddsAndStats, icon: 'trend' },
+    { path: 'community', label: this.i18n.t().community, icon: 'chat' },
+    { path: 'tickets', label: this.i18n.t().registerTicket, icon: 'plus' },
+    { path: 'bank', label: this.i18n.t().myBank, icon: 'bank' },
+    { path: 'history', label: this.i18n.t().myBets, icon: 'bets' },
+    { path: 'insights', label: this.i18n.t().profitability, icon: 'trend' },
+    { path: 'challenges', label: this.i18n.t().challenges, icon: 'flag' },
+  ]);
+  mobileLinks = computed(() => [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
-    { path: 'matches', label: 'Partidos del día', icon: 'calendar' },
-    { path: 'match-analysis', label: 'Cuotas y Stats', icon: 'trend' },
-    { path: 'tickets', label: 'Registrar ticket', icon: 'plus' },
-    { path: 'bank', label: 'Mi bank', icon: 'bank' },
-    { path: 'history', label: 'Mis apuestas', icon: 'bets' },
-    { path: 'insights', label: 'Rentabilidad', icon: 'trend' },
-    { path: 'challenges', label: 'Retos', icon: 'flag' },
-    { path: 'settings', label: 'Ajustes y casas', icon: 'settings' },
-  ];
-  mobileLinks = this.links.slice(0, 4);
+    { path: 'matches', label: 'Partidos', icon: 'calendar' },
+    { path: 'tickets', label: 'Registrar', icon: 'plus' },
+    { path: 'history', label: 'Apuestas', icon: 'bets' },
+  ]);
+
+  userProfile = computed(() => this.vm.data().profile);
+  username = computed(() => this.userProfile().username || this.userProfile().email.split('@')[0]);
+  displayName = computed(() => this.userProfile().display_name || this.username());
+  userAvatar = computed(() => this.userProfile().avatar_url || '');
+  userInitial = computed(() => (this.username() || 'U').slice(0, 2).toUpperCase());
   private menuTrigger: HTMLElement | null = null;
   trapMenu(event: KeyboardEvent) {
     if (!this.sidebarOpen() || event.key !== 'Tab') return;
@@ -73,9 +87,10 @@ export class ShellComponent implements OnInit {
       first?.focus();
     }
   }
-  currentTitle = computed(
-    () => this.links.find((l) => '/' + l.path === this.path())?.label ?? 'Mi espacio',
-  );
+  currentTitle = computed(() => {
+    if (this.path() === '/settings') return this.i18n.t().settingsAndHouses;
+    return this.links().find((l) => '/' + l.path === this.path())?.label ?? this.i18n.t().mySpace;
+  });
   constructor() {
     this.router.events.pipe(takeUntilDestroyed()).subscribe((event) => {
       if (event instanceof NavigationEnd) {

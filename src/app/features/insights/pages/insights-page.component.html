@@ -1,263 +1,654 @@
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+<!-- Top Page Header -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 pb-4 border-b border-border/60">
   <div>
-    <h1 class="text-3xl font-bold tracking-tight text-text">Tu rendimiento</h1>
-    <p class="text-xs text-muted mt-1">Explora qué deportes y mercados han tenido mejores resultados en tu registro.</p>
+    <div class="flex items-center gap-2">
+      <span class="eyebrow !text-accent font-mono font-bold">ANALÍTICA & RENTABILIDAD</span>
+      <span class="text-xs text-muted">·</span>
+      <span class="text-xs text-muted font-medium">{{ overallStats().closedTickets }} tickets cerrados</span>
+    </div>
+    <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-text mt-1">
+      Tu Rendimiento y Rentabilidad
+    </h1>
+    <p class="text-xs sm:text-sm text-muted mt-1 max-w-2xl">
+      Descubre con total claridad en qué deportes y mercados ganas más dinero, y detecta a tiempo tus fugas de capital para proteger tu bankroll.
+    </p>
   </div>
-  <button class="secondary text-xs py-2 px-4" [disabled]="vm.busy()" (click)="refresh()">Actualizar</button>
-</div>
-<div class="flex flex-wrap border-b border-border mb-5 gap-1" role="group" aria-label="Sección de análisis">
-  @for (
-    t of [
-      { id: 'efficiency', label: 'Eficiencia' },
-      { id: 'clv', label: 'Cuota de cierre' },
-      { id: 'patterns', label: 'Patrones' },
-    ];
-    track t.id
-  ) {
-    <button
-      class="bg-transparent text-muted py-2.5 px-4 text-xs font-semibold border-b-2 border-transparent transition-all cursor-pointer hover:text-text"
-      [class.border-b-accent]="tab() === t.id"
-      [class.text-accent]="tab() === t.id"
-      [attr.aria-pressed]="tab() === t.id"
-      (click)="tab.set(t.id)"
+
+  <div class="flex items-center gap-2.5 shrink-0">
+    <span class="px-3 py-1 rounded-full text-xs font-mono font-bold bg-surface-high border border-border text-text">
+      {{ vm.currency() }}
+    </span>
+    <button 
+      type="button" 
+      class="action-pill-btn py-2 px-4 text-xs inline-flex items-center gap-1.5"
+      [disabled]="vm.busy()" 
+      (click)="refresh()"
     >
-      {{ t.label }}
-    </button>
-  }
-</div>
-<section class="grid gap-4 mb-6" aria-label="Filtros del análisis">
-  <div class="flex flex-wrap gap-2" role="group" aria-label="Deporte">
-    @for (sport of sports; track sport) {
-      <button
-        class="py-2 px-3.5 border border-border rounded-full bg-surface text-muted text-xs font-medium transition-all hover:text-text cursor-pointer"
-        [class.bg-accent/10]="insights.sport() === sport"
-        [class.border-accent]="insights.sport() === sport"
-        [class.text-accent]="insights.sport() === sport"
-        [class.font-semibold]="insights.sport() === sport"
-        [attr.aria-pressed]="insights.sport() === sport"
-        (click)="chooseSport(sport)"
-      >
-        {{ sportLabel(sport) }}
-      </button>
-    }
-  </div>
-  <div class="flex flex-wrap border-b border-border gap-1 my-1" role="group" aria-label="Agrupar resultados">
-    <button class="bg-transparent text-muted py-2 px-3 text-xs font-semibold border-b-2 border-transparent cursor-pointer hover:text-text" [class.border-b-accent]="insights.mode() === 'market'" [class.text-accent]="insights.mode() === 'market'" (click)="chooseMode('market')">
-      Por mercado</button
-    ><button class="bg-transparent text-muted py-2 px-3 text-xs font-semibold border-b-2 border-transparent cursor-pointer hover:text-text" [class.border-b-accent]="insights.mode() === 'type'" [class.text-accent]="insights.mode() === 'type'" (click)="chooseMode('type')">
-      Por tipo de apuesta
+      <span [class.animate-spin]="vm.busy()">⟳</span>
+      <span>Actualizar</span>
     </button>
   </div>
-  @if (insights.mode() === 'market') {
-    <div class="flex flex-wrap gap-1.5" role="group" aria-label="Mercado">
-      <button
-        class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium transition-all hover:text-text cursor-pointer"
-        [class.bg-accent/10]="!insights.market()"
-        [class.border-accent]="!insights.market()"
-        [class.text-accent]="!insights.market()"
-        [class.font-semibold]="!insights.market()"
-        (click)="insights.market.set(''); selected.set(null)"
-      >
-        Todos los mercados
-      </button>
-      @for (market of markets(); track market) {
-        <button
-          class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium transition-all hover:text-text cursor-pointer"
-          [class.bg-accent/10]="insights.market() === market"
-          [class.border-accent]="insights.market() === market"
-          [class.text-accent]="insights.market() === market"
-          [class.font-semibold]="insights.market() === market"
-          [attr.aria-pressed]="insights.market() === market"
-          (click)="insights.market.set(market); selected.set(null)"
-        >
-          {{ marketLabel(market) }}
-        </button>
-      }
-    </div>
-  }
-  <details class="text-xs text-muted">
-    <summary class="cursor-pointer font-medium hover:text-text transition-colors">Más opciones</summary>
-    <div class="flex flex-wrap gap-2 mt-3">
-      <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="!insights.type()" [class.text-accent]="!insights.type()" [class.border-accent]="!insights.type()" (click)="insights.type.set('')">
-        Todos los tickets
-      </button>
-      @for (type of ['simple', 'parlay', 'same_game']; track type) {
-        <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="insights.type() === type" [class.text-accent]="insights.type() === type" [class.border-accent]="insights.type() === type" (click)="insights.type.set(type)">
-          {{ typeLabel(type) }}
-        </button>
-      }
-    </div>
-    <label class="flex items-center gap-2.5 text-xs text-muted cursor-pointer my-3"
-      ><input
-        type="checkbox"
-        [ngModel]="insights.includeArchived()"
-        (ngModelChange)="insights.includeArchived.set($event); insights.market.set('')"
-        class="w-auto m-0"
-      />Incluir casas eliminadas</label
-    >
-    <div class="flex flex-wrap gap-2" aria-label="Ordenar">
-      @for (sort of ['profit', 'frequency', 'yield']; track sort) {
-        <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="insights.sort() === sort" [class.text-accent]="insights.sort() === sort" [class.border-accent]="insights.sort() === sort" (click)="insights.sort.set($any(sort))">
-          {{ sort === 'profit' ? 'Neto' : sort === 'frequency' ? 'Frecuencia' : 'Yield' }}
-        </button>
-      }
-    </div>
-  </details>
-</section>
-<app-advanced-analysis [mode]="tab()" />
+</div>
+
+<!-- Primary Navigation Tabs (Single clean row) -->
+<div class="flex items-center gap-2 overflow-x-auto w-full pb-2 mb-6 border-b border-border/60 scrollbar-thin">
+  <button
+    type="button"
+    class="flex items-center gap-2 py-2 px-4 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap"
+    [class.bg-accent]="tab() === 'efficiency'"
+    [class.text-white]="tab() === 'efficiency'"
+    [class.border-accent]="tab() === 'efficiency'"
+    [class.shadow-md]="tab() === 'efficiency'"
+    [class.bg-surface]="tab() !== 'efficiency'"
+    [class.border-border]="tab() !== 'efficiency'"
+    [class.text-muted]="tab() !== 'efficiency'"
+    [class.hover:text-text]="tab() !== 'efficiency'"
+    (click)="tab.set('efficiency')"
+  >
+    <span>💰</span>
+    <span>Ganancias vs Fugas (Rentabilidad)</span>
+  </button>
+
+  <button
+    type="button"
+    class="flex items-center gap-2 py-2 px-4 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap"
+    [class.bg-accent]="tab() === 'odds'"
+    [class.text-white]="tab() === 'odds'"
+    [class.border-accent]="tab() === 'odds'"
+    [class.shadow-md]="tab() === 'odds'"
+    [class.bg-surface]="tab() !== 'odds'"
+    [class.border-border]="tab() !== 'odds'"
+    [class.text-muted]="tab() !== 'odds'"
+    [class.hover:text-text]="tab() !== 'odds'"
+    (click)="tab.set('odds')"
+  >
+    <span>🎯</span>
+    <span>Rendimiento por Cuota</span>
+  </button>
+
+  <button
+    type="button"
+    class="flex items-center gap-2 py-2 px-4 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap"
+    [class.bg-accent]="tab() === 'patterns'"
+    [class.text-white]="tab() === 'patterns'"
+    [class.border-accent]="tab() === 'patterns'"
+    [class.shadow-md]="tab() === 'patterns'"
+    [class.bg-surface]="tab() !== 'patterns'"
+    [class.border-border]="tab() !== 'patterns'"
+    [class.text-muted]="tab() !== 'patterns'"
+    [class.hover:text-text]="tab() !== 'patterns'"
+    (click)="tab.set('patterns')"
+  >
+    <span>🧠</span>
+    <span>Patrones y Hábitos</span>
+  </button>
+
+  <button
+    type="button"
+    class="flex items-center gap-2 py-2 px-4 rounded-full text-xs font-semibold border transition-all cursor-pointer whitespace-nowrap"
+    [class.bg-accent]="tab() === 'clv'"
+    [class.text-white]="tab() === 'clv'"
+    [class.border-accent]="tab() === 'clv'"
+    [class.shadow-md]="tab() === 'clv'"
+    [class.bg-surface]="tab() !== 'clv'"
+    [class.border-border]="tab() !== 'clv'"
+    [class.text-muted]="tab() !== 'clv'"
+    [class.hover:text-text]="tab() !== 'clv'"
+    (click)="tab.set('clv')"
+  >
+    <span>📈</span>
+    <span>Cuota de Cierre (CLV)</span>
+  </button>
+</div>
+
+<!-- ========================================================================= -->
+<!-- TAB 1: RENTABILIDAD & GANANCIAS VS FUGAS (VISTA PRINCIPAL REDISEÑADA)       -->
+<!-- ========================================================================= -->
 @if (tab() === 'efficiency') {
-  <p class="text-xs text-muted my-3">
-    <strong class="text-text font-semibold">{{ insights.total() }}</strong> tickets · {{ insights.closed() }} cerrados ·
-    <strong class="text-accent font-semibold">{{ pending() }} pendientes</strong> · Todo el historial
-  </p>
-  @if (pending()) {
-    <p class="info-note">
-      Los pendientes ya están registrados.
-      <a routerLink="/history" [queryParams]="{ status: 'pending' }" class="text-accent underline">Resuelve sus resultados</a>
-      para incluirlos en las ganancias.
-    </p>
-  }
-  @if (insights.unclassified()) {
-    <p class="info-note">
-      {{ insights.unclassified() }} tickets sin mercado preciso.
-      <a routerLink="/history" class="text-accent underline">Editar sus etiquetas</a>.
-    </p>
-  }
-  @if (insights.missingRate()) {
-    <p class="alert">
-      Falta una tasa de cambio para comparar importes. <a routerLink="/bank" class="text-accent underline">Revisar moneda</a>.
-    </p>
-  }
-  @if (insights.total()) {
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-5">
-      @if (insights.ranked().best; as best) {
-        <button class="panel p-5 grid justify-stretch justify-items-start text-left gap-2 text-text hover:border-accent/40 transition-colors cursor-pointer" (click)="selected.set(best.key)">
-          <small class="text-[10px] text-muted font-bold tracking-wider">MEJOR NETO</small><strong class="text-base font-semibold">{{ marketLabel(best.market) }}</strong
-          ><span class="text-2xl font-bold font-mono text-emerald-400">{{ vm.format(best.profit) }}</span
-          ><small class="text-xs text-muted">{{ best.sport }} · {{ best.won }} ganadas / {{ best.lost }} perdidas</small>
-        </button>
-      }
-      @if (insights.ranked().worst; as worst) {
-        <button class="panel p-5 grid justify-stretch justify-items-start text-left gap-2 text-text hover:border-accent/40 transition-colors cursor-pointer" (click)="selected.set(worst.key)">
-          <small class="text-[10px] text-muted font-bold tracking-wider">MAYOR PÉRDIDA</small><strong class="text-base font-semibold">{{ marketLabel(worst.market) }}</strong
-          ><span class="text-2xl font-bold font-mono text-red-400">{{ vm.format(worst.profit) }}</span
-          ><small class="text-xs text-muted">{{ worst.sport }} · {{ worst.won }} ganadas / {{ worst.lost }} perdidas</small>
-        </button>
-      }
-    </div>
-    <section class="panel p-5">
-      <div class="section-heading mb-4">
-        <h2>{{ insights.mode() === 'market' ? 'Tus mercados' : 'Tus tipos de apuesta' }}</h2>
-        <span class="currency-tag">{{ vm.currency() }}</span>
+
+  <!-- TOP EXECUTIVE CARDS (¿Dónde ganas más? & ¿Dónde pierdes?) -->
+  <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+
+    <!-- 1. MAYOR FUENTE DE GANANCIAS (DONDE GANAS MÁS) -->
+    <div 
+      class="p-5 rounded-3xl bg-surface border border-emerald-500/40 shadow-lg relative overflow-hidden flex flex-col justify-between transition-all hover:scale-[1.01]"
+      [class.cursor-pointer]="bestMarket()"
+      (click)="bestMarket() && selected.set(bestMarket()!.key)"
+    >
+      <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-xl pointer-events-none"></div>
+      
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400">🔥 TU MAYOR GANANCIA</span>
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        </div>
+
+        @if (bestMarket(); as best) {
+          <h3 class="text-lg font-black text-text leading-tight truncate">
+            {{ marketLabel(best.market) }}
+          </h3>
+          <span class="text-xs text-muted font-medium">{{ best.sport }}</span>
+
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-emerald-400 block tracking-tight">
+              +{{ vm.format(best.profit) }}
+            </span>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                Yield {{ percent(best.yield) }}
+              </span>
+              <span class="text-[11px] text-muted">
+                {{ percent(best.winRate) }} acierto
+              </span>
+            </div>
+          </div>
+        } @else {
+          <h3 class="text-base font-bold text-text mt-2">Sin datos de ganancia aún</h3>
+          <p class="text-xs text-muted mt-1">Registra y cierra tickets con resultado positivo para identificar tu mejor mercado.</p>
+        }
       </div>
+
+      <div class="pt-2 border-t border-border/40 mt-2 flex items-center justify-between text-[11px] text-muted">
+        <span>{{ bestMarket() ? bestMarket()!.won + ' ganadas / ' + bestMarket()!.lost + ' perdidas' : '0 tickets' }}</span>
+        @if (bestMarket()) {
+          <span class="text-accent font-semibold hover:underline">Ver tickets →</span>
+        }
+      </div>
+    </div>
+
+    <!-- 2. MAYOR FUGA DE CAPITAL (DONDE PIERDES DINERO) -->
+    <div 
+      class="p-5 rounded-3xl bg-surface border shadow-lg relative overflow-hidden flex flex-col justify-between transition-all hover:scale-[1.01]"
+      [class.border-red-500/40]="worstMarket()"
+      [class.border-border]="!worstMarket()"
+      [class.cursor-pointer]="worstMarket()"
+      (click)="worstMarket() && selected.set(worstMarket()!.key)"
+    >
+      <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-red-500/10 rounded-full blur-xl pointer-events-none"></div>
+
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="text-[10px] font-black uppercase tracking-wider text-red-400">⚠️ FUGA DE CAPITAL</span>
+          <span class="w-2 h-2 rounded-full" [class.bg-red-500]="worstMarket()" [class.bg-emerald-400]="!worstMarket()"></span>
+        </div>
+
+        @if (worstMarket(); as worst) {
+          <h3 class="text-lg font-black text-text leading-tight truncate">
+            {{ marketLabel(worst.market) }}
+          </h3>
+          <span class="text-xs text-muted font-medium">{{ worst.sport }}</span>
+
+          <div class="my-3">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-red-400 block tracking-tight">
+              {{ vm.format(worst.profit) }}
+            </span>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-500/15 text-red-400 border border-red-500/30">
+                Yield {{ percent(worst.yield) }}
+              </span>
+              <span class="text-[11px] text-muted">
+                {{ worst.lost }} perdidas
+              </span>
+            </div>
+          </div>
+        } @else {
+          <h3 class="text-base font-bold text-text mt-2">¡Sin fugas detectadas!</h3>
+          <p class="text-xs text-muted mt-1">No tienes mercados cerrados en negativo en tu registro actual.</p>
+        }
+      </div>
+
+      <div class="pt-2 border-t border-border/40 mt-2 flex items-center justify-between text-[11px] text-muted">
+        <span>{{ worstMarket() ? worstMarket()!.closed + ' tickets cerrados' : '100% control de riesgo' }}</span>
+        @if (worstMarket()) {
+          <span class="text-red-400 font-semibold hover:underline">Auditar →</span>
+        }
+      </div>
+    </div>
+
+    <!-- 3. TIPO DE APUESTA MÁS EFECTIVO (SIMPLES VS PARLAYS) -->
+    <div class="p-5 rounded-3xl bg-surface border border-border shadow-lg flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="text-[10px] font-black uppercase tracking-wider text-accent">📊 TIPO DE TICKET</span>
+          <app-icon name="bets" class="text-accent text-xs" />
+        </div>
+
+        <h3 class="text-base font-bold text-text">Efectividad por Estructura</h3>
+        <p class="text-xs text-muted mt-0.5">Compara si ganas más en simples o en combinadas.</p>
+
+        <div class="flex flex-col gap-2 mt-3">
+          @for (type of typeComparison(); track type.id) {
+            <div class="flex items-center justify-between text-xs p-2 rounded-xl bg-surface-high/60 border border-border/60">
+              <div class="flex flex-col">
+                <span class="font-bold text-text">{{ type.label }}</span>
+                <span class="text-[10px] text-muted">{{ type.count }} jugadas · {{ type.won }}G - {{ type.lost }}P</span>
+              </div>
+              <div class="text-right">
+                <strong 
+                  class="font-mono font-bold block"
+                  [class.text-emerald-400]="type.profit > 0"
+                  [class.text-red-400]="type.profit < 0"
+                  [class.text-muted]="type.profit === 0"
+                >
+                  {{ type.profit !== 0 ? (type.profit > 0 ? '+' : '') + vm.format(type.profit) : 'MXN 0.00' }}
+                </strong>
+                <span class="text-[10px] text-muted">{{ percent(type.yield) }}</span>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. BALANCE GLOBAL DE RENDIMIENTO -->
+    <div class="p-5 rounded-3xl bg-surface border border-border shadow-lg flex flex-col justify-between">
+      <div>
+        <div class="flex items-center justify-between gap-2 mb-2">
+          <span class="text-[10px] font-black uppercase tracking-wider text-muted">💼 BALANCE TOTAL CERRADO</span>
+          <app-icon name="trend" class="text-muted text-xs" />
+        </div>
+
+        <h3 class="text-base font-bold text-text">Retorno Total Acumulado</h3>
+
+        <div class="my-3">
+          <span 
+            class="text-2xl sm:text-3xl font-black font-mono block tracking-tight"
+            [class.text-emerald-400]="overallStats().totalProfit > 0"
+            [class.text-red-400]="overallStats().totalProfit < 0"
+            [class.text-text]="overallStats().totalProfit === 0"
+          >
+            {{ (overallStats().totalProfit > 0 ? '+' : '') + vm.format(overallStats().totalProfit) }}
+          </span>
+
+          <div class="flex items-center gap-2 mt-1">
+            <span 
+              class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold"
+              [class.bg-emerald-500/15]="overallStats().overallYield && overallStats().overallYield! > 0"
+              [class.text-emerald-400]="overallStats().overallYield && overallStats().overallYield! > 0"
+              [class.bg-red-500/15]="overallStats().overallYield && overallStats().overallYield! < 0"
+              [class.text-red-400]="overallStats().overallYield && overallStats().overallYield! < 0"
+            >
+              Yield {{ percent(overallStats().overallYield) }}
+            </span>
+            <span class="text-[11px] text-muted">
+              {{ percent(overallStats().winRate) }} acierto global
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2 border-t border-border/40 mt-2 flex items-center justify-between text-[11px] text-muted">
+        <span>{{ overallStats().won }} ganadas / {{ overallStats().lost }} perdidas</span>
+        @if (pending() > 0) {
+          <a routerLink="/history" [queryParams]="{ status: 'pending' }" class="text-accent underline font-semibold">
+            {{ pending() }} pendientes
+          </a>
+        }
+      </div>
+    </div>
+
+  </section>
+
+  <!-- PENDING TICKETS CALLOUT NOTICE (IF APPLICABLE) -->
+  @if (pending() > 0) {
+    <div class="p-3.5 rounded-2xl bg-accent/10 border border-accent/30 text-xs flex items-center justify-between gap-3 mb-6">
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+        <span class="text-text font-medium">
+          Tienes <strong>{{ pending() }} tickets pendientes</strong> de resolver. Complétalos para que se sumen a tus métricas de rentabilidad.
+        </span>
+      </div>
+      <a routerLink="/history" [queryParams]="{ status: 'pending' }" class="action-pill-btn primary py-1 px-3 text-xs shrink-0">
+        Resolver apuestas →
+      </a>
+    </div>
+  }
+
+  <!-- UNIFIED FILTER TOOLBAR (Single clean, non-overwhelming row) -->
+  <section class="flex flex-col gap-3 p-4 rounded-2xl bg-surface border border-border shadow-sm mb-6">
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <!-- Sport Pills -->
+      <div class="flex items-center gap-1.5 overflow-x-auto max-w-full scrollbar-thin py-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-muted shrink-0 mr-1">Deporte:</span>
+        @for (sport of sports; track sport) {
+          <button
+            type="button"
+            class="pill-filter-btn text-xs py-1.5 px-3.5"
+            [class.active]="insights.sport() === sport"
+            (click)="chooseSport(sport)"
+          >
+            {{ sportLabel(sport) }}
+          </button>
+        }
+      </div>
+
+      <!-- Controls Right: Mode Switcher & Sort -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <!-- Mode Switcher -->
+        <div class="inline-flex items-center p-1 rounded-full bg-surface-high border border-border">
+          <button 
+            type="button" 
+            class="pill-filter-btn text-xs py-1 px-3"
+            [class.active]="insights.mode() === 'market'"
+            (click)="chooseMode('market')"
+          >
+            Por mercado
+          </button>
+          <button 
+            type="button" 
+            class="pill-filter-btn text-xs py-1 px-3"
+            [class.active]="insights.mode() === 'type'"
+            (click)="chooseMode('type')"
+          >
+            Por tipo de ticket
+          </button>
+        </div>
+
+        <!-- Sort Select -->
+        <select 
+          [ngModel]="insights.sort()" 
+          (ngModelChange)="insights.sort.set($event)"
+          class="h-8 px-2.5 rounded-full bg-surface-high border border-border text-text text-xs outline-none focus:border-accent"
+        >
+          <option value="profit">Ordenar por Ganancia ($)</option>
+          <option value="yield">Ordenar por Yield (%)</option>
+          <option value="frequency">Ordenar por Frecuencia</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Active Markets Sub-filter (when in market mode and markets exist) -->
+    @if (insights.mode() === 'market' && markets().length > 0) {
+      <div class="flex items-center gap-1.5 overflow-x-auto w-full scrollbar-thin pt-2 border-t border-border/40">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-muted shrink-0 mr-1">Filtrar mercado:</span>
+        <button
+          type="button"
+          class="text-[11px] py-1 px-2.5 rounded-full border transition-all cursor-pointer whitespace-nowrap"
+          [class.bg-accent]="!insights.market()"
+          [class.text-white]="!insights.market()"
+          [class.border-accent]="!insights.market()"
+          [class.bg-surface-high]="insights.market()"
+          [class.border-border]="insights.market()"
+          [class.text-muted]="insights.market()"
+          (click)="insights.market.set(''); selected.set(null)"
+        >
+          Todos ({{ markets().length }})
+        </button>
+        @for (market of markets(); track market) {
+          <button
+            type="button"
+            class="text-[11px] py-1 px-2.5 rounded-full border transition-all cursor-pointer whitespace-nowrap"
+            [class.bg-accent]="insights.market() === market"
+            [class.text-white]="insights.market() === market"
+            [class.border-accent]="insights.market() === market"
+            [class.bg-surface-high]="insights.market() !== market"
+            [class.border-border]="insights.market() !== market"
+            [class.text-muted]="insights.market() !== market"
+            (click)="insights.market.set(market); selected.set(null)"
+          >
+            {{ marketLabel(market) }}
+          </button>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- DUAL-PANEL SECTION: ¿DÓNDE GANAS DINERO? VS ¿DÓNDE PIERDES DINERO? -->
+  <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+    <!-- COLUMNA 1: 🟢 MERCADOS CON GANANCIA (DÓNDE GANAS MÁS) -->
+    <div class="flex flex-col gap-4 p-5 sm:p-6 rounded-3xl bg-surface border border-emerald-500/30 shadow-xl">
+      <div class="flex items-center justify-between border-b border-border/50 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-emerald-400"></span>
+          <h3 class="text-base font-bold text-text">¿Dónde estás ganando dinero?</h3>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          {{ winningRows().length }} mercados en verde
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        @for (row of winningRows(); track row.key) {
+          <button 
+            type="button" 
+            class="flex flex-col gap-2 p-3.5 rounded-2xl bg-surface-high/60 hover:bg-emerald-500/10 border border-border hover:border-emerald-500/40 transition-all cursor-pointer text-left group"
+            (click)="selected.set(row.key)"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm font-bold text-text group-hover:text-emerald-400 truncate">
+                  {{ marketLabel(row.market) }}
+                </span>
+                <span class="text-[11px] text-muted">
+                  {{ row.sport }} · {{ row.won }} ganadas / {{ row.lost }} perdidas
+                </span>
+              </div>
+
+              <div class="text-right shrink-0">
+                <span class="text-base font-black font-mono text-emerald-400 block">
+                  +{{ vm.format(row.profit) }}
+                </span>
+                <span class="text-[11px] font-mono font-bold text-emerald-400/90">
+                  Yield {{ percent(row.yield) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Proportional Winning Bar -->
+            <div class="w-full h-1.5 rounded-full bg-surface overflow-hidden">
+              <div 
+                class="h-full bg-emerald-400 rounded-full transition-all duration-500" 
+                [style.width.%]="(Math.abs(row.profit ?? 0) / barMax()) * 100"
+              ></div>
+            </div>
+          </button>
+        } @empty {
+          <div class="py-8 px-4 text-center text-muted text-xs bg-surface-high/30 rounded-2xl border border-dashed border-border">
+            <p class="font-medium text-text">Sin mercados ganadores para el filtro seleccionado.</p>
+            <p class="mt-1 text-[11px]">Prueba con «Todos los deportes» o registra nuevos tickets resueltos.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- COLUMNA 2: 🔴 MERCADOS CON PÉRDIDA (DÓNDE ESTÁS PERDIENDO) -->
+    <div class="flex flex-col gap-4 p-5 sm:p-6 rounded-3xl bg-surface border border-red-500/30 shadow-xl">
+      <div class="flex items-center justify-between border-b border-border/50 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-red-400"></span>
+          <h3 class="text-base font-bold text-text">¿En qué estás perdiendo dinero?</h3>
+        </div>
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20">
+          {{ losingRows().length }} fugas detectadas
+        </span>
+      </div>
+
+      <div class="flex flex-col gap-2.5">
+        @for (row of losingRows(); track row.key) {
+          <button 
+            type="button" 
+            class="flex flex-col gap-2 p-3.5 rounded-2xl bg-surface-high/60 hover:bg-red-500/10 border border-border hover:border-red-500/40 transition-all cursor-pointer text-left group"
+            (click)="selected.set(row.key)"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm font-bold text-text group-hover:text-red-400 truncate">
+                  {{ marketLabel(row.market) }}
+                </span>
+                <span class="text-[11px] text-muted">
+                  {{ row.sport }} · {{ row.lost }} perdidas de {{ row.closed }} cerradas
+                </span>
+              </div>
+
+              <div class="text-right shrink-0">
+                <span class="text-base font-black font-mono text-red-400 block">
+                  {{ vm.format(row.profit) }}
+                </span>
+                <span class="text-[11px] font-mono font-bold text-red-400/90">
+                  Yield {{ percent(row.yield) }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Proportional Loss Bar -->
+            <div class="w-full h-1.5 rounded-full bg-surface overflow-hidden">
+              <div 
+                class="h-full bg-red-500 rounded-full transition-all duration-500" 
+                [style.width.%]="(Math.abs(row.profit ?? 0) / barMax()) * 100"
+              ></div>
+            </div>
+          </button>
+        } @empty {
+          <div class="py-8 px-4 text-center text-muted text-xs bg-surface-high/30 rounded-2xl border border-dashed border-border flex flex-col items-center gap-2">
+            <span class="text-2xl">🛡️</span>
+            <p class="font-bold text-text">¡Sin fugas de capital!</p>
+            <p class="text-[11px] max-w-xs">No tienes apuestas cerradas en números rojos en este filtro. Mantén esta gestión de riesgo.</p>
+          </div>
+        }
+      </div>
+    </div>
+
+  </section>
+
+  <!-- MASTER TABLE / EXPLORER (DESGLOSE COMPLETO) -->
+  <section class="panel p-5 sm:p-6 mb-8">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <h2 class="text-base font-bold text-text">Desglose Detallado de Rendimiento</h2>
+        <p class="text-xs text-muted">Haz clic en cualquier categoría para auditar sus tickets individuales.</p>
+      </div>
+      <span class="text-xs text-muted font-medium">{{ insights.rows().length }} categorías listadas</span>
+    </div>
+
+    <div class="flex flex-col divide-y divide-border/60">
       @for (group of insights.rows(); track group.key) {
-        <button class="grid grid-cols-1 sm:grid-cols-[1fr_1.2fr_1fr] gap-4 w-full bg-transparent text-text text-left rounded-none border-t border-border py-4.5 text-xs hover:bg-surface-high transition-colors cursor-pointer" (click)="selected.set(group.key)">
-          <span>
-            <strong class="block text-sm font-semibold">{{ marketLabel(group.market) }}</strong>
-            <small class="block text-muted text-[11px] mt-1">{{ group.sport }} · {{ group.total }} tickets</small>
-            <span class="block w-full h-1.5 bg-surface-high rounded-full mt-2 overflow-hidden" aria-hidden="true"
-              ><i
-                class="block h-full rounded-full transition-all duration-300"
+        <button 
+          type="button"
+          class="grid grid-cols-1 sm:grid-cols-[1.5fr_1.2fr_1fr] items-center gap-3 py-3 px-2 text-left rounded-xl hover:bg-surface-high transition-colors cursor-pointer group"
+          (click)="selected.set(group.key)"
+        >
+          <div>
+            <strong class="block text-xs sm:text-sm font-bold text-text group-hover:text-accent truncate">
+              {{ marketLabel(group.market) }}
+            </strong>
+            <small class="block text-muted text-[11px] mt-0.5">
+              {{ group.sport }} · {{ group.total }} tickets ({{ group.closed }} cerrados)
+            </small>
+
+            <!-- Relative bar -->
+            <div class="w-full max-w-[200px] h-1.5 bg-surface-high rounded-full mt-1.5 overflow-hidden">
+              <div
+                class="h-full rounded-full transition-all duration-300"
                 [style.width.%]="(Math.abs(group.profit ?? 0) / barMax()) * 100"
                 [class.bg-emerald-400]="(group.profit ?? 0) >= 0"
                 [class.bg-red-500]="(group.profit ?? 0) < 0"
-              ></i></span
-          ></span>
-          <span>
-            <strong class="block text-xs font-medium">{{ group.won }} ganadas · {{ group.lost }} perdidas</strong>
-            <small class="block text-muted text-[11px] mt-1"
-              >{{ group.pending }} pendientes · {{ group.cashout }} cashout ·
-              {{ group.voided }} anuladas</small
-            ></span
-          ><span class="text-right sm:text-right"
-            ><strong
-              class="block text-sm font-bold font-mono"
+              ></div>
+            </div>
+          </div>
+
+          <div>
+            <span class="text-xs font-semibold text-text block">
+              {{ group.won }} ganadas · {{ group.lost }} perdidas
+            </span>
+            <small class="text-muted text-[11px] block mt-0.5">
+              {{ group.pending }} pendientes · {{ group.cashout }} cashout · {{ group.voided }} anuladas
+            </small>
+          </div>
+
+          <div class="text-left sm:text-right">
+            <strong
+              class="block text-sm sm:text-base font-black font-mono"
               [class.text-emerald-400]="(group.profit ?? 0) > 0"
               [class.text-red-400]="(group.profit ?? 0) < 0"
-              >{{ group.closed ? vm.format(group.profit) : 'Por resolver' }}</strong
-            ><small class="block text-muted text-[11px] mt-1">Yield {{ percent(group.yield) }} · Ver tickets →</small></span
-          >
-        </button>
-      }
-    </section>
-    @if (detail(); as group) {
-      <section class="panel p-5 mt-5" aria-live="polite">
-        <div class="section-heading mb-4">
-          <div>
-            <span class="eyebrow">REGISTROS DEL GRUPO</span>
-            <h2>{{ marketLabel(group.market) }} · {{ group.sport }}</h2>
-            <p>
-              {{ typeLabel(group.type) }} · Últimos {{ detailTickets().length }} de
-              {{ group.total }} tickets. Los registros ocultos del historial también cuentan.
-            </p>
+              [class.text-muted]="(group.profit ?? 0) === 0"
+            >
+              {{ group.closed ? ((group.profit ?? 0) > 0 ? '+' : '') + vm.format(group.profit) : 'Por resolver' }}
+            </strong>
+            <small class="block text-muted text-[11px] mt-0.5 font-mono">
+              Yield {{ percent(group.yield) }} · Ver tickets →
+            </small>
           </div>
-          <button class="secondary text-xs py-1.5 px-3" (click)="selected.set(null)">Cerrar detalle</button>
+        </button>
+      } @empty {
+        <div class="py-12 text-center text-muted text-xs">
+          <p>No se encontraron tickets con los filtros actuales.</p>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Registro</th>
-                <th>Estado</th>
-                <th>Importe original</th>
-                <th>Neto del ticket cerrado</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (bet of detailTickets(); track bet.id) {
-                <tr>
-                  <td>
-                    {{ bet.event }}
-                    @for (d of bet.selection_details ?? []; track $index) {
-                      @if (d.market === 'Otro') {
-                        <small>Otro: {{ d.description }}</small>
-                      }
+      }
+    </div>
+  </section>
+
+  <!-- DRILL-DOWN PANEL (DETALLE DE TICKETS DEL GRUPO SELECCIONADO) -->
+  @if (detail(); as group) {
+    <section class="panel p-5 sm:p-7 border-2 border-accent/40 shadow-2xl mb-8" aria-live="polite">
+      <div class="flex justify-between items-start gap-4 mb-4 pb-3 border-b border-border">
+        <div>
+          <span class="eyebrow !text-accent font-mono font-bold">REGISTROS DETALLADOS</span>
+          <h2 class="text-lg font-black text-text mt-0.5">{{ marketLabel(group.market) }} · {{ group.sport }}</h2>
+          <p class="text-xs text-muted mt-0.5">
+            Mostrando {{ detailTickets().length }} de {{ group.total }} tickets asociados a este grupo.
+          </p>
+        </div>
+        <button type="button" class="action-pill-btn py-1.5 px-3 text-xs" (click)="selected.set(null)">
+          Cerrar detalle ✕
+        </button>
+      </div>
+
+      <div class="table-wrap overflow-x-auto">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="border-b border-border text-xs text-muted">
+              <th class="py-2.5 px-3">Evento / Selección</th>
+              <th class="py-2.5 px-3">Estado</th>
+              <th class="py-2.5 px-3">Importe</th>
+              <th class="py-2.5 px-3 text-right">Neto Obtenido</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border/40 text-xs">
+            @for (bet of detailTickets(); track bet.id) {
+              <tr class="hover:bg-surface-high transition-colors">
+                <td class="py-3 px-3">
+                  <strong class="block text-text font-semibold">{{ bet.event }}</strong>
+                  @for (d of bet.selection_details ?? []; track $index) {
+                    @if (d.market === 'Otro' && d.description) {
+                      <small class="block text-muted text-[10px]">Detalle: {{ d.description }}</small>
                     }
-                    <small>{{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
-                  </td>
-                  <td>
-                    <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span>
-                  </td>
-                  <td>{{ vm.native(bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN') }}</td>
-                  <td>
-                    {{
-                      bet.status === 'pending' || bet.status === 'void'
-                        ? '—'
-                        : vm.money(bet.payout - bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN')
-                    }}
-                  </td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <a class="text-accent underline text-xs inline-block mt-3" routerLink="/history">Consultar o clasificar mis apuestas →</a>
-      </section>
-    }
-  } @else {
-    <section class="panel empty-block">
-      <h2>Sin tickets en este filtro</h2>
-      <p>Prueba otro deporte o registra tu primera apuesta.</p>
-      <a routerLink="/tickets" class="action-pill-btn primary"><span>Registrar ticket</span></a>
+                  }
+                  <small class="text-muted text-[11px] font-mono">{{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
+                </td>
+                <td class="py-3 px-3">
+                  <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span>
+                </td>
+                <td class="py-3 px-3 font-mono font-medium">
+                  {{ vm.native(bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN') }}
+                </td>
+                <td class="py-3 px-3 text-right font-mono font-bold">
+                  @if (bet.status === 'pending' || bet.status === 'void') {
+                    <span class="text-muted">—</span>
+                  } @else {
+                    <span [class.text-emerald-400]="bet.payout - bet.stake > 0" [class.text-red-400]="bet.payout - bet.stake < 0">
+                      {{ (bet.payout - bet.stake > 0 ? '+' : '') + vm.money(bet.payout - bet.stake, bet.currency === 'USD' ? 'USD' : 'MXN') }}
+                    </span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pt-3 border-t border-border flex justify-between items-center text-xs text-muted">
+        <span>Los tickets resueltos actualizan tu bankroll de forma automática.</span>
+        <a class="text-accent underline font-semibold" routerLink="/history">Ir a Mis Apuestas →</a>
+      </div>
     </section>
   }
-  <details class="text-xs text-muted mt-6 leading-relaxed">
-    <summary class="cursor-pointer font-medium hover:text-text transition-colors">Cómo leer estos resultados</summary>
-    <p class="mt-2">
-      Son resultados pasados, no predicciones. Una muestra pequeña puede cambiar mucho. El neto es
-      retorno menos importe apostado; el yield divide ese neto entre el importe de los tickets
-      cerrados. Depósitos y retiros no cuentan como ganancias.
-    </p>
-    <p class="mt-2">
-      En mercados se muestra el resultado completo de los tickets que los incluyen. Un parlay con
-      varios mercados aparece en cada uno: no sumes esas filas ni atribuyas su resultado a una
-      selección individual. Por tipo de apuesta cada ticket cuenta una sola vez. Los tickets ocultos
-      cuentan; las casas eliminadas se incluyen con la opción correspondiente.
-    </p>
-    <p class="mt-2">
-      Los mercados antiguos con unidad explícita se agrupan con los nuevos (por ejemplo Over
-      carreras y Carreras). Los Over/Under genéricos requieren clasificación manual. Cashout y
-      anuladas no cuentan para la tasa de acierto.
-    </p>
-  </details>
+
+}
+
+<!-- ========================================================================= -->
+<!-- OTHER SPECIALIZED TABS (DELEGATED TO ADVANCED ANALYSIS COMPONENT)         -->
+<!-- ========================================================================= -->
+@if (tab() !== 'efficiency') {
+  <app-advanced-analysis [mode]="tab()" />
 }

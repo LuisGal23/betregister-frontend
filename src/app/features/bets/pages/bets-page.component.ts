@@ -13,7 +13,7 @@ import {
 import { BankAssistantComponent } from '../components/bank-assistant/bank-assistant.component';
 import { MatchPickerComponent } from '../../sports/components/match-picker/match-picker.component';
 import { BetScoresComponent } from '../../sports/components/bet-scores/bet-scores.component';
-import type { GameReference } from '../../sports/models/sports.model';
+import type { GameReference, SportsGame } from '../../sports/models/sports.model';
 import { CsvTransferComponent } from '../components/csv-transfer/csv-transfer.component';
 import { BetManagementComponent } from '../components/bet-management/bet-management.component';
 import { Component, ElementRef, inject } from '@angular/core';
@@ -111,14 +111,38 @@ export class BetsPageComponent {
   ] as const;
   activity = computed(() => {
     const bets = this.vm.data().bets.filter((b) => !b.history_hidden);
+    const pendingBets = bets.filter((b) => b.status === 'pending');
+    const wonBets = bets.filter((b) => b.status === 'won');
+    const lostBets = bets.filter((b) => b.status === 'lost');
+
+    const pendingStake = pendingBets.reduce(
+      (sum, b) => sum + (this.vm.converted(b.remaining_stake ?? b.stake, b.currency) ?? 0),
+      0,
+    );
+    const wonProfit = wonBets.reduce(
+      (sum, b) => sum + (this.vm.converted(b.payout - b.stake, b.currency) ?? 0),
+      0,
+    );
+    const lostStake = lostBets.reduce(
+      (sum, b) => sum + (this.vm.converted(b.stake, b.currency) ?? 0),
+      0,
+    );
+    const totalResolved = wonBets.length + lostBets.length;
+    const winRate = totalResolved > 0 ? Math.round((wonBets.length / totalResolved) * 1000) / 10 : 0;
+
     return {
-      pending: bets.filter((b) => b.status === 'pending').length,
-      won: bets.filter((b) => b.status === 'won').length,
-      lost: bets.filter((b) => b.status === 'lost').length,
+      pending: pendingBets.length,
+      pendingStake,
+      won: wonBets.length,
+      wonProfit,
+      lost: lostBets.length,
+      lostStake,
+      total: bets.length,
+      winRate,
     };
   });
-  showResult(status: BetStatus) {
-    void this.router.navigate(['/history'], { queryParams: { status } });
+  showResult(status: BetStatus | 'all') {
+    void this.router.navigate(['/history'], { queryParams: status === 'all' ? {} : { status } });
     this.workspaceMode.set('history');
     this.betFilter.set(status);
     this.typeFilter.set('all');
@@ -477,5 +501,185 @@ export class BetsPageComponent {
       this.cashoutId = null;
       this.cashoutAmount = null;
     }
+  }
+
+  resolvingAuto = signal(false);
+  showCsvTransfer = signal(false);
+
+  async autoResolveBets() {
+    if (this.resolvingAuto()) return;
+    this.resolvingAuto.set(true);
+    this.vm.error.set('');
+    this.vm.notice.set('');
+
+    const pendingBets = this.vm.data().bets.filter(
+      (b) => b.status === 'pending' && b.linked_games && b.linked_games.length > 0,
+    );
+
+    if (!pendingBets.length) {
+      this.resolvingAuto.set(false);
+      this.vm.notice.set('No hay apuestas pendientes vinculadas a partidos de la API para auto-resolver.');
+      return;
+    }
+
+    let resolvedCount = 0;
+    let wonCount = 0;
+    let lostCount = 0;
+
+    try {
+      for (const bet of pendingBets) {
+        try {
+          const scoreData = await this.sportsService.scores(bet.id);
+          if (scoreData?.events?.length) {
+            const outcome = this.evaluateBetOutcome(bet, scoreData.events);
+            if (outcome) {
+              const success = await this.bets.settle(bet.id, outcome, 0);
+              if (success) {
+                resolvedCount++;
+                if (outcome === 'won') wonCount++;
+                if (outcome === 'lost') lostCount++;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn(`Error resolving bet ${bet.id}:`, e);
+        }
+      }
+
+      if (resolvedCount > 0) {
+        await this.vm.refresh();
+        this.vm.notice.set(
+          `🎯 ¡Auto-resolución completada! Se resolvieron ${resolvedCount} apuesta(s): ${wonCount} ganada(s), ${lostCount} perdida(s).`,
+        );
+      } else {
+        this.vm.notice.set(
+          'Se verificaron los partidos de tus apuestas pendientes: aún no han finalizado o no hay marcadores oficiales definitivos.',
+        );
+      }
+    } catch (err) {
+      this.vm.error.set('Ocurrió un error al contactar la API de resultados.');
+    } finally {
+      this.resolvingAuto.set(false);
+    }
+  }
+
+  evaluateBetOutcome(bet: Bet, games: SportsGame[]): BetResult | null {
+    if (!games.length) return null;
+    const allFinal = games.every((g) => g.state === 'final');
+    if (!allFinal) return null;
+
+    if (bet.bet_type === 'simple' || (!bet.bet_type && games.length === 1)) {
+      const game = games[0];
+      if (game.home_score === null || game.away_score === null) return null;
+      const hScore = Number(game.home_score);
+      const aScore = Number(game.away_score);
+      if (isNaN(hScore) || isNaN(aScore)) return null;
+
+      const sel = bet.selection_details?.[0];
+      const eventText = (bet.event || '').toLowerCase();
+      const market = (sel?.market || bet.market_tag || '').toLowerCase();
+      const pick = (sel?.pick || '').toLowerCase();
+      const line = sel?.line !== null && sel?.line !== undefined ? Number(sel.line) : null;
+
+      // 1. Moneyline
+      if (market.includes('ml') || market.includes('moneyline') || market.includes('ganador')) {
+        const isHomePick =
+          pick === 'local' ||
+          pick.includes('home') ||
+          eventText.includes('local') ||
+          eventText.includes(game.home.toLowerCase());
+        const isAwayPick =
+          pick === 'visitante' ||
+          pick.includes('away') ||
+          eventText.includes('visitante') ||
+          eventText.includes(game.away.toLowerCase());
+        const isDrawPick =
+          pick === 'empate' || pick.includes('draw') || pick.includes('tie') || eventText.includes('empate');
+
+        if (hScore > aScore) return isHomePick ? 'won' : 'lost';
+        if (aScore > hScore) return isAwayPick ? 'won' : 'lost';
+        return isDrawPick ? 'won' : 'lost';
+      }
+
+      // 2. Goles / Puntos / Totales
+      if (
+        market.includes('gol') ||
+        market.includes('punto') ||
+        market.includes('total') ||
+        market.includes('carrera') ||
+        eventText.includes('más de') ||
+        eventText.includes('menos de') ||
+        eventText.includes('over') ||
+        eventText.includes('under')
+      ) {
+        const totalScore = hScore + aScore;
+        let effectiveLine = line;
+        let isOver =
+          pick.includes('más') || pick.includes('over') || eventText.includes('más de') || eventText.includes('over');
+        let isUnder =
+          pick.includes('menos') ||
+          pick.includes('under') ||
+          eventText.includes('menos de') ||
+          eventText.includes('under');
+
+        if (effectiveLine === null) {
+          const match = eventText.match(/(?:más de|menos de|over|under)\s*([0-9]+(?:\.[0-9]+)?)/i);
+          if (match) {
+            effectiveLine = parseFloat(match[1]);
+            if (eventText.includes('menos') || eventText.includes('under')) {
+              isUnder = true;
+              isOver = false;
+            } else {
+              isOver = true;
+              isUnder = false;
+            }
+          }
+        }
+
+        if (effectiveLine !== null && !isNaN(effectiveLine)) {
+          if (isOver) {
+            if (totalScore > effectiveLine) return 'won';
+            if (totalScore < effectiveLine) return 'lost';
+            return 'void';
+          }
+          if (isUnder) {
+            if (totalScore < effectiveLine) return 'won';
+            if (totalScore > effectiveLine) return 'lost';
+            return 'void';
+          }
+        }
+      }
+
+      // 3. Ambos anotan
+      if (market.includes('ambos') || eventText.includes('ambos anotan') || eventText.includes('btts')) {
+        const bothScored = hScore > 0 && aScore > 0;
+        const isYes =
+          pick.includes('sí') ||
+          pick.includes('si') ||
+          pick.includes('yes') ||
+          eventText.includes('sí') ||
+          eventText.includes('si');
+        return isYes ? (bothScored ? 'won' : 'lost') : (bothScored ? 'lost' : 'won');
+      }
+
+      // 4. Hándicap / Spread
+      if (market.includes('hándicap') || market.includes('handicap') || market.includes('spread')) {
+        let spreadLine = line;
+        if (spreadLine === null) {
+          const match = eventText.match(/([+-]?[0-9]+(?:\.[0-9]+)?)/);
+          if (match) spreadLine = parseFloat(match[1]);
+        }
+        if (spreadLine !== null && !isNaN(spreadLine)) {
+          const isHomePick =
+            pick === 'local' || eventText.includes('local') || eventText.includes(game.home.toLowerCase());
+          const diff = isHomePick ? hScore + spreadLine - aScore : aScore + spreadLine - hScore;
+          if (diff > 0) return 'won';
+          if (diff < 0) return 'lost';
+          return 'void';
+        }
+      }
+    }
+
+    return null;
   }
 }

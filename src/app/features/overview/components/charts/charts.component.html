@@ -3,7 +3,7 @@
   <div class="flex flex-col gap-3 p-3.5 sm:px-5 bg-surface-high border-b border-border">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <!-- Period Pill Switcher -->
-      <div class="inline-flex items-center gap-1.5 bg-surface p-1.5 rounded-full border border-border shadow-inner" role="group" aria-label="Periodo de resultados">
+      <div class="inline-flex items-center gap-1 sm:gap-1.5 bg-surface p-1 sm:p-1.5 rounded-full border border-border shadow-inner max-w-full overflow-x-auto scrollbar-none" role="group" aria-label="Periodo de resultados">
         @for (tab of analytics.tabs; track tab.value) {
           <button
             type="button"

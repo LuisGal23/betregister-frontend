@@ -6,44 +6,44 @@
     </div>
   }
 }
-<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 mb-6">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
   <div>
-    <h1 class="text-3xl font-bold tracking-tight text-text">Resumen</h1>
-    <p class="text-xs text-muted mt-1">Saldos, resultados y actividad reciente.</p>
+    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-text">Resumen</h1>
+    <p class="text-xs text-muted mt-0.5">Saldos, resultados y actividad reciente.</p>
   </div>
-  <div class="flex items-center gap-2.5 flex-wrap">
-    <a class="action-pill-btn" routerLink="/matches">
+  <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none flex-nowrap sm:flex-wrap">
+    <a class="action-pill-btn text-xs py-2 px-3 whitespace-nowrap shrink-0" routerLink="/matches">
       <app-icon name="calendar" /><span>Partidos del día</span>
     </a>
-    <a class="action-pill-btn" routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }">
+    <a class="action-pill-btn text-xs py-2 px-3 whitespace-nowrap shrink-0" routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }">
       <app-icon name="plus" /><span>Registrar movimiento</span>
     </a>
-    <button type="button" class="action-pill-btn primary" (click)="ticketModal.open()">
+    <button type="button" class="action-pill-btn primary text-xs py-2 px-3.5 whitespace-nowrap shrink-0" (click)="ticketModal.open()">
       <app-icon name="plus" /><span>Registrar ticket</span>
     </button>
   </div>
 </div>
-<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6" aria-label="Resultados generales de casas activas">
-  <article class="panel p-4.5 m-0">
-    <span class="block text-xs text-muted">Bank registrado</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ vm.format(kpis().bank) }}</strong
+<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3 mb-6" aria-label="Resultados generales de casas activas">
+  <article class="panel p-3.5 sm:p-4.5 m-0">
+    <span class="block text-xs text-muted">Bank registrado</span><strong class="block my-1.5 text-lg sm:text-2xl font-bold tracking-tight text-text font-mono truncate">{{ vm.format(kpis().bank) }}</strong
     ><small class="block text-[10px] text-muted">Disponible + pendiente</small>
   </article>
-  <article class="panel p-4.5 m-0">
-    <span class="block text-xs text-muted">Yield</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(kpis().yield) }}</strong
+  <article class="panel p-3.5 sm:p-4.5 m-0">
+    <span class="block text-xs text-muted">Yield</span><strong class="block my-1.5 text-lg sm:text-2xl font-bold tracking-tight text-text font-mono truncate">{{ percent(kpis().yield) }}</strong
     ><small class="block text-[10px] text-muted">Neto / importe liquidado</small>
   </article>
-  <article class="panel p-4.5 m-0">
-    <span class="block text-xs text-muted">ROI</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(kpis().roi) }}</strong
+  <article class="panel p-3.5 sm:p-4.5 m-0">
+    <span class="block text-xs text-muted">ROI</span><strong class="block my-1.5 text-lg sm:text-2xl font-bold tracking-tight text-text font-mono truncate">{{ percent(kpis().roi) }}</strong
     ><small class="block text-[10px] text-muted">Neto / depósitos históricos</small>
   </article>
-  <article class="panel p-4.5 m-0">
-    <span class="block text-xs text-muted">Acierto</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(vm.winRate()) }}</strong
-    ><small class="block text-[10px] text-muted">{{ vm.won() }} ganadas · {{ vm.lost() }} perdidas</small>
+  <article class="panel p-3.5 sm:p-4.5 m-0">
+    <span class="block text-xs text-muted">Acierto</span><strong class="block my-1.5 text-lg sm:text-2xl font-bold tracking-tight text-text font-mono truncate">{{ percent(vm.winRate()) }}</strong
+    ><small class="block text-[10px] text-muted">{{ vm.won() }}G · {{ vm.lost() }}P</small>
   </article>
-  <article class="panel p-4.5 m-0 col-span-2 sm:col-span-1">
+  <article class="panel p-3.5 sm:p-4.5 m-0 col-span-2 sm:col-span-1">
     <span class="block text-xs text-muted">Neto de este mes</span
     ><strong
-      class="block my-2 text-xl sm:text-2xl font-bold tracking-tight font-mono break-all"
+      class="block my-1.5 text-lg sm:text-2xl font-bold tracking-tight font-mono truncate"
       [class.negative]="(kpis().month ?? 0) < 0"
       [class.positive]="(kpis().month ?? 0) > 0"
       >{{ vm.format(kpis().month) }}</strong
