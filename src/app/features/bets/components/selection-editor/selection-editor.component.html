@@ -1,9 +1,10 @@
-<div class="selection-editor">
-  @if(value().source_text){<p class="info-note">Texto leído: {{value().source_text}}. Confirma que los campos coincidan; usa Otro si incluye jugador, periodo o una condición específica.</p>}
+<div class="selection-editor block">
+  @if(value().source_text){<p class="info-note mb-3 p-3 bg-surface-high/50 border border-border rounded-xl text-xs text-text-muted">Texto leído: {{value().source_text}}. Confirma que los campos coincidan; usa Otro si incluye jugador, periodo o una condición específica.</p>}
   @if (showSport()) {
-    <label
+    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
       >Deporte de la selección {{ index() + 1
       }}<select
+        class="mt-1 block w-full clean-select"
         [name]="'selectionSport' + index()"
         [ngModel]="value().sport"
         (ngModelChange)="changeSport($event)"
@@ -15,9 +16,10 @@
     >
   }
   @if (games().length > 1) {
-    <label
+    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
       >Partido de la selección {{ index() + 1
       }}<select
+        class="mt-1 block w-full clean-select"
         [name]="'selectionGame' + index()"
         [ngModel]="value().game_id"
         (ngModelChange)="changeGame($event)"
@@ -31,9 +33,10 @@
     >
   }
   @if (!games().length && showManual()) {
-    <label
+    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
       >Partido {{ index() + 1
       }}<input
+        class="mt-1 block w-full clean-input"
         [name]="'manualEvent' + index()"
         [(ngModel)]="value().event_label"
         required
@@ -41,9 +44,10 @@
         placeholder="Ej. América vs. Pumas"
     /></label>
   }
-  <label
+  <label class="block mb-3.5 text-xs font-semibold text-text-muted"
     >Mercado de la selección {{ index() + 1
     }}<select
+      class="mt-1 block w-full clean-select"
       [name]="'selectionMarket' + index()"
       [ngModel]="value().market"
       (ngModelChange)="changeMarket($event)"
@@ -56,25 +60,26 @@
     </select></label
   >
   @if (value().market === 'Otro') {
-    <label
+    <label class="block mb-1 text-xs font-semibold text-text-muted"
       >Describe el otro mercado<input
+        class="mt-1 block w-full clean-input"
         [name]="'otherDescription' + index()"
         [(ngModel)]="value().description"
         required
         minlength="3"
         maxlength="200"
         placeholder="Ej. Jugador marca en cualquier momento" /></label
-    ><small>Se guardará como Otro junto con esta descripción.</small>
+    ><small class="text-xs text-text-muted block mb-3">Se guardará como Otro junto con esta descripción.</small>
   } @else {
-    <div class="choice-row">
-      <label
+    <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3 mb-3.5">
+      <label class="block text-xs font-semibold text-text-muted"
         >{{
           totals()
             ? 'Más / menos'
             : value().market === 'Ambos anotan'
               ? '¿Ambos anotan?'
               : 'Tu elección'
-        }}<select [name]="'selectionPick' + index()" [(ngModel)]="value().pick" required>
+        }}<select class="mt-1 block w-full clean-select" [name]="'selectionPick' + index()" [(ngModel)]="value().pick" required>
           @if (totals()) {
             <option>Más de</option>
             <option>Menos de</option>
@@ -91,8 +96,9 @@
         </select></label
       >
       @if (totals() || handicap()) {
-        <label
+        <label class="block text-xs font-semibold text-text-muted"
           >Línea<input
+            class="mt-1 block w-full clean-input"
             [name]="'selectionLine' + index()"
             type="number"
             [(ngModel)]="value().line"

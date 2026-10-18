@@ -1,28 +1,29 @@
-<details class="panel">
-  <summary>Importar o exportar CSV</summary>
-  <div class="actions">
+<details class="panel block mb-6 p-5 border border-border rounded-2xl bg-surface">
+  <summary class="cursor-pointer font-semibold text-sm select-none text-text">Importar o exportar CSV</summary>
+  <div class="actions flex gap-2.5 flex-wrap mt-4">
     <a class="secondary button-link" href="/api/export/bets.csv">Exportar apuestas</a
     ><a class="secondary button-link" href="/api/export/ledger.csv">Exportar libro de movimientos</a
     ><a class="secondary button-link" href="/ejemplo-apuestas.csv" download>Archivo de ejemplo</a>
   </div>
-  <p>
+  <p class="text-xs text-text-muted mt-3 leading-relaxed">
     Importa apuestas a casas que ya existen en tu cuenta y tienen fondos para cubrirlas. Se validan
     todas las filas; si hay errores, no se importa ninguna. Los duplicados se rechazan.
   </p>
-  <label
+  <label class="block mt-4 text-xs font-semibold text-text-muted"
     >Archivo CSV de apuestas<input
       type="file"
       accept=".csv,text/csv"
       (change)="choose($event)"
       [disabled]="vm.busy()"
+      class="max-w-[480px] w-full block mt-1.5 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-surface-high file:text-text hover:file:bg-accent/20 cursor-pointer"
   /></label>
   @if (reading()) {
-    <p role="status">Leyendo archivo…</p>
+    <p role="status" class="text-xs text-text-muted mt-2">Leyendo archivo…</p>
   }
   @if (localError()) {
-    <p role="alert" class="negative">{{ localError() }}</p>
+    <p role="alert" class="negative text-xs text-red-500 mt-2">{{ localError() }}</p>
   }
-  <div class="actions">
+  <div class="actions flex gap-2.5 flex-wrap mt-4">
     <button class="secondary" [disabled]="!content || vm.busy() || reading()" (click)="run(true)">
       Validar archivo</button
     ><button
@@ -34,7 +35,7 @@
     </button>
   </div>
   @if (report(); as r) {
-    <p role="status">
+    <p role="status" class="text-xs text-text-muted mt-3">
       {{ r.rows }} filas ·
       {{
         r.imported
@@ -45,7 +46,7 @@
       }}
     </p>
     @if (r.errors.length) {
-      <ul>
+      <ul class="mt-2 list-disc list-inside text-xs text-red-400">
         @for (error of r.errors; track $index) {
           <li class="negative">Línea {{ error.line }}: {{ error.message }}</li>
         }

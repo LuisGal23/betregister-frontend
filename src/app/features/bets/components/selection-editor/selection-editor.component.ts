@@ -6,7 +6,6 @@ import type { GameReference } from '../../../sports/models/sports.model';
   selector: 'app-selection-editor',
   imports: [FormsModule],
   templateUrl: './selection-editor.component.html',
-  styleUrl: './selection-editor.component.css',
 })
 export class SelectionEditorComponent {
   value = input.required<SelectionDetail>();

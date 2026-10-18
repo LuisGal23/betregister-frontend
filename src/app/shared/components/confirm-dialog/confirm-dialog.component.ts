@@ -3,7 +3,6 @@ import { AfterViewInit, Component, ElementRef, input, output, viewChild } from '
 @Component({
   selector: 'app-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
-  styleUrl: './confirm-dialog.component.css',
 })
 export class ConfirmDialogComponent implements AfterViewInit {
   title = input.required<string>();
