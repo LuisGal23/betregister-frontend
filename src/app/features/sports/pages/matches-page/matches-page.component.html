@@ -169,6 +169,22 @@
         }
       </div>
     }
+
+    <!-- Sub-leagues Pills (When Béisbol is selected) -->
+    @if (selectedCategory() === 'baseball') {
+      <div class="sub-leagues-bar full-width-subtabs" role="tablist" aria-label="Ligas de béisbol">
+        @for (sub of baseballLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="sub-pill" 
+            [class.active]="selectedSubLeague() === sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
+    }
   </div>
 
   <!-- Search / Counter Bar -->
@@ -366,15 +382,23 @@
             </div>
           </div>
 
-          <!-- Details Toggle Button (Odds, Players, Head-to-Head) -->
-          <div class="pt-2">
+          <!-- Match Analysis & Odds Action Buttons -->
+          <div class="pt-2 flex items-center gap-2">
             <button 
               type="button" 
-              class="details-toggle-btn"
+              class="action-pill-btn flex-1 py-2 text-xs"
+              (click)="openMatchAnalysis(game)"
+            >
+              <app-icon name="trend" />
+              <span>Ver Cuotas y Estadísticas</span>
+            </button>
+            <button 
+              type="button" 
+              class="w-8 h-8 rounded-full bg-surface-high border border-border text-muted hover:text-text hover:border-accent flex items-center justify-center transition-all cursor-pointer" 
+              title="Vista rápida de cuotas"
               (click)="toggleDetails(game)"
             >
-              <app-icon [name]="expandedMatchId() === game.id ? 'check' : 'plus'" />
-              <span>{{ expandedMatchId() === game.id ? 'Ocultar Cuotas y Jugadores' : 'Ver Cuotas Oficiales y Jugadores' }}</span>
+              <app-icon [name]="expandedMatchId() === game.id ? 'close' : 'arrow'" class="text-xs" />
             </button>
           </div>
 
