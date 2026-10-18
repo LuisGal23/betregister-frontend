@@ -38,6 +38,26 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'match-analysis',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/sports/pages/match-analysis-page/match-analysis-page.component').then(
+        (m) => m.MatchAnalysisPageComponent,
+      ),
+  },
+  {
+    path: 'cuotas',
+    redirectTo: 'match-analysis',
+  },
+  {
+    path: 'odds',
+    redirectTo: 'match-analysis',
+  },
+  {
+    path: 'estadisticas',
+    redirectTo: 'match-analysis',
+  },
+  {
     path: 'partidos',
     redirectTo: 'matches',
   },

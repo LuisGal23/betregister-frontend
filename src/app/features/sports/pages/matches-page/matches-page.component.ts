@@ -37,7 +37,7 @@ export class MatchesPageComponent implements OnInit {
   private ticketModal = inject(TicketModalService);
   vm = inject(LedgerState);
 
-  // Categories: NFL, NBA, Ligas Europeas, Selecciones / Amistosos, Liga MX, MLS, MLB
+  // Categories: NFL, NBA, Ligas Europeas, Selecciones / Amistosos, Liga MX, MLS, Béisbol
   categories = [
     { id: 'all', label: 'Todos' },
     { id: 'nfl', label: 'NFL', leagues: ['nfl'] },
@@ -46,7 +46,7 @@ export class MatchesPageComponent implements OnInit {
     { id: 'intl', label: 'Selecciones / Amistosos', leagues: ['nations', 'concacaf-nations', 'friendlies', 'worldcup', 'euro', 'copa-america', 'gold-cup', 'qualifiers-uefa', 'qualifiers-conmebol', 'qualifiers-concacaf'] },
     { id: 'ligamx', label: 'Liga MX', leagues: ['ligamx'] },
     { id: 'mls', label: 'MLS', leagues: ['mls'] },
-    { id: 'mlb', label: 'MLB', leagues: ['mlb'] },
+    { id: 'baseball', label: 'Béisbol (MLB / KBO)', leagues: ['mlb', 'kbo'] },
   ];
 
   europeanLeagues = [
@@ -68,6 +68,12 @@ export class MatchesPageComponent implements OnInit {
     { id: 'qualifiers-uefa', label: 'Eliminatorias UEFA' },
     { id: 'qualifiers-conmebol', label: 'Eliminatorias CONMEBOL' },
     { id: 'qualifiers-concacaf', label: 'Eliminatorias Concacaf' },
+  ];
+
+  baseballLeagues = [
+    { id: 'all', label: 'Todo béisbol' },
+    { id: 'mlb', label: 'MLB' },
+    { id: 'kbo', label: 'KBO' },
   ];
 
   selectedCategory = signal<string>('all');
@@ -99,11 +105,18 @@ export class MatchesPageComponent implements OnInit {
       if (live && g.state !== 'live') return false;
       if (cat === 'europe' && sub !== 'all' && g.league !== sub) return false;
       if (cat === 'intl' && sub !== 'all' && g.league !== sub) return false;
+      if (cat === 'baseball' && sub !== 'all' && g.league !== sub) return false;
       if (activeCat && activeCat.leagues && !activeCat.leagues.includes(g.league)) return false;
       if (q && !`${g.home} ${g.away} ${g.league_name}`.toLowerCase().includes(q)) return false;
       return true;
     });
   });
+
+  openMatchAnalysis(game: SportsGame) {
+    void this.router.navigate(['/match-analysis'], {
+      queryParams: { league: game.league, id: game.id }
+    });
+  }
 
   stats = computed(() => {
     const all = this.games();

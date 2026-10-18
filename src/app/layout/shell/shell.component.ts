@@ -46,10 +46,11 @@ export class ShellComponent implements OnInit {
   links = [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
     { path: 'matches', label: 'Partidos del día', icon: 'calendar' },
+    { path: 'match-analysis', label: 'Cuotas y Stats', icon: 'trend' },
     { path: 'tickets', label: 'Registrar ticket', icon: 'plus' },
     { path: 'bank', label: 'Mi bank', icon: 'bank' },
     { path: 'history', label: 'Mis apuestas', icon: 'bets' },
-    { path: 'insights', label: 'Análisis', icon: 'trend' },
+    { path: 'insights', label: 'Rentabilidad', icon: 'trend' },
     { path: 'challenges', label: 'Retos', icon: 'flag' },
     { path: 'settings', label: 'Ajustes y casas', icon: 'settings' },
   ];

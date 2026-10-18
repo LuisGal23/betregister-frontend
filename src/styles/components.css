@@ -763,7 +763,7 @@ dialog::backdrop {
   gap: 8px;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.38s cubic-bezier(0.25, 1, 0.35, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   z-index: 1;
 }
@@ -775,7 +775,7 @@ dialog::backdrop {
   background: var(--accent);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.38s cubic-bezier(0.25, 1, 0.35, 1);
   z-index: 0;
   border-radius: 9999px;
 }
@@ -789,7 +789,7 @@ dialog::backdrop {
 .action-pill-btn strong {
   position: relative;
   z-index: 1;
-  transition: color 0.2s ease;
+  transition: color 0.25s ease;
 }
 
 .action-pill-btn:hover {
@@ -828,6 +828,67 @@ dialog::backdrop {
 
 .action-pill-btn:disabled::before {
   display: none;
+}
+
+/* Animated Period & Segmented Filter Buttons */
+.pill-filter-btn {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.38s cubic-bezier(0.25, 1, 0.35, 1);
+  user-select: none;
+  z-index: 1;
+}
+
+.pill-filter-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.38s cubic-bezier(0.25, 1, 0.35, 1);
+  z-index: 0;
+  border-radius: 9999px;
+}
+
+.pill-filter-btn:hover:not(.active)::before {
+  transform: scaleX(1);
+}
+
+.pill-filter-btn:hover:not(.active) {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  transform: translateY(-1px);
+}
+
+.pill-filter-btn.active {
+  background: var(--accent);
+  color: #ffffff !important;
+  border-color: var(--accent);
+  box-shadow: 0 3px 12px rgba(41, 184, 245, 0.38);
+}
+
+.pill-filter-btn.active::before {
+  display: none;
+}
+
+.pill-filter-btn span,
+.pill-filter-btn app-icon {
+  position: relative;
+  z-index: 1;
 }
 
 /* =========================================================
