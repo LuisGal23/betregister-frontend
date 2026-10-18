@@ -97,9 +97,22 @@ export class MatchesPageComponent implements OnInit {
     };
   });
 
+  todayStr = computed(() => zoneDay(new Date().toISOString(), this.vm.data().profile.timezone));
+  yesterdayStr = computed(() => {
+    const t = this.todayStr();
+    const d = new Date(t + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().slice(0, 10);
+  });
+  tomorrowStr = computed(() => {
+    const t = this.todayStr();
+    const d = new Date(t + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().slice(0, 10);
+  });
+
   ngOnInit() {
-    const today = zoneDay(new Date().toISOString(), this.vm.data().profile.timezone);
-    this.selectedDate.set(today);
+    this.selectedDate.set(this.todayStr());
     void this.loadMatches();
   }
 
@@ -130,11 +143,55 @@ export class MatchesPageComponent implements OnInit {
     if (img) img.style.display = 'none';
   }
 
+  selectNamedDay(target: 'yesterday' | 'today' | 'tomorrow') {
+    if (target === 'yesterday') this.selectedDate.set(this.yesterdayStr());
+    else if (target === 'today') this.selectedDate.set(this.todayStr());
+    else if (target === 'tomorrow') this.selectedDate.set(this.tomorrowStr());
+    void this.loadMatches();
+  }
+
   setDateOffset(offsetDays: number) {
     const current = this.selectedDate() ? new Date(this.selectedDate() + 'T12:00:00Z') : new Date();
     current.setUTCDate(current.getUTCDate() + offsetDays);
     this.selectedDate.set(current.toISOString().slice(0, 10));
     void this.loadMatches();
+  }
+
+  teamColor(name: string, apiColor?: string | null): string {
+    if (apiColor && apiColor.startsWith('#') && apiColor.length >= 4) {
+      const hex = apiColor.replace('#', '');
+      const num = parseInt(hex.length === 3 ? hex.split('').map(c => c+c).join('') : hex, 16);
+      if (!isNaN(num)) {
+        const r = (num >> 16) & 255;
+        const g = (num >> 8) & 255;
+        const b = num & 255;
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        if (brightness > 30 && brightness < 235) {
+          return apiColor;
+        }
+      }
+    }
+
+    const sportsPalette = [
+      '#ef4444', '#0284c7', '#10b981', '#f59e0b',
+      '#8b5cf6', '#06b6d4', '#ea580c', '#3b82f6',
+      '#ec4899', '#14b8a6', '#f43f5e', '#6366f1'
+    ];
+    let hash = 0;
+    for (let i = 0; i < (name || '').length; i++) {
+      hash = (name.charCodeAt(i) + ((hash << 5) - hash)) | 0;
+    }
+    const idx = Math.abs(hash) % sportsPalette.length;
+    return sportsPalette[idx];
+  }
+
+  cardAuraStyle(game: SportsGame): { [key: string]: string } {
+    const homeCol = this.teamColor(game.home, game.home_color);
+    const awayCol = this.teamColor(game.away, game.away_color);
+    return {
+      '--home-aura': homeCol,
+      '--away-aura': awayCol,
+    };
   }
 
   async loadMatches() {

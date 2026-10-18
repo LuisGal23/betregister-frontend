@@ -33,9 +33,30 @@
     <div class="header-actions">
       <!-- Quick Date Switcher -->
       <div class="date-pills" role="group" aria-label="Fecha de partidos">
-        <button type="button" class="pill-btn" (click)="setDateOffset(-1)">Ayer</button>
-        <button type="button" class="pill-btn active" (click)="setDateOffset(0)">Hoy</button>
-        <button type="button" class="pill-btn" (click)="setDateOffset(1)">Mañana</button>
+        <button 
+          type="button" 
+          class="pill-btn" 
+          [class.active]="selectedDate() === yesterdayStr()" 
+          (click)="selectNamedDay('yesterday')"
+        >
+          Ayer
+        </button>
+        <button 
+          type="button" 
+          class="pill-btn" 
+          [class.active]="selectedDate() === todayStr()" 
+          (click)="selectNamedDay('today')"
+        >
+          Hoy
+        </button>
+        <button 
+          type="button" 
+          class="pill-btn" 
+          [class.active]="selectedDate() === tomorrowStr()" 
+          (click)="selectNamedDay('tomorrow')"
+        >
+          Mañana
+        </button>
         <input 
           type="date" 
           class="date-input" 
@@ -68,7 +89,7 @@
 
   <!-- League Categories Tabs -->
   <div class="filter-controls-container">
-    <nav class="category-tabs" aria-label="Categorías deportivas">
+    <nav class="category-tabs full-width-tabs" aria-label="Categorías deportivas">
       @for (cat of categories; track cat.id) {
         <button 
           type="button" 
@@ -83,7 +104,7 @@
 
     <!-- Sub-leagues Pills (When Ligas Europeas is selected) -->
     @if (selectedCategory() === 'europe') {
-      <div class="sub-leagues-bar" role="tablist" aria-label="Ligas europeas específicas">
+      <div class="sub-leagues-bar full-width-subtabs" role="tablist" aria-label="Ligas europeas específicas">
         @for (sub of europeanLeagues; track sub.id) {
           <button 
             type="button" 
@@ -131,7 +152,10 @@
     <div class="matches-grid">
       @for (game of filteredGames(); track game.id) {
         @let analysis = analyzeGame(game);
-        <article class="match-card">
+        <article class="match-card dynamic-aura-card" [ngStyle]="cardAuraStyle(game)">
+          <!-- Animated Team Color Gradient Aura Backdrop -->
+          <div class="card-ambient-aura" aria-hidden="true"></div>
+
           <!-- Card Header / Meta -->
           <div class="card-meta">
             <div class="meta-left">
@@ -169,11 +193,13 @@
           <div class="matchup-body">
             <!-- Home Team (Visita) -->
             <div class="team-col home">
-              <div class="team-crest">
+              <div class="team-crest borderless-crest">
                 @if (game.home_logo) {
                   <img [src]="game.home_logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" />
                 }
-                <span class="crest-placeholder">{{ shortCode(game.home) }}</span>
+                <span class="crest-placeholder" [style.color]="teamColor(game.home, game.home_color)">
+                  {{ shortCode(game.home) }}
+                </span>
               </div>
               <span class="team-code">{{ shortCode(game.home) }}</span>
               <strong class="team-name">{{ game.home }}</strong>
@@ -199,11 +225,13 @@
 
             <!-- Away Team (Local) -->
             <div class="team-col away">
-              <div class="team-crest">
+              <div class="team-crest borderless-crest">
                 @if (game.away_logo) {
                   <img [src]="game.away_logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" />
                 }
-                <span class="crest-placeholder">{{ shortCode(game.away) }}</span>
+                <span class="crest-placeholder" [style.color]="teamColor(game.away, game.away_color)">
+                  {{ shortCode(game.away) }}
+                </span>
               </div>
               <span class="team-code">{{ shortCode(game.away) }}</span>
               <strong class="team-name">{{ game.away }}</strong>

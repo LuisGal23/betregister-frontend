@@ -6,6 +6,8 @@ export interface GameReference {
   start: string;
   home_logo?: string | null;
   away_logo?: string | null;
+  home_color?: string | null;
+  away_color?: string | null;
   home: string;
   away: string;
   provider: string;
