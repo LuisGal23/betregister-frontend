@@ -382,7 +382,18 @@ export class BetsPageComponent {
     this.marketTag =
       categories.length === 1 && this.leagueTag !== 'Mixto' ? categories[0] : 'Mixto';
     this.updateOdds();
-    if (this.odds === null || this.stake === null) return false;
+    if (!this.selectedHouse) {
+      this.vm.error.set('Selecciona una casa de apuestas para registrar el ticket.');
+      return false;
+    }
+    if (this.stake === null || this.stake <= 0) {
+      this.vm.error.set('Indica el importe de la apuesta.');
+      return false;
+    }
+    if (this.odds === null) {
+      this.vm.error.set('Indica la cuota de la apuesta.');
+      return false;
+    }
     if (decimalOdds(this.odds, this.oddsFormat) === null) {
       this.vm.error.set(
         'Cuota inválida. Decimal: mayor que 1. Americana: entero de -100 o menor, o +100 o mayor.',

@@ -218,6 +218,27 @@
   letter-spacing: -0.6px;
   white-space: nowrap;
 }
+.inline-ticket-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin: 12px 0;
+  border: 1px solid var(--negative);
+  background: color-mix(in srgb, var(--negative) 12%, var(--surface));
+  color: var(--negative);
+}
+.inline-ticket-error button {
+  background: transparent;
+  color: inherit;
+  border: none;
+  font-size: 13px;
+  padding: 2px 6px;
+  cursor: pointer;
+}
 .register-button {
   width: 100%;
   min-height: 46px;

@@ -109,7 +109,12 @@ small,
 }
 .game.selected {
   border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  box-shadow: 0 0 16px rgba(41, 184, 245, 0.2), 0 0 0 1px var(--accent);
+}
+.game.selected .choose {
+  background: var(--accent);
+  color: #060812;
+  font-weight: 700;
 }
 .choose {
   display: block;
@@ -120,6 +125,7 @@ small,
   background: var(--surface-high);
   text-align: center;
   font-weight: 600;
+  transition: all 0.15s ease;
 }
 .connection {
   border-left: 3px solid var(--accent);

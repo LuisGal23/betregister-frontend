@@ -11,35 +11,54 @@
 }
 .public-header {
   max-width: 1220px;
-  margin: auto;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 25px;
-  padding: 24px 30px;
+  padding: 18px 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 .public-header nav {
   display: flex;
-  gap: 24px;
+  gap: 20px;
   align-items: center;
 }
 .public-header a {
   text-decoration: none;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
+  color: #94a3b8;
+  transition: color 0.15s ease;
+}
+.public-header a:hover {
+  color: #ffffff;
+}
+.public-header .login-link {
+  color: #cbd5e1;
 }
 .public-header .button-link {
-  padding: 12px 18px;
+  padding: 10px 20px;
+  font-size: 13px;
 }
 .theme-switch {
-  width: 34px;
-  height: 34px;
-  background: var(--surface);
-  color: var(--muted);
-  border: 1px solid var(--border);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
 }
-.theme-switch app-icon {
-  width: 17px;
+.theme-switch:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 .sidebar {
   width: 216px;

@@ -1,6 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" xmlns:c2pa="http://c2pa.org/manifest">
-  <rect x="1" y="1" width="46" height="46" rx="13" fill="#d2f51a" stroke="#d2f51a" stroke-width="1.5"/>
-  <path d="M12 36h24" stroke="#526307" stroke-width="2" stroke-linecap="round"/>
-  <polyline points="12,30 19,23 25,27 36,14" fill="none" stroke="#b8acff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="36" cy="14" r="3.4" fill="#b8acff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1726" />
+      <stop offset="100%" stop-color="#060913" />
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#bgGrad)" stroke="#29b8f5" stroke-opacity="0.5" stroke-width="1.5"/>
+  <rect x="12" y="24" width="5" height="12" rx="2" fill="#38bdf8" fill-opacity="0.5"/>
+  <rect x="21" y="17" width="5" height="19" rx="2" fill="#38bdf8" fill-opacity="0.8"/>
+  <rect x="30" y="11" width="5" height="25" rx="2" fill="url(#cyanGrad)"/>
 </svg>

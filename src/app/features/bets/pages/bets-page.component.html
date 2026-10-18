@@ -363,6 +363,12 @@
                 }
                 
                 <app-ticket-protection [league]="leagueTag" [betType]="betType" />
+                @if (vm.error()) {
+                  <div class="inline-ticket-error alert" role="alert">
+                    <span>{{ vm.error() }}</span>
+                    <button type="button" class="text-button" (click)="vm.error.set('')">✕</button>
+                  </div>
+                }
                 <button class="primary register-button" [disabled]="vm.busy()">
                   <app-icon name="plus" />{{ vm.busy() ? 'Guardando…' : 'Guardar apuesta' }}
                 </button>

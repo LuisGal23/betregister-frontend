@@ -1,107 +1,259 @@
-<section class="hero">
-  <div class="hero-copy">
-    <span class="eyebrow">TU HISTORIAL. UNA PERSPECTIVA MÁS CLARA.</span>
-    <h1>Conoce tus números.<br /><em>Cuida tu bank.</em></h1>
-    <p>
-      Reúne tus apuestas, saldos y resultados en un solo lugar. Menos hojas sueltas. Más claridad
-      sobre el dinero que tienes en juego.
-    </p>
-    <div class="hero-actions">
-      <a class="primary button-link" [routerLink]="vm.authenticated() ? '/overview' : '/register'"
-        >{{ vm.authenticated() ? 'Ir a mi resumen' : 'Crear mi cuenta' }}
-        <app-icon name="arrow" /></a
-      ><a class="secondary button-link" href="#como-funciona">Cómo funciona</a>
-    </div>
-    <span class="hero-note">18+ · Registro personal · MXN y USD</span>
+<div class="landing-wrap">
+  <!-- Top announcement bar inspired by FabLabs -->
+  <div class="top-announcement">
+    <a [routerLink]="vm.authenticated() ? '/overview' : '/register'" class="announcement-link">
+      <span class="announcement-tag">PRO</span>
+      <span>Control de Bankroll auditado · Seguimiento en vivo con ESPN y MLB</span>
+      <span class="announcement-arrow">→</span>
+    </a>
   </div>
-  <div
-    class="product-preview"
-    aria-label="Ejemplo ilustrativo de un registro. No son ganancias reales."
-  >
-    <div class="preview-head">
-      <span><i></i> Mi resumen</span><span>Datos de ejemplo</span>
-    </div>
-    <div class="preview-balance">
-      <small>Bank total</small><strong>$10,000<span>.00 MXN</span></strong>
-      <p>Disponible + apuestas pendientes</p>
-    </div>
-    <svg
-      viewBox="0 0 480 180"
-      role="img"
-      aria-label="Ejemplo de evolución con ganancias y pérdidas"
-    >
-      <defs>
-        <linearGradient id="landingFill" x1="0" y1="0" x2="0" y2="1">
-          <stop stop-color="#29b8f5" stop-opacity=".3" />
-          <stop offset="1" stop-color="#29b8f5" stop-opacity="0" />
-        </linearGradient>
-      </defs>
-      <path d="M0 45H480 M0 90H480 M0 135H480" stroke="currentColor" opacity=".08" />
-      <path
-        d="M0 135 C35 135 30 60 75 70 S120 155 165 105 S215 20 265 60 S325 120 370 75 S430 95 480 35 L480 180H0Z"
-        fill="url(#landingFill)"
-      />
-      <path
-        d="M0 135 C35 135 30 60 75 70 S120 155 165 105 S215 20 265 60 S325 120 370 75 S430 95 480 35"
-        fill="none"
-        stroke="#26b4ee"
-        stroke-width="3"
-      />
-      <circle cx="265" cy="60" r="6" fill="#26b4ee" stroke="white" stroke-width="3" />
-    </svg>
-    <div class="preview-bottom">
-      <div><small>Disponible</small><strong>$9,500</strong></div>
-      <div><small>En juego</small><strong>$500</strong></div>
-      <div class="preview-ring" aria-label="Ejemplo: 65 por ciento de aciertos">
-        <span>65%<small>Aciertos</small></span>
+
+  <section class="hero-section">
+    <div class="hero-center">
+      <!-- Pill badge with glowing cyan dot -->
+      <div class="hero-pill">
+        <span class="pill-dot"></span>
+        <span>WNBA, NBA, NFL Y FÚTBOL · CONTROL AUDITADO POR PARTIDO</span>
+      </div>
+
+      <!-- Headline with serif italic highlight and cyan trailing cursor pipe -->
+      <h1 class="hero-title">
+        Control de apuestas que<br />
+        <em class="serif-italic">rinde cuentas.</em><span class="cursor-pipe">|</span>
+      </h1>
+
+      <p class="hero-desc">
+        Registra cada jugada con partidos oficiales de ESPN y MLB, gestiona tus saldos por casa
+        y audita tu rentabilidad real antes y después de cada partido. Nada se borra. Cero sesgos.
+      </p>
+
+      <!-- Action buttons -->
+      <div class="hero-actions">
+        <a class="primary-pill" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+          {{ vm.authenticated() ? 'Ver mi resumen' : 'Empezar mi registro' }}
+        </a>
+
+        <div class="sport-switch-group" role="group" aria-label="Deportes">
+          <button
+            type="button"
+            class="sport-btn"
+            [class.active]="activeSport() === 'NFL'"
+            (click)="activeSport.set('NFL')"
+          >
+            NFL
+          </button>
+          <button
+            type="button"
+            class="sport-btn"
+            [class.active]="activeSport() === 'MLB'"
+            (click)="activeSport.set('MLB')"
+          >
+            MLB
+          </button>
+          <button
+            type="button"
+            class="sport-btn"
+            [class.active]="activeSport() === 'Fútbol'"
+            (click)="activeSport.set('Fútbol')"
+          >
+            Fútbol
+          </button>
+        </div>
+
+        <a class="how-text-link" href="#como-funciona">
+          Cómo funciona el modelo <span class="arrow-sym">→</span>
+        </a>
       </div>
     </div>
-    <div class="floating-note">
-      <app-icon name="bank" />
-      <div><strong>Tu dinero, a la vista</strong><small>Cada casa con su propio saldo</small></div>
+
+    <!-- The Showcased Match & Calibration Card (FabLabs style) -->
+    <div class="showcase-container">
+      <div class="audit-showcase-card">
+        <div class="match-side">
+          <div class="match-meta-row">
+            <span class="match-badge">{{ currentExample().badge }}</span>
+            <span class="meta-note">Probabilidad registrada antes del inicio</span>
+          </div>
+
+          <div class="match-teams-row">
+            <div class="team-col away">
+              <span class="team-name">
+                <span class="team-dot away"></span>
+                {{ currentExample().awayTeam }}
+              </span>
+              <strong class="team-pct">{{ currentExample().awayProb }}%</strong>
+            </div>
+
+            <div class="team-col home">
+              <span class="team-name">
+                {{ currentExample().homeTeam }}
+                <span class="team-dot home"></span>
+              </span>
+              <strong class="team-pct">{{ currentExample().homeProb }}%</strong>
+            </div>
+          </div>
+
+          <div class="dual-prob-track" role="progressbar" [attr.aria-valuenow]="currentExample().homeProb">
+            <div class="track-segment away" [style.width.%]="currentExample().awayProb"></div>
+            <div class="track-segment home" [style.width.%]="currentExample().homeProb"></div>
+          </div>
+        </div>
+
+        <div class="calibration-side">
+          <span class="calib-header">CALIBRACIÓN AUDITADA</span>
+          <p class="calib-context">{{ currentExample().calibrationLabel }}</p>
+          <strong class="calib-metric">{{ currentExample().calibrationStat }}</strong>
+          <div class="calib-subinfo">
+            <span>Rendimiento neto: <b>{{ currentExample().calibrationYield }}</b></span>
+          </div>
+          <a class="calib-action" href="#como-funciona">
+            Ver el control de aciertos <span class="arrow-sym">→</span>
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
-</section>
-<section id="como-funciona" class="how">
-  <div class="section-intro">
-    <span class="eyebrow">UN REGISTRO QUE SE ENTIENDE</span>
-    <h2>Todo lo importante.<br />Sin perderte entre números.</h2>
-  </div>
-  <div class="feature-grid">
-    <article>
-      <app-icon name="bank" /><span>01</span>
-      <h3>Organiza tu bank</h3>
-      <p>Añade tus casas y registra depósitos y retiros en su moneda original.</p>
-    </article>
-    <article>
-      <app-icon name="bets" /><span>02</span>
-      <h3>Registra tu ticket</h3>
-      <p>
-        Selecciona el partido, el mercado y la cuota. Simples, parlays o combinadas del mismo
-        partido.
+
+    <!-- Secondary Interactive Bankroll Preview Card -->
+    <div class="preview-deck">
+      <div class="bank-glance-card">
+        <div class="glance-top">
+          <div class="glance-label">
+            <span class="live-dot"></span>
+            <strong>Control de Bankroll en Vivo</strong>
+          </div>
+          <span class="bank-tag">Multi-casa · MXN y USD</span>
+        </div>
+
+        <div class="glance-body">
+          <div class="glance-metrics">
+            <div class="metric-block">
+              <small>Bank total consolidado</small>
+              <strong>$14,850<span class="currency-tag">.00 MXN</span></strong>
+              <p>Disponible + apuestas en juego</p>
+            </div>
+            <div class="metric-block">
+              <small>Rendimiento / Yield</small>
+              <strong class="positive-text">+18.4%</strong>
+              <p>Retorno sobre inversión real</p>
+            </div>
+          </div>
+
+          <!-- Dynamic SVG Bank Curve -->
+          <svg viewBox="0 0 480 130" class="curve-chart" role="img" aria-label="Evolución de bankroll">
+            <defs>
+              <linearGradient id="fabCyanGlow" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#29b8f5" stop-opacity="0.35" />
+                <stop offset="100%" stop-color="#29b8f5" stop-opacity="0.0" />
+              </linearGradient>
+            </defs>
+            <path d="M0 32H480 M0 65H480 M0 98H480" stroke="rgba(255,255,255,0.06)" stroke-width="1" />
+            <path
+              d="M0 110 C40 105 50 65 90 75 S140 120 180 80 S240 25 290 55 S350 95 390 60 S440 68 480 30 L480 130 H0 Z"
+              fill="url(#fabCyanGlow)"
+            />
+            <path
+              d="M0 110 C40 105 50 65 90 75 S140 120 180 80 S240 25 290 55 S350 95 390 60 S440 68 480 30"
+              fill="none"
+              stroke="#29b8f5"
+              stroke-width="3"
+            />
+            <circle cx="290" cy="55" r="5" fill="#29b8f5" stroke="#ffffff" stroke-width="2.5" />
+            <circle cx="480" cy="30" r="5" fill="#29b8f5" stroke="#ffffff" stroke-width="2.5" />
+          </svg>
+
+          <div class="glance-bottom">
+            <div class="sub-stat">
+              <small>Disponible</small>
+              <strong>$13,200</strong>
+            </div>
+            <div class="sub-stat">
+              <small>En juego</small>
+              <strong>$1,650</strong>
+            </div>
+            <div class="winrate-badge">
+              <span class="pct">68%</span>
+              <small>Aciertos</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section id="como-funciona" class="how-section">
+    <div class="section-header">
+      <span class="section-eyebrow">METODOLOGÍA AUDITADA</span>
+      <h2 class="section-title">
+        Todo lo importante.<br />
+        <em class="serif-italic">Sin perderte entre números.</em>
+      </h2>
+      <p class="section-desc">
+        Construido para apostadores serios que buscan rentabilidad a largo plazo basada en datos y disciplina.
       </p>
-    </article>
-    <article>
-      <app-icon name="trend" /><span>03</span>
-      <h3>Entiende tus resultados</h3>
-      <p>Consulta tu historial, identifica patrones y lleva el seguimiento de tus retos.</p>
-    </article>
-  </div>
-</section>
-<section class="age-notice" id="uso-responsable">
-  <span class="age-mark">18+</span>
-  <div>
-    <h2>El registro empieza por un límite.</h2>
-    <p>
-      Las apuestas son exclusivamente para mayores de 18 años. Puedes perder el dinero apostado.
-      BetRegister es una herramienta de registro: no recibe apuestas ni garantiza ganancias.
-      Establece límites y no uses dinero destinado a gastos esenciales.
-    </p>
-  </div>
-</section>
-<section class="closing">
-  <h2>Tu próxima decisión empieza<br />por entender tu historial.</h2>
-  <a class="primary button-link" [routerLink]="vm.authenticated() ? '/overview' : '/register'"
-    >{{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }} <app-icon name="arrow"
-  /></a>
-</section>
+    </div>
+
+    <div class="feature-cards-grid">
+      <article class="feature-card">
+        <div class="feature-card-top">
+          <div class="icon-wrap">
+            <app-icon name="bank" />
+          </div>
+          <span class="step-num">01</span>
+        </div>
+        <h3>Controla cada casa</h3>
+        <p>Añade tus casas de apuestas, registra depósitos, retiros y visualiza tu exposición por divisa en tiempo real.</p>
+      </article>
+
+      <article class="feature-card featured">
+        <div class="feature-card-top">
+          <div class="icon-wrap cyan">
+            <app-icon name="bets" />
+          </div>
+          <span class="step-num">02</span>
+        </div>
+        <h3>Registra con datos oficiales</h3>
+        <p>Consulta partidos en vivo de ESPN, MLB y NFL. Vincula cuotas, hándicaps o selecciones de mismo partido sin errores.</p>
+      </article>
+
+      <article class="feature-card">
+        <div class="feature-card-top">
+          <div class="icon-wrap">
+            <app-icon name="trend" />
+          </div>
+          <span class="step-num">03</span>
+        </div>
+        <h3>Audita tus números reales</h3>
+        <p>Identifica qué ligas y mercados te dan ganancias reales, sigue tus retos y protege tu bank con alertas de disciplina.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Responsible Gaming 18+ Section -->
+  <section class="responsible-section" id="uso-responsable">
+    <div class="responsible-badge">18+</div>
+    <div class="responsible-text">
+      <h3>El registro empieza por un límite.</h3>
+      <p>
+        Las apuestas son exclusivamente para mayores de 18 años. Puedes perder el dinero apostado.
+        BetRegister es una herramienta de gestión y análisis personal: no recibe apuestas ni garantiza ganancias.
+        Establece límites claros y nunca arriesgues fondos destinados a necesidades esenciales.
+      </p>
+    </div>
+  </section>
+
+  <!-- Closing Call to Action -->
+  <section class="cta-closing">
+    <div class="cta-box">
+      <h2>
+        Tu próxima decisión empieza<br />
+        <em class="serif-italic">por entender tu historial.</em>
+      </h2>
+      <p>Comienza a registrar hoy mismo. Cero costos ocultos.</p>
+      <a class="primary-pill large" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+        {{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }}
+        <span class="arrow-sym">→</span>
+      </a>
+    </div>
+  </section>
+</div>

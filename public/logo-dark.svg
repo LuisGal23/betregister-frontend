@@ -1,7 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 48" width="210" height="48" role="img" aria-label="BetRegister" xmlns:c2pa="http://c2pa.org/manifest">
-  <style>text { fill: #eef0ff; } @media (prefers-color-scheme: dark) { text { fill: #eef0ff; } }</style><rect x="1" y="1" width="46" height="46" rx="13" fill="#d2f51a" stroke="#d2f51a" stroke-width="1.5"/>
-  <path d="M12 36h24" stroke="#526307" stroke-width="2" stroke-linecap="round"/>
-  <polyline points="12,30 19,23 25,27 36,14" fill="none" stroke="#b8acff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="36" cy="14" r="3.4" fill="#b8acff"/>
-  <text x="60" y="31" font-family="Inter, 'Segoe UI', system-ui, sans-serif" font-size="24" font-weight="600" letter-spacing="-0.6" fill="#e8ecea">BetRegister</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 48" width="210" height="48" role="img" aria-label="BetRegister">
+  <defs>
+    <linearGradient id="bgGradD" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0e1726" />
+      <stop offset="100%" stop-color="#060913" />
+    </linearGradient>
+    <linearGradient id="cyanGradD" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="44" height="44" rx="12" fill="url(#bgGradD)" stroke="#29b8f5" stroke-opacity="0.5" stroke-width="1.5"/>
+  <rect x="12" y="24" width="5" height="12" rx="2" fill="#38bdf8" fill-opacity="0.5"/>
+  <rect x="21" y="17" width="5" height="19" rx="2" fill="#38bdf8" fill-opacity="0.8"/>
+  <rect x="30" y="11" width="5" height="25" rx="2" fill="url(#cyanGradD)"/>
+  <text x="56" y="31" font-family="Inter, -apple-system, sans-serif" font-size="20" font-weight="700" letter-spacing="-0.5" fill="#f8fafc">Bet<tspan fill="#29b8f5">Register</tspan></text>
 </svg>
