@@ -1,11 +1,12 @@
 @for (animation of [graph().path]; track animation) {
-  <div class="plot">
-    <div class="axis">
+  <div class="relative pl-8 sm:pl-12">
+    <div class="absolute left-0 top-6 bottom-9 flex flex-col justify-between text-[9px] sm:text-[10px] max-w-[48px] sm:max-w-[65px] break-all text-muted">
       <span>{{ format(graph().max) }}</span
       ><span>{{ format(graph().min) }}</span>
     </div>
     <svg
       viewBox="0 0 600 224"
+      class="w-full h-[195px] block overflow-visible"
       role="group"
       aria-label="Ganancia acumulada. Selecciona un punto para ver el detalle."
       (pointerleave)="active.set(null)"
@@ -25,11 +26,10 @@
           <stop offset="1" stop-color="var(--negative)" />
         </linearGradient>
       </defs>
-      <path d="M24 36H576 M24 84H576 M24 132H576 M24 180H576" class="grid" />
-      <line x1="24" x2="576" [attr.y1]="graph().zero" [attr.y2]="graph().zero" class="zero" />
+      <path d="M24 36H576 M24 84H576 M24 132H576 M24 180H576" stroke="var(--chart-grid)" stroke-dasharray="4 5" />
+      <line x1="24" x2="576" [attr.y1]="graph().zero" [attr.y2]="graph().zero" stroke="var(--border)" stroke-dasharray="3 4" />
       <path [attr.d]="graph().area" fill="var(--chart-fill)" opacity=".12" />
       <path
-        class="trace"
         [attr.d]="animation"
         pathLength="1"
         fill="none"
@@ -38,12 +38,12 @@
         stroke-linecap="round"
         stroke-linejoin="round"
       />
-      <circle class="traveler" r="5" fill="var(--accent)" aria-hidden="true">
+      <circle class="pointer-events-none" r="5" fill="var(--accent)" aria-hidden="true">
         <animateMotion dur="3.2s" [attr.path]="animation" fill="freeze" calcMode="paced" />
       </circle>
       @for (point of points(); track point.id) {
         <circle
-          class="point"
+          class="cursor-pointer transition-[r] duration-150 hover:r-7 focus:r-7 outline-none"
           [attr.cx]="point.x"
           [attr.cy]="point.y"
           r="5"
@@ -82,12 +82,12 @@
     </svg>
   </div>
 }
-<div class="point-detail" aria-live="polite">
+<div class="min-h-8 mt-1 py-1.5 border-0 rounded-xl flex flex-wrap gap-x-3.5 gap-y-1.5 items-center text-muted text-[10px] sm:text-xs" aria-live="polite">
   @if (selected(); as point) {
     <span>{{ label(point.time, true) }} · {{ point.label }}</span
-    ><strong [style.color]="color(point.value)"
+    ><strong [style.color]="color(point.value)" class="text-xs font-semibold"
       >{{ description(point.value) }}: {{ format(point.value) }}</strong
-    ><small
+    ><small class="basis-full text-[10px]"
       >Resultado de este movimiento:
       <b [style.color]="color(point.change)">{{ format(point.change) }}</b></small
     >

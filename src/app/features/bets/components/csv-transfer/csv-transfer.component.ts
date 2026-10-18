@@ -11,7 +11,6 @@ interface Report {
 @Component({
   selector: 'app-csv-transfer',
   templateUrl: './csv-transfer.component.html',
-  styleUrl: './csv-transfer.component.css',
 })
 export class CsvTransferComponent {
   vm = inject(LedgerState);

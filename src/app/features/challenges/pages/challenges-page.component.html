@@ -14,11 +14,11 @@
     actualizan el progreso.
   </p>
 </details>
-<div class="challenge-layout">
-  <details class="panel collapsible" [open]="!service.items().length">
+<div class="grid grid-cols-1 gap-5">
+  <details class="panel collapsible m-0" [open]="!service.items().length">
     <summary>+ Crear un reto</summary>
     @if (vm.data().houses.length) {
-      <form ngNativeValidate (ngSubmit)="create()">
+      <form ngNativeValidate (ngSubmit)="create()" class="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-3 max-w-[800px] mt-4">
         <label
           >Nombre<input
             name="title"
@@ -115,18 +115,18 @@
             </select></label
           >
         </details>
-        <button class="primary" [disabled]="vm.busy()">Crear reto</button>
+        <button class="primary justify-self-start sm:col-span-2" [disabled]="vm.busy()">Crear reto</button>
       </form>
     } @else {
       <p>Añade una casa para comenzar.</p>
       <a routerLink="/bank">Ir a mi bank</a>
     }
   </details>
-  <section class="challenge-list">
+  <section class="min-w-0">
     <div class="section-heading">
       <h2>Tus retos</h2>
-      <label class="check"
-        ><input type="checkbox" [ngModel]="archived()" (ngModelChange)="archived.set($event)" /> Ver
+      <label class="flex items-center gap-2 text-xs cursor-pointer"
+        ><input type="checkbox" [ngModel]="archived()" (ngModelChange)="archived.set($event)" class="w-auto m-0" /> Ver
         archivados</label
       >
     </div>
@@ -140,7 +140,7 @@
       </div>
     } @else {
       @for (c of rows(); track c.id) {
-        <article class="panel challenge-card">
+        <article class="panel p-5 sm:p-6 mb-4">
           <div class="section-heading">
             <div>
               <span class="eyebrow">{{ kinds[c.kind] }} · {{ c.house }}</span>
@@ -148,12 +148,13 @@
             </div>
             <span class="status">{{ statuses[c.status] }}</span>
           </div>
-          <strong class="challenge-value">{{ vm.native(c.reference, c.currency) }}</strong>
-          <p>
+          <strong class="text-2xl font-bold tracking-tight text-text block my-1">{{ vm.native(c.reference, c.currency) }}</strong>
+          <p class="text-xs text-muted mb-2">
             Referencia actual · {{ vm.native(c.initial, c.currency) }} iniciales + neto de tickets
             cerrados
           </p>
           <progress
+            class="w-full h-2 accent-accent my-2"
             [value]="c.progress"
             max="100"
             [attr.aria-label]="'Progreso de ' + c.title"
@@ -208,7 +209,7 @@
   </section>
 </div>
 @if (detail(); as c) {
-  <section class="panel challenge-detail">
+  <section class="panel p-6 mt-6">
     <div class="section-heading">
       <div>
         <h2>{{ c.title }} · pasos</h2>

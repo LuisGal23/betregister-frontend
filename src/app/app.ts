@@ -4,6 +4,6 @@ import { ShellComponent } from './layout/shell/shell.component';
   selector: 'app-root',
   imports: [ShellComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css',
+  host: { class: 'block' },
 })
 export class App {}

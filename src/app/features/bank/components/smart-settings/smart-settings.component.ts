@@ -4,7 +4,7 @@ import {DatePipe} from '@angular/common';
 import {ApiService} from '../../../../core/services/api.service';
 import type {Protection} from '../../../bets/components/ticket-protection/ticket-protection.component';
 interface PublicProfile {enabled:boolean;name:string;token:string}
-@Component({selector:'app-smart-settings',imports:[FormsModule,DatePipe],templateUrl:'./smart-settings.component.html',styleUrl:'./smart-settings.component.css'})
+@Component({selector:'app-smart-settings',imports:[FormsModule,DatePipe],templateUrl:'./smart-settings.component.html'})
 export class SmartSettingsComponent {
  api=inject(ApiService);protection=signal<Protection|null>(null);profile=signal<PublicProfile|null>(null);enabled=false;hours=6;publicEnabled=false;name='';busy=signal(false);message=signal('');error=signal('');loading=signal(true);
  constructor(){void this.load()}

@@ -1,14 +1,16 @@
-<section class="bank-performance panel">
+<section class="panel p-0 bg-surface text-text border border-border rounded-2xl overflow-hidden my-5 shadow-sm">
   <!-- Internal Card Filter Toolbar -->
-  <div class="chart-toolbar">
-    <div class="toolbar-row primary-controls">
+  <div class="flex flex-col gap-3 p-3.5 sm:px-5 bg-surface-high border-b border-border">
+    <div class="flex items-center justify-between flex-wrap gap-3">
       <!-- Period Pill Switcher -->
-      <div class="pill-group" role="group" aria-label="Periodo de resultados">
+      <div class="inline-flex items-center gap-1 bg-surface p-1 rounded-full border border-border" role="group" aria-label="Periodo de resultados">
         @for (tab of analytics.tabs; track tab.value) {
           <button
             type="button"
-            class="pill-tab"
-            [class.active]="analytics.period() === tab.value"
+            class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95"
+            [class.!bg-accent]="analytics.period() === tab.value"
+            [class.!text-white]="analytics.period() === tab.value"
+            [class.shadow-md]="analytics.period() === tab.value"
             [attr.aria-pressed]="analytics.period() === tab.value"
             (click)="analytics.period.set(tab.value)"
           >
@@ -18,7 +20,7 @@
         @if (analytics.period() !== 'all') {
           <input
             type="date"
-            class="pill-date-input"
+            class="bg-surface-high border border-border text-text text-xs py-1 px-2 rounded-full mr-1 outline-none"
             aria-label="Fecha del periodo"
             [ngModel]="analytics.anchor()"
             (ngModelChange)="analytics.setAnchor($event)"
@@ -27,19 +29,23 @@
       </div>
 
       <!-- Money vs Units Segmented Pill -->
-      <div class="segmented-pill-control" role="group" aria-label="Unidad de la gráfica">
+      <div class="inline-flex items-center bg-surface border border-border rounded-full p-1" role="group" aria-label="Unidad de la gráfica">
         <button 
           type="button" 
-          class="seg-btn"
-          [class.active]="!unitView()" 
+          class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95"
+          [class.!bg-accent]="!unitView()"
+          [class.!text-white]="!unitView()"
+          [class.shadow-md]="!unitView()"
           (click)="unitView.set(false)"
         >
           Dinero
         </button>
         <button
           type="button"
-          class="seg-btn"
-          [class.active]="unitView()"
+          class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
+          [class.!bg-accent]="unitView()"
+          [class.!text-white]="unitView()"
+          [class.shadow-md]="unitView()"
           [disabled]="!units.value(vm.currency())"
           (click)="unitView.set(true)"
         >
@@ -49,13 +55,16 @@
     </div>
 
     <!-- Sport & League Pills (Replacing dropdown select) -->
-    <div class="toolbar-row filter-pills-row">
-      <div class="filter-pills-scroll">
-        <span class="filter-label">DEPORTE:</span>
+    <div class="flex items-center w-full">
+      <div class="flex items-center gap-2 overflow-x-auto w-full scrollbar-thin pb-0.5">
+        <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">DEPORTE:</span>
         <button 
           type="button" 
-          class="filter-pill" 
-          [class.active]="!analytics.sportFilter()"
+          class="bg-surface border border-border text-muted text-xs font-medium py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+          [class.bg-emerald-500/15]="!analytics.sportFilter()"
+          [class.border-accent]="!analytics.sportFilter()"
+          [class.text-accent]="!analytics.sportFilter()"
+          [class.font-semibold]="!analytics.sportFilter()"
           (click)="analytics.sportFilter.set(''); analytics.leagueFilter.set('')"
         >
           Todos
@@ -63,8 +72,11 @@
         @for (sport of analytics.sportTags; track sport) {
           <button 
             type="button" 
-            class="filter-pill" 
-            [class.active]="analytics.sportFilter() === sport"
+            class="bg-surface border border-border text-muted text-xs font-medium py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+            [class.bg-emerald-500/15]="analytics.sportFilter() === sport"
+            [class.border-accent]="analytics.sportFilter() === sport"
+            [class.text-accent]="analytics.sportFilter() === sport"
+            [class.font-semibold]="analytics.sportFilter() === sport"
             (click)="analytics.sportFilter.set(sport); analytics.leagueFilter.set('')"
           >
             {{ sport }}
@@ -73,13 +85,15 @@
 
         <!-- Dynamic Leagues if Sport selected or active -->
         @if (analytics.sportFilter() === 'Fútbol') {
-          <span class="filter-divider">|</span>
-          <span class="filter-label">LIGA:</span>
+          <span class="text-border font-light mx-1">|</span>
+          <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">LIGA:</span>
           @for (league of ['Liga MX', 'Premier League', 'La Liga', 'MLS', 'Champions League']; track league) {
             <button 
               type="button" 
-              class="filter-pill sub" 
-              [class.active]="analytics.leagueFilter() === league"
+              class="bg-surface border border-border text-muted text-xs py-0.5 px-2.5 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
+              [class.bg-blue-500/15]="analytics.leagueFilter() === league"
+              [class.border-blue-500]="analytics.leagueFilter() === league"
+              [class.text-blue-400]="analytics.leagueFilter() === league"
               (click)="analytics.leagueFilter.set(analytics.leagueFilter() === league ? '' : league)"
             >
               {{ league }}
@@ -91,7 +105,7 @@
         @if (analytics.hasTagFilter()) {
           <button 
             type="button" 
-            class="clear-filters-pill" 
+            class="bg-red-500/10 border border-red-500/25 text-red-500 text-xs font-semibold py-0.5 px-2.5 rounded-full cursor-pointer ml-auto whitespace-nowrap hover:bg-red-500 hover:text-white transition-all"
             (click)="analytics.typeFilter.set(''); analytics.sportFilter.set(''); analytics.leagueFilter.set(''); analytics.marketFilter.set('')"
           >
             ✕ Limpiar
@@ -101,128 +115,128 @@
     </div>
   </div>
 
-  <div class="bank-performance-body">
-    <div class="bank-summary">
+  <div class="grid grid-cols-1 md:grid-cols-[320px_minmax(0,1fr)] w-full">
+    <div class="p-6 sm:p-7 md:border-r border-border flex flex-col items-start bg-gradient-to-br from-[#159fef] to-[#087fd5] text-white">
       <button
-        class="detail-trigger"
+        class="bg-transparent text-white/80 border-0 p-0 text-left justify-start text-[11px] font-semibold tracking-wider uppercase cursor-pointer hover:text-white"
         (click)="detail.set('bank')"
         aria-label="Ver detalles de tu bank"
       >
         Tu bank · disponible + pendientes ↗</button
       ><button
-        class="bank-number detail-trigger"
+        class="text-2xl sm:text-3xl font-bold tracking-tight text-white my-3 font-mono cursor-pointer bg-transparent border-0 p-0 text-left"
         (click)="detail.set('bank')"
         aria-label="Abrir detalle del saldo"
       >
         {{ vm.format(totalBank()) }}</button
-      ><span class="period-profit" [class.negative]="(analytics.profit() ?? 0) < 0"
+      ><span class="text-xs font-semibold text-white bg-white/20 border border-white/25 px-2.5 py-1 rounded-full font-mono" [class.bg-red-950/40]="(analytics.profit() ?? 0) < 0"
         >{{ vm.format(analytics.profit()) }} en el periodo</span
       >
-      <p>Disponible y pendiente en todas tus casas.</p>
+      <p class="text-xs text-white/80 mt-auto pt-6">Disponible y pendiente en todas tus casas.</p>
     </div>
-  <div class="bank-curve">
-    <div class="chart-caption">
-      <h3>Evolución del resultado</h3>
-      <span>Ganancia neta · sin depósitos ni retiros</span>
-    </div>
-    @if (analytics.series(); as series) {
-      <app-profit-chart
-        [series]="displaySeries() ?? []"
-        [period]="analytics.period()"
-        [unitLabel]="unitView() && units.value(vm.currency()) ? 'U' : ''"
-      />
-    } @else {
-      <p>Configura el tipo de cambio para combinar los resultados.</p>
-    }
-    <details>
-      <summary>Ver datos de la gráfica</summary>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Fecha</th>
-              <th>Movimiento</th>
-              <th>Resultado</th>
-              <th>Acumulado</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (point of analytics.series(); track point.id) {
-              @if (point.event) {
-                <tr>
-                  <td>{{ analytics.eventTime(point.time) }}</td>
-                  <td>{{ point.label }}</td>
-                  <td>{{ vm.format(point.change) }}</td>
-                  <td>{{ vm.format(point.value) }}</td>
-                </tr>
-              }
-            }
-          </tbody>
-        </table>
+    <div class="p-5 sm:p-6 self-stretch min-w-0">
+      <div class="mb-3">
+        <h3 class="text-sm font-semibold m-0 text-text">Evolución del resultado</h3>
+        <span class="text-[10px] text-muted block mt-1">Ganancia neta · sin depósitos ni retiros</span>
       </div>
-    </details>
-  </div>
+      @if (analytics.series(); as series) {
+        <app-profit-chart
+          [series]="displaySeries() ?? []"
+          [period]="analytics.period()"
+          [unitLabel]="unitView() && units.value(vm.currency()) ? 'U' : ''"
+        />
+      } @else {
+        <p class="text-xs text-muted py-4">Configura el tipo de cambio para combinar los resultados.</p>
+      }
+      <details class="mt-3">
+        <summary class="text-xs text-muted cursor-pointer hover:text-text transition-colors">Ver datos de la gráfica</summary>
+        <div class="table-wrap mt-2">
+          <table>
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Movimiento</th>
+                <th>Resultado</th>
+                <th>Acumulado</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (point of analytics.series(); track point.id) {
+                @if (point.event) {
+                  <tr>
+                    <td>{{ analytics.eventTime(point.time) }}</td>
+                    <td>{{ point.label }}</td>
+                    <td>{{ vm.format(point.change) }}</td>
+                    <td>{{ vm.format(point.value) }}</td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </div>
   </div>
 </section>
-<div class="summary-strip">
-  <article>
-    <span>Disponible</span><strong>{{ vm.format(vm.total('balance')) }}</strong>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 my-5">
+  <article class="panel p-4.5 sm:p-5 relative overflow-hidden">
+    <span class="text-xs text-muted">Disponible</span><strong class="block text-xl sm:text-2xl font-bold my-2 text-text font-mono">{{ vm.format(vm.total('balance')) }}</strong>
   </article>
-  <article>
-    <span>En pendientes</span><strong>{{ vm.format(vm.total('pending')) }}</strong
-    ><a routerLink="/history" [queryParams]="{ status: 'pending' }"
+  <article class="panel p-4.5 sm:p-5 relative overflow-hidden">
+    <span class="text-xs text-muted">En pendientes</span><strong class="block text-xl sm:text-2xl font-bold my-2 text-text font-mono">{{ vm.format(vm.total('pending')) }}</strong
+    ><a routerLink="/history" [queryParams]="{ status: 'pending' }" class="text-xs text-accent underline"
       >{{ vm.pendingBets().length }} por resolver</a
     >
   </article>
-  <article>
-    <button class="detail-trigger" (click)="detail.set('bets')" aria-label="Ver últimas apuestas">
+  <article class="panel p-4.5 sm:p-5 relative overflow-hidden">
+    <button class="bg-transparent text-muted border-0 p-0 text-left text-xs font-medium cursor-pointer hover:text-text" (click)="detail.set('bets')" aria-label="Ver últimas apuestas">
       Ganadas / perdidas ↗</button
-    ><strong>{{ analytics.won() }} / {{ analytics.lost() }}</strong
-    ><small>No incluye pendientes, anuladas ni cashout.</small>
+    ><strong class="block text-xl sm:text-2xl font-bold my-2 text-text font-mono">{{ analytics.won() }} / {{ analytics.lost() }}</strong
+    ><small class="text-[10px] text-muted block leading-tight">No incluye pendientes, anuladas ni cashout.</small>
   </article>
-  <article>
-    <span>Tasa de acierto</span
-    ><strong>{{
+  <article class="panel p-4.5 sm:p-5 pr-16 relative overflow-hidden">
+    <span class="text-xs text-muted">Tasa de acierto</span
+    ><strong class="block text-xl sm:text-2xl font-bold my-2 text-text font-mono">{{
       analytics.winRate() === null ? '—' : (analytics.winRate() | number: '1.0-1') + '%'
     }}</strong>
     <div
-      class="win-donut"
+      class="w-12 h-12 sm:w-14 sm:h-14 rounded-full p-1.5 absolute right-3.5 top-6 -rotate-[70deg]"
       aria-hidden="true"
       [style.background]="
         'conic-gradient(var(--accent) ' + (analytics.winRate() ?? 0) + '%, var(--surface-high) 0)'
       "
     >
-      <span></span>
+      <span class="block w-full h-full rounded-full bg-surface"></span>
     </div>
   </article>
 </div>
 @if (showDistribution()) {
-  <section class="panel distribution">
-    <div class="section-heading">
+  <section class="panel mb-6">
+    <div class="section-heading mb-4">
       <div>
         <h2>Tu bank por casa</h2>
         <p>Saldo disponible + importe en apuestas pendientes</p>
       </div>
       <a routerLink="/bank">Administrar ↗</a>
     </div>
-    <div class="distribution-cards">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,220px),1fr))] gap-3 p-2">
       @for (house of distribution(); track house.id) {
-        <article>
-          <div class="section-heading">
-            <h3>{{ house.name }}</h3>
+        <article class="p-4 border border-border rounded-xl bg-surface min-w-0">
+          <div class="flex items-center justify-between gap-2 mb-2">
+            <h3 class="text-xs font-semibold m-0 text-text">{{ house.name }}</h3>
             <span class="currency-tag">{{ house.currency }}</span>
           </div>
-          <strong class="distribution-value">{{ vm.format(house.value) }}</strong>
-          <div class="house-track"><span [style.width.%]="house.percent"></span></div>
-          <small>{{ house.percent | number: '1.0-1' }}% del bank general</small>
-          <div class="actions">
+          <strong class="block text-xl font-bold my-3 text-text font-mono">{{ vm.format(house.value) }}</strong>
+          <div class="w-[130px] h-1.5 rounded-full bg-surface-high overflow-hidden"><span class="h-full block bg-accent" [style.width.%]="house.percent"></span></div>
+          <small class="block text-muted text-[11px] my-2">{{ house.percent | number: '1.0-1' }}% del bank general</small>
+          <div class="actions mt-3">
             <a
-              class="secondary button-link"
+              class="secondary button-link text-xs py-1.5 px-3"
               routerLink="/confirmations"
               [queryParams]="{ house: house.id, kind: 'deposit' }"
               >Anotar depósito</a
             ><a
-              class="secondary button-link"
+              class="secondary button-link text-xs py-1.5 px-3"
               routerLink="/confirmations"
               [queryParams]="{ house: house.id, kind: 'withdrawal' }"
               >Anotar retiro</a
@@ -230,7 +244,7 @@
           </div>
         </article>
       } @empty {
-        <p>
+        <p class="text-xs text-muted py-4">
           {{
             distribution() === null
               ? 'Configura una tasa de cambio para ver los saldos.'
@@ -245,9 +259,9 @@
   <app-detail-card [kind]="kind" (dismiss)="detail.set(null)" />
 }
 
-<details class="advanced-metrics panel">
-  <summary>Métricas avanzadas de rendimiento</summary>
-  <div class="section-heading">
+<details class="panel mt-6">
+  <summary class="cursor-pointer text-xs font-semibold hover:text-accent transition-colors">Métricas avanzadas de rendimiento</summary>
+  <div class="section-heading mt-4">
     <div>
       <h2>Rendimiento histórico · etiquetas seleccionadas</h2>
       <p>
@@ -257,7 +271,7 @@
     </div>
   </div>
   @if (analytics.metrics(); as m) {
-    <div class="metrics">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 my-4">
       <article class="metric">
         <span>Yield / total apostado</span
         ><strong class="metric-value">{{
@@ -295,7 +309,7 @@
         ><strong class="metric-value">{{ m.maxLossStreak }}</strong>
       </article>
     </div>
-    <p>
+    <p class="text-xs text-muted mb-2">
       Por debajo del máximo de ganancias desde:
       {{ m.lossesSince ? analytics.day(m.lossesSince) : 'sin caída vigente' }}.
     </p>
@@ -307,6 +321,6 @@
       liquidado (incluye cashout parcial). La caída máxima excluye depósitos y retiros.
     </p>
   } @else {
-    <p>Configura el tipo de cambio para combinar las métricas.</p>
+    <p class="text-xs text-muted py-2">Configura el tipo de cambio para combinar las métricas.</p>
   }
 </details>

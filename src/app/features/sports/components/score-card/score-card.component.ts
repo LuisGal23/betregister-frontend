@@ -4,7 +4,7 @@ import type { SportsGame } from '../../models/sports.model';
 @Component({
   selector: 'app-score-card',
   templateUrl: './score-card.component.html',
-  styleUrl: './score-card.component.css',
+  host: { class: 'block text-left' },
 })
 export class ScoreCardComponent {
   game = input.required<SportsGame>();

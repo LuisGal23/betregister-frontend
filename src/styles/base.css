@@ -90,4 +90,4 @@ footer {
   color: #858d92;
 }
 
-input,select,textarea{border-radius:8px;min-height:42px;background:color-mix(in srgb,var(--bg) 40%,var(--surface));transition:border-color .15s}input[type=checkbox]{min-height:0;accent-color:var(--accent)}label{font-size:11px;font-weight:550}input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 18%,transparent);outline-offset:1px}button{transition:background .15s,color .15s}summary:focus-visible{outline:2px solid var(--accent)}@media(prefers-reduced-motion:reduce){input,select,textarea,button{transition:none}}
+input,select,textarea{border-radius:8px;min-height:42px;background:color-mix(in srgb,var(--bg) 40%,var(--surface));transition:border-color .15s}input[type=checkbox]{min-height:0;accent-color:var(--accent)}label{font-size:11px;font-weight:550}input:focus,select:focus,textarea:focus{outline:2px solid color-mix(in srgb,var(--accent) 18%,transparent);outline-offset:1px}button{transition:all .2s cubic-bezier(0.16, 1, 0.3, 1)}summary:focus-visible{outline:2px solid var(--accent)}@media(prefers-reduced-motion:reduce){input,select,textarea,button{transition:none}}

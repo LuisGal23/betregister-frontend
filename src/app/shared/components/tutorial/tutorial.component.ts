@@ -11,7 +11,6 @@ import { Router } from '@angular/router';
 @Component({
   selector: 'app-tutorial',
   templateUrl: './tutorial.component.html',
-  styleUrl: './tutorial.component.css',
 })
 export class TutorialComponent implements AfterViewInit {
   dismiss = output();

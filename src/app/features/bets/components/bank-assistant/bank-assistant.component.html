@@ -1,48 +1,60 @@
-<div class="assistant" [class.expanded]="open()">
+<div 
+  class="fixed bottom-6 right-7 z-[65] w-[min(400px,calc(100vw-32px))] pointer-events-none max-[600px]:right-4 max-[600px]:bottom-4 max-[760px]:!bottom-[calc(82px+env(safe-area-inset-bottom))]"
+  [class.expanded]="open()"
+>
   @if (open()) {
     <section
-      class="assistant-panel"
+      class="pointer-events-auto bg-[var(--surface)] border border-[var(--border)] rounded-[17px] shadow-[0_16px_70px_rgba(11,40,69,0.17)] overflow-hidden mb-3.5 animate-[fadeIn_0.23s_ease-out]"
       role="dialog"
       aria-modal="false"
       aria-labelledby="assistant-title"
       (keydown.escape)="close()"
     >
-      <header>
+      <header class="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-[var(--border)]">
         <div>
-          <span class="eyebrow">ANTES DE REGISTRAR</span>
-          <h2 id="assistant-title">Cuida tu bank</h2>
+          <span class="text-[9px] font-bold tracking-wider text-[var(--muted)] uppercase">ANTES DE REGISTRAR</span>
+          <h2 id="assistant-title" class="mt-1 mb-0 text-base sm:text-lg font-semibold tracking-[-0.4px] text-[var(--text)]">Cuida tu bank</h2>
         </div>
         <button
           #closer
-          class="close-assistant"
+          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center transition-all duration-200 cursor-pointer active:scale-95"
           type="button"
           aria-label="Cerrar asistente de bank"
           (click)="close()"
         >
-          <app-icon name="close" />
+          <app-icon name="close" class="w-[15px] h-[15px]" />
         </button>
       </header>
-      <div class="assistant-tabs" role="group" aria-label="Sistema de gestión">
+      <div class="flex gap-1.5 bg-[var(--bg)] p-1 mx-4 sm:mx-6 my-3 rounded-xl border border-[var(--border)]" role="group" aria-label="Sistema de gestión">
         <button
           type="button"
-          [class.selected]="mode() === 'fixed'"
+          class="flex-1 text-[11px] py-2 px-2 text-[var(--muted)] bg-transparent rounded-lg transition-all duration-200 font-medium cursor-pointer hover:text-text hover:bg-surface/50 active:scale-[0.98]"
+          [class.!bg-[var(--surface)]]="mode() === 'fixed'"
+          [class.!text-[var(--accent)]]="mode() === 'fixed'"
+          [class.shadow-sm]="mode() === 'fixed'"
+          [class.font-semibold]="mode() === 'fixed'"
           [attr.aria-pressed]="mode() === 'fixed'"
           (click)="mode.set('fixed')"
         >
           Porcentaje fijo</button
         ><button
           type="button"
-          [class.selected]="mode() === 'kelly'"
+          class="flex-1 text-[11px] py-2 px-2 text-[var(--muted)] bg-transparent rounded-lg transition-all duration-200 font-medium cursor-pointer hover:text-text hover:bg-surface/50 active:scale-[0.98]"
+          [class.!bg-[var(--surface)]]="mode() === 'kelly'"
+          [class.!text-[var(--accent)]]="mode() === 'kelly'"
+          [class.shadow-sm]="mode() === 'kelly'"
+          [class.font-semibold]="mode() === 'kelly'"
           [attr.aria-pressed]="mode() === 'kelly'"
           (click)="mode.set('kelly')"
         >
           Kelly fraccional
         </button>
       </div>
-      <div class="assistant-scroll">
-        <label
+      <div class="px-4 sm:px-6 pt-1 pb-5 sm:pb-6 max-h-[min(63vh,600px)] overflow-y-auto overscroll-contain max-[600px]:max-h-[calc(100dvh-255px)] flex flex-col gap-3.5">
+        <label class="text-[11px] flex flex-col gap-1.5 text-[var(--muted)]"
           >Casa para el cálculo<select
             name="assistantHouse"
+            class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
             [ngModel]="houseId()"
             (ngModelChange)="houseIdChange.emit($event)"
           >
@@ -55,31 +67,33 @@
         @if (mode() === 'fixed') {
           <app-bank-guidance [houseId]="houseId()" [stake]="stake()" />
         } @else {
-          <p class="intro">
-            Calcula una fracción del saldo con la cuota y <strong>tu propia estimación</strong> de
+          <p class="text-[11px] leading-relaxed text-[var(--muted)]">
+            Calcula una fracción del saldo con la cuota y <strong class="text-[var(--text)]">tu propia estimación</strong> de
             probabilidad.
           </p>
           @if (house(); as h) {
-            <div class="available">
+            <div class="flex flex-col gap-1 py-2 text-[11px] text-[var(--muted)]">
               <span>Disponible en {{ h.name }}</span
-              ><strong>{{ vm.native(h.balance, h.currency) }}</strong>
+              ><strong class="text-[22px] font-bold text-[var(--text)]">{{ vm.native(h.balance, h.currency) }}</strong>
             </div>
           }
-          <div class="form-grid">
-            <label
+          <div class="grid grid-cols-2 gap-3">
+            <label class="text-[11px] flex flex-col gap-1 text-[var(--muted)]"
               >Cuota decimal<input
                 type="number"
                 name="kellyOdds"
+                class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                 min="1.0001"
                 max="10000"
                 step="0.0001"
                 placeholder="1.90"
                 [ngModel]="kellyOdds()"
                 (ngModelChange)="kellyOdds.set($event)" /></label
-            ><label
+            ><label class="text-[11px] flex flex-col gap-1 text-[var(--muted)]"
               >Probabilidad estimada (%)<input
                 type="number"
                 name="kellyProbability"
+                class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                 min="0"
                 max="100"
                 step="0.1"
@@ -88,9 +102,10 @@
                 (ngModelChange)="probability.set($event)"
             /></label>
           </div>
-          <label
+          <label class="text-[11px] flex flex-col gap-1 text-[var(--muted)]"
             >Fracción de Kelly<select
               name="kellyFraction"
+              class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
               [ngModel]="fraction()"
               (ngModelChange)="fraction.set(+$event)"
             >
@@ -100,40 +115,49 @@
           >
           @if (calculation(); as result) {
             <div
-              class="kelly-result"
-              [class.over-reference]="result.allocation > 0.02"
+              class="rounded-[10px] p-[19px] flex flex-col gap-2 border"
+              [class.bg-[var(--surface-high)]]="result.allocation <= 0.02"
+              [class.text-[var(--accent)]]="result.allocation <= 0.02"
+              [class.border-transparent]="result.allocation <= 0.02"
+              [class.text-[var(--negative)]]="result.allocation > 0.02"
+              [class.bg-[color-mix(in_srgb,var(--negative)_7%,var(--surface))]]="result.allocation > 0.02"
+              [class.border-[color-mix(in_srgb,var(--negative)_25%,var(--border))]]="result.allocation > 0.02"
               aria-live="polite"
             >
-              <span>Importe calculado</span
-              ><strong>{{ vm.native(result.amountMinor, house()!.currency) }}</strong
-              ><small>{{ (result.allocation * 100).toFixed(2) }}% del saldo disponible</small>
+              <span class="text-[11px] text-inherit">Importe calculado</span
+              ><strong class="text-[29px] font-bold tracking-tight text-inherit">{{ vm.native(result.amountMinor, house()!.currency) }}</strong
+              ><small class="text-[11px] text-inherit opacity-80">{{ (result.allocation * 100).toFixed(2) }}% del saldo disponible</small>
             </div>
-            <p [class.positive]="result.edge > 0" [class.negative]="result.edge < 0"><strong>{{result.edge > 0 ? '+EV' : result.edge < 0 ? '−EV' : 'EV neutro'}} · {{(result.edge*100).toFixed(2)}}%</strong> por unidad apostada, según tu probabilidad estimada.</p>
-            @if(unitAmount()!==null){<p>Kelly fraccional: {{unitAmount()!.toFixed(2)}} U de referencia.</p>}
-            <p class="field-help">Es un cálculo hipotético, no un máximo seguro. No estima la probabilidad por ti.</p>
+            <p class="text-[11px] leading-relaxed" [class.text-[var(--positive)]]="result.edge > 0" [class.text-[var(--negative)]]="result.edge < 0">
+              <strong class="font-bold">{{result.edge > 0 ? '+EV' : result.edge < 0 ? '−EV' : 'EV neutro'}} · {{(result.edge*100).toFixed(2)}}%</strong> por unidad apostada, según tu probabilidad estimada.
+            </p>
+            @if(unitAmount()!==null){
+              <p class="text-[11px] text-[var(--muted)]">Kelly fraccional: {{unitAmount()!.toFixed(2)}} U de referencia.</p>
+            }
+            <p class="text-[11px] text-[var(--muted)]">Es un cálculo hipotético, no un máximo seguro. No estima la probabilidad por ti.</p>
             @if (result.edge <= 0) {
-              <p class="calculation-note">
+              <p class="text-[11px] leading-relaxed text-[var(--muted)]">
                 Con esa probabilidad y cuota, el modelo no asigna importe: el valor esperado es cero
                 o negativo.
               </p>
             } @else if (result.allocation > 0.02) {
-              <p class="warning">
+              <p class="text-[11px] text-[var(--negative)] p-[11px] border border-[var(--border)] border-l-[3px] border-l-[var(--negative)] rounded-[5px] bg-[rgba(244,63,94,0.06)] leading-relaxed">
                 Supera la referencia del 2% de tu saldo. Kelly puede producir importes altos incluso
                 usando una fracción.
               </p>
             }
           } @else {
-            <p class="calculation-note">
+            <p class="text-[11px] leading-relaxed text-[var(--muted)]">
               Selecciona una casa e introduce una cuota mayor que 1 y una probabilidad de 0 a 100%.
             </p>
           }
-          <details class="method">
-            <summary>Qué significa y cómo se calcula</summary>
-            <p>
+          <details class="my-4 text-[11px] text-[var(--muted)] leading-relaxed">
+            <summary class="cursor-pointer text-[var(--text)] font-medium">Qué significa y cómo se calcula</summary>
+            <p class="mt-2">
               Kelly = (probabilidad × cuota − 1) / (cuota − 1). Aplicamos la fracción elegida, un
               mínimo de cero y redondeo hacia abajo al centavo.
             </p>
-            <p>
+            <p class="mt-2">
               La cuota del ticket se precarga en decimal. El cálculo usa un modelo de ganar o
               perder: no incluye bonos, cashout, empates anulados ni liquidaciones parciales. Para
               una combinada, la probabilidad debe corresponder a ganar el ticket completo.
@@ -142,10 +166,11 @@
               href="https://onlinelibrary.wiley.com/doi/abs/10.1002/j.1538-7305.1956.tb03809.x"
               target="_blank"
               rel="noopener"
+              class="inline-block mt-1 text-[var(--accent)] text-[10px] hover:underline"
               >Fundamento del criterio de Kelly ↗</a
             >
           </details>
-          <p class="footnote">
+          <p class="text-[10px] leading-relaxed text-[var(--muted)]">
             Una probabilidad mal estimada cambia mucho el resultado. Tu acierto histórico y la cuota
             no prueban la probabilidad real. Esta calculadora no cambia tu ticket ni garantiza
             ganancias.
@@ -156,22 +181,27 @@
   }
   <button
     #launcher
-    class="assistant-launcher"
+    class="pointer-events-auto flex items-center gap-3 ml-auto p-0 bg-transparent text-[var(--text)] cursor-pointer"
     type="button"
     aria-haspopup="dialog"
     [attr.aria-expanded]="open()"
     [attr.aria-label]="open() ? 'Cerrar asistente de bank' : 'Ve cómo cuidar tu bank'"
     (click)="open() ? close() : open.set(true)"
   >
-    <span class="assistant-prompt">{{
-      risk() ? 'Revisa tu exposición' : 'Ve cómo cuidar tu bank'
-    }}</span
-    ><span class="assistant-icon"
-      ><app-icon [name]="open() ? 'close' : 'chat'" /><i
-        [class.risky]="risk()"
+    @if (!open()) {
+      <span class="text-[11px] font-medium bg-[var(--surface)] border border-[var(--border)] px-4 py-3 rounded-tl-xl rounded-tr-xl rounded-bl-xl rounded-br-sm shadow-[0_4px_20px_rgba(18,40,76,0.06)] text-[var(--text)] max-[600px]:text-[10px] max-[600px]:px-3.5 max-[600px]:py-2.5">
+        {{ risk() ? 'Revisa tu exposición' : 'Ve cómo cuidar tu bank' }}
+      </span>
+    }
+    <span class="w-[54px] h-[54px] bg-[var(--accent)] text-white grid place-items-center rounded-full relative shadow-[0_7px_24px_rgba(0,125,204,0.3)] max-[600px]:w-12 max-[600px]:h-12 hover:scale-105 active:scale-95 transition-transform">
+      <app-icon [name]="open() ? 'close' : 'chat'" class="w-6 h-6" />
+      <i
+        class="absolute -top-0.5 -right-0.5 w-[18px] h-[18px] bg-[var(--surface)] border-2 border-[var(--accent)] text-[var(--accent)] rounded-full text-[10px] font-bold not-italic grid place-items-center"
+        [class.!bg-[var(--negative)]]="risk()"
+        [class.!text-white]="risk()"
+        [class.!border-[var(--surface)]]="risk()"
         aria-hidden="true"
-        >{{ risk() ? '!' : 'i' }}</i
-      ></span
-    >
+      >{{ risk() ? '!' : 'i' }}</i>
+    </span>
   </button>
 </div>

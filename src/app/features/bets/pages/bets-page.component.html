@@ -1,40 +1,48 @@
-<div class="page-heading">
+<div class="flex items-center justify-between gap-4 flex-wrap mb-6">
   <div>
-    <h1>{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Registrar ticket' }}</h1>
-    <p>Anota tus tickets y resultados. Las apuestas se realizan fuera de BetRegister.</p>
+    <h1 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0">{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Registrar ticket' }}</h1>
+    <p class="text-xs text-[var(--muted)] mt-1 mb-0">Anota tus tickets y resultados. Las apuestas se realizan fuera de BetRegister.</p>
   </div>
-  <div class="workspace-tabs" role="group" aria-label="Vista de apuestas">
+  <div class="flex gap-1 border border-[var(--border)] rounded-full p-1 bg-[var(--surface)] max-[600px]:w-full" role="group" aria-label="Vista de apuestas">
     <button
       type="button"
-      [class.active]="workspaceMode() === 'register'"
+      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 cursor-pointer"
+      [class.!bg-[var(--accent)]]="workspaceMode() === 'register'"
+      [class.!text-[var(--on-accent)]]="workspaceMode() === 'register'"
+      [class.font-semibold]="workspaceMode() === 'register'"
+      [class.shadow-md]="workspaceMode() === 'register'"
       [attr.aria-pressed]="workspaceMode() === 'register'"
       routerLink="/tickets"
     >
       Registrar ticket</button
     ><button
       type="button"
-      [class.active]="workspaceMode() === 'history'"
+      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 flex items-center justify-center gap-2 cursor-pointer"
+      [class.!bg-[var(--accent)]]="workspaceMode() === 'history'"
+      [class.!text-[var(--on-accent)]]="workspaceMode() === 'history'"
+      [class.font-semibold]="workspaceMode() === 'history'"
+      [class.shadow-md]="workspaceMode() === 'history'"
       [attr.aria-pressed]="workspaceMode() === 'history'"
       routerLink="/history"
     >
-      Mis tickets <span>{{ vm.data().bets.length }}</span>
+      Mis tickets <span class="text-[11px] text-[var(--text)] bg-[var(--surface-high)] px-2 py-0.5 rounded-full">{{ vm.data().bets.length }}</span>
     </button>
   </div>
 </div>
-<div class="activity-strip" aria-label="Tu actividad de apuestas">
-  <button (click)="showResult('pending')">
-    <span class="activity-dot pending"></span><strong>{{ activity().pending }}</strong> En juego
-    <span class="activity-arrow">→</span></button
-  ><button (click)="showResult('won')">
-    <span class="activity-dot won"></span><strong>{{ activity().won }}</strong> Ganadas</button
-  ><button (click)="showResult('lost')">
-    <span class="activity-dot lost"></span><strong>{{ activity().lost }}</strong> Perdidas</button
-  ><small>Tu historial visible · todas las fechas</small>
+<div class="flex items-center gap-2 flex-wrap mb-6 p-2 bg-[var(--surface)] border border-[var(--border)] rounded-[14px] max-[600px]:gap-0.5" aria-label="Tu actividad de apuestas">
+  <button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('pending')">
+    <span class="w-[7px] h-[7px] rounded-full bg-[var(--accent)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().pending }}</strong> En juego
+    <span class="ml-3 text-[var(--accent)] max-[600px]:hidden">→</span></button
+  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('won')">
+    <span class="w-[7px] h-[7px] rounded-full bg-[var(--positive)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().won }}</strong> Ganadas</button
+  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('lost')">
+    <span class="w-[7px] h-[7px] rounded-full bg-[var(--negative)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().lost }}</strong> Perdidas</button
+  ><small class="ml-auto px-3 text-[11px] text-[var(--muted)] max-[1050px]:hidden">Tu historial visible · todas las fechas</small>
 </div>
 @if (workspaceMode() === 'register') {
   <app-screenshot-import (draft)="applyScreenshot($event)" />
   <div>
-    @if(vm.data().profile.sports_enabled){<div class="tabs" role="group" aria-label="Modo de registro">
+    @if(vm.data().profile.sports_enabled){<div class="tabs mb-4" role="group" aria-label="Modo de registro">
       <button
         [class.selected]="!quickMode() && vm.data().profile.sports_enabled"
         [attr.aria-pressed]="!quickMode() && vm.data().profile.sports_enabled"
@@ -50,9 +58,14 @@
       </button>
     </div>
     }
-    <div class="bet-workspace" [class.quick-mode]="quickMode() || !vm.data().profile.sports_enabled">
+    <div 
+      class="grid grid-cols-1 gap-6 items-start mb-7"
+      [class.xl:grid-cols-[minmax(0,1fr)_minmax(370px,0.92fr)]]="!quickMode() && vm.data().profile.sports_enabled"
+      [class.max-w-[780px]]="quickMode() || !vm.data().profile.sports_enabled"
+      [class.mx-auto]="quickMode() || !vm.data().profile.sports_enabled"
+    >
       @if (!quickMode() && vm.data().profile.sports_enabled) {
-        <section class="match-workspace">
+        <section class="min-w-0">
           <app-match-picker
             [selected]="selectedGames"
             [limit]="betType === 'parlay' ? 12 : 1"
@@ -60,54 +73,46 @@
             (complete)="focusTicket()"
             (sportChange)="calendarSport($event)"
           />
-          <div class="manual-note">
-            <strong>¿No encuentras tu partido?</strong>
-            <p>
+          <div class="py-3 px-1 text-[13px] text-[var(--muted)]">
+            <strong class="text-[var(--text)] font-semibold">¿No encuentras tu partido?</strong>
+            <p class="text-xs my-1 text-[var(--muted)]">
               Escríbelo en el campo «Partido» de tu ticket. También puedes registrar apuestas sin
               vincularlas al calendario.
             </p>
           </div>
         </section>
       }
-      <aside class="ticket-column" id="ticket">
-        <section class="panel ticket-panel">
-          <div class="ticket-heading">
-            <span class="step-label">REGISTRO PERSONAL</span>
-            <h2>
+      <aside class="w-full sticky top-[22px] min-w-0 max-[1050px]:static" id="ticket">
+        <section class="panel max-h-[max(500px,calc(100dvh-200px))] overflow-y-auto overscroll-contain border-t-[3px] border-t-[var(--accent)] rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-6 shadow-sm">
+          <div class="mb-4.5">
+            <span class="text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">REGISTRO PERSONAL</span>
+            <h2 class="text-[23px] font-bold text-[var(--text)] m-0 mb-2">
               Tu ticket
-              <span>{{
-                betType === 'same_game'
-                  ? 'Mismo partido'
-                  : betType === 'parlay'
-                    ? 'Parlay'
-                    : 'Simple'
-              }}</span>
             </h2>
           </div>
 
-          <div class="bet-types" role="group" aria-label="Tipo de apuesta">
+          <div class="grid grid-cols-3 gap-1 mb-5.5 p-1 border border-[var(--border)] rounded-xl bg-[var(--bg)]" role="group" aria-label="Tipo de apuesta">
             @for (type of types; track type.id) {
               <button
                 type="button"
-                [class.active]="betType === type.id"
+                class="border-0 py-2 px-1 justify-center text-center bg-transparent text-[var(--muted)] rounded-lg transition-all duration-200 hover:text-text hover:bg-surface/50 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center cursor-pointer"
+                [class.!bg-[var(--surface)]]="betType === type.id"
+                [class.shadow-sm]="betType === type.id"
+                [class.!text-[var(--accent)]]="betType === type.id"
+                [class.!border]="betType === type.id"
+                [class.!border-accent/30]="betType === type.id"
                 [attr.aria-pressed]="betType === type.id"
                 (click)="setType(type.id)"
               >
-                <span class="type-symbol">{{
-                  type.id === 'simple' ? '01' : type.id === 'parlay' ? '02' : '03'
-                }}</span
-                ><span
-                  ><strong>{{ type.label }}</strong
-                  ><small>{{ type.detail }}</small></span
-                >
+                <strong class="text-xs font-semibold">{{ type.label }}</strong>
               </button>
             }
           </div>
 
           @if (vm.data().houses.length) {
-            <form ngNativeValidate (ngSubmit)="addBet()">
-              <label
-                >Casa de apuestas<select name="betHouse" [(ngModel)]="selectedHouse" required>
+            <form ngNativeValidate (ngSubmit)="addBet()" class="flex flex-col gap-3.5">
+              <label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
+                >Casa de apuestas<select name="betHouse" [(ngModel)]="selectedHouse" required class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none">
                   <option value="" disabled>Selecciona una casa</option>
                   @for (h of vm.data().houses; track h.id) {
                     <option [value]="h.id">{{ h.name }} · {{ h.currency }}</option>
@@ -115,20 +120,21 @@
                 </select></label
               >
               @if (selectedGames.length) {
-                <div class="ticket-games">
+                <div class="bg-[var(--surface-high)] rounded-[10px] p-3 mb-2 flex flex-col gap-1">
                   @for (game of selectedGames; track game.id) {
-                    <p>
-                      <small>{{ game.league_name }}</small
-                      ><strong>{{ game.away }} vs {{ game.home }}</strong>
+                    <p class="m-0 text-xs text-[var(--muted)]">
+                      <small class="block text-[11px]">{{ game.league_name }}</small
+                      ><strong class="block text-[13px] text-[var(--text)] font-semibold">{{ game.away }} vs {{ game.home }}</strong>
                     </p>
                   }
                 </div>
               }
               @if (!selectedGames.length) {
-                <div class="form-grid">
-                  <label
+                <div class="grid grid-cols-2 gap-3">
+                  <label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
                     >Deporte<select
                       name="ticketSport"
+                      class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                       [disabled]="selectedGames.length > 0"
                       [ngModel]="sportForLeague(leagueTag)"
                       (ngModelChange)="setSport($event)"
@@ -140,9 +146,10 @@
                         <option value="Mixto">Mixto</option>
                       }
                     </select></label
-                  ><label
+                  ><label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
                     >Liga<select
                       name="ticketLeague"
+                      class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                       [disabled]="selectedGames.length > 0"
                       [ngModel]="leagueTag"
                       (ngModelChange)="setLeague($event)"
@@ -155,15 +162,15 @@
                 </div>
               }
               @for (selection of selections; track $index; let i = $index) {
-                <div class="structured-selection">
-                  <div class="selection-title">
+                <div class="border-t border-[var(--border)] mt-2 pt-4 pb-1 flex flex-col gap-3">
+                  <div class="flex justify-between items-center text-[13px] font-semibold text-[var(--text)]">
                     <strong>{{
                       betType === 'simple' ? 'Tu selección' : 'Selección ' + (i + 1)
                     }}</strong>
                     @if (selections.length > 2) {
                       <button
                         type="button"
-                        class="text-button"
+                        class="text-button text-xs text-[var(--negative)] hover:underline"
                         [attr.aria-label]="'Quitar selección ' + (i + 1)"
                         (click)="removeSelection(i)"
                       >
@@ -181,11 +188,12 @@
                     "
                   />
                   @if (betType === 'parlay' && !totalOddsMode) {
-                    <label
+                    <label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
                       >Cuota decimal de la selección {{ i + 1
                       }}<input
                         [name]="'legOdds' + i"
                         type="number"
+                        class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                         [(ngModel)]="legs[i].odds"
                         (ngModelChange)="updateOdds()"
                         min="1.0001"
@@ -199,13 +207,13 @@
               @if (betType !== 'simple') {
                 <button
                   type="button"
-                  class="secondary"
+                  class="secondary text-xs px-4 py-2 rounded-full font-medium"
                   [disabled]="selections.length >= 30"
                   (click)="addSelection()"
                 >
                   + Añadir selección
                 </button>
-                <p class="field-help selection-help">
+                <p class="text-xs text-[var(--muted)] leading-relaxed my-1">
                   {{
                     betType === 'same_game'
                       ? 'Usa la cuota total de la casa. Todas las selecciones corresponden al mismo partido.'
@@ -213,9 +221,14 @@
                   }}
                 </p>
               }
-              @if(betType === 'parlay'){<label class="check"><input type="checkbox" name="totalOddsMode" [(ngModel)]="totalOddsMode" (ngModelChange)="updateOdds()" /> Usar la cuota total del boleto</label>}
-              @if(importWarnings){<p class="info-note">{{importWarnings}}</p>}
-              <div class="tabs" role="group" aria-label="Importe del ticket">
+              @if(betType === 'parlay'){
+                <label class="flex items-center gap-2 text-xs text-[var(--text)] cursor-pointer">
+                  <input type="checkbox" name="totalOddsMode" [(ngModel)]="totalOddsMode" (ngModelChange)="updateOdds()" class="rounded" /> 
+                  Usar la cuota total del boleto
+                </label>
+              }
+              @if(importWarnings){<p class="text-xs p-2.5 rounded-lg bg-[rgba(41,184,245,0.08)] text-[var(--accent)] border border-[rgba(41,184,245,0.2)]">{{importWarnings}}</p>}
+              <div class="tabs my-1" role="group" aria-label="Importe del ticket">
                 <button
                   type="button"
                   [class.selected]="stakeMode === 'money'"
@@ -232,32 +245,34 @@
                 </button>
               </div>
               @if (stakeMode === 'units') {
-                <p class="field-help">
+                <p class="text-xs text-[var(--muted)]">
                   1 U = {{ vm.format(units.value(inputCurrency()), inputCurrency()) }} · Importe:
                   {{ vm.format(stake, inputCurrency()) }}
                 </p>
               }
               @if (!vm.data().profile.units) {
-                <p class="field-help">
-                  Puedes configurar tus unidades en <a routerLink="/bank">Mi bank</a>.
+                <p class="text-xs text-[var(--muted)]">
+                  Puedes configurar tus unidades en <a routerLink="/bank" class="text-[var(--accent)] hover:underline">Mi bank</a>.
                 </p>
               }
-              <div class="form-grid">
-                <label
+              <div class="grid grid-cols-2 gap-3">
+                <label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
                   >¿Cuánto apostaste? ({{ stakeMode === 'units' ? 'U' : inputCurrency() }})<input
                     name="stake"
                     type="number"
+                    class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                     [(ngModel)]="stakeInput"
                     min="0.01"
                     max="9999999999.99"
                     step="0.01"
                     required
                     placeholder="100.00" /></label
-                ><label
+                ><label class="text-xs flex flex-col gap-1 text-[var(--muted)]"
                   >Cuota {{ oddsFormat === 'american' ? 'americana' : 'decimal'
                   }}<input
                     name="odds"
                     type="number"
+                    class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                     [(ngModel)]="odds"
                     [readonly]="betType === 'parlay' && !totalOddsMode"
                     [min]="oddsFormat === 'american' ? -999900 : 1.0001"
@@ -267,16 +282,16 @@
                     [placeholder]="oddsFormat === 'american' ? '-110' : '1.90'"
                 /></label>
               </div>
-              <details class="ticket-options">
-                <summary>Vincular a un reto (opcional)</summary>
+              <details class="my-1.5 p-3 px-3.5 border border-[var(--border)] rounded-[10px]">
+                <summary class="text-xs text-[var(--muted)] cursor-pointer select-none font-medium">Vincular a un reto (opcional)</summary>
                 @if (challengeError()) {
-                  <p class="negative">No se pudieron cargar los retos.</p>
-                  <button type="button" class="secondary" (click)="loadChallenges()">
+                  <p class="text-xs text-[var(--negative)] mt-2">No se pudieron cargar los retos.</p>
+                  <button type="button" class="secondary text-xs px-3 py-1.5 rounded-full mt-1" (click)="loadChallenges()">
                     Reintentar
                   </button>
                 }
-                <label
-                  >Reto<select name="challengeId" [(ngModel)]="challengeId">
+                <label class="text-xs flex flex-col gap-1 text-[var(--muted)] mt-2"
+                  >Reto<select name="challengeId" class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none" [(ngModel)]="challengeId">
                     <option value="">Sin reto</option>
                     @for (c of challengeService.items(); track c.id) {
                       @if (c.status === 'active' && c.house_id === +selectedHouse) {
@@ -285,21 +300,22 @@
                     }
                   </select></label
                 >
-                <p class="field-help">
+                <p class="text-[11px] text-[var(--muted)] leading-relaxed mt-2">
                   Se comprueban las reglas al registrar el ticket. Cambiar de casa puede requerir
                   quitar el reto seleccionado.
                 </p>
               </details>
-              <details class="ticket-options">
-                <summary>
+              <details class="my-1.5 p-3 px-3.5 border border-[var(--border)] rounded-[10px]">
+                <summary class="text-xs text-[var(--muted)] cursor-pointer select-none font-medium">
                   Opciones de cuota y bonificación
                   @if (bonus) {
                     · Extra activo
                   }
                 </summary>
-                <label
+                <label class="text-xs flex flex-col gap-1 text-[var(--muted)] mt-2"
                   >Formato de cuota<select
                     name="oddsFormat"
+                    class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                     [(ngModel)]="oddsFormat"
                     (ngModelChange)="odds = null"
                     [disabled]="betType === 'parlay'"
@@ -309,54 +325,56 @@
                   </select></label
                 >
                 @if (betType !== 'simple') {
-                  <label
+                  <label class="text-xs flex flex-col gap-1 text-[var(--muted)] mt-2"
                     >Bonificación adicional ({{ inputCurrency() }})<input
                       name="bonus"
                       type="number"
+                      class="text-xs p-2.5 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none"
                       [(ngModel)]="bonus"
                       min="0"
                       max="9999999999.99"
                       step="0.01"
                       placeholder="0.00"
                   /></label>
-                  <p class="field-help">Dinero extra que se suma al retorno únicamente si gana.</p>
+                  <p class="text-[11px] text-[var(--muted)] mt-1">Dinero extra que se suma al retorno únicamente si gana.</p>
                 }
               </details>
               @if (oddsFormat === 'american' && decimalPreview(); as decimal) {
-                <p class="field-help">
+                <p class="text-xs text-[var(--muted)]">
                   Equivalente decimal: {{ decimal }}. El retorno usa la cuota americana exacta.
                 </p>
               }
               @if (selectedBank(); as house) {
                 <div
-                  class="stake-reference"
-                  [class.exceeded]="(stake ?? 0) * 100 > Math.floor(house.balance / 50)"
+                  class="grid grid-cols-2 gap-2.5 p-3.5 bg-[var(--surface-high)] border border-[var(--border)] rounded-[10px] text-[11px] text-[var(--muted)] my-2"
+                  [class.!border-[var(--negative)]]="(stake ?? 0) * 100 > Math.floor(house.balance / 50)"
+                  [class.!text-[var(--negative)]]="(stake ?? 0) * 100 > Math.floor(house.balance / 50)"
                 >
                   <span
                     >Disponible
-                    <strong>{{ vm.native(house.balance, house.currency) }}</strong></span
+                    <strong class="block text-[13px] text-[var(--text)] font-semibold mt-1">{{ vm.native(house.balance, house.currency) }}</strong></span
                   ><span
                     >Referencia 2%
-                    <strong>{{
+                    <strong class="block text-[13px] text-[var(--text)] font-semibold mt-1">{{
                       vm.native(Math.floor(house.balance / 50), house.currency)
                     }}</strong></span
                   >
                   @if ((stake ?? 0) * 100 > Math.floor(house.balance / 50)) {
-                    <small>El importe supera la referencia del 2%.</small>
+                    <small class="col-span-2 text-[var(--negative)] font-medium">El importe supera la referencia del 2%.</small>
                   }
                 </div>
               }
-              <div class="ticket-submit">
-                <div class="ticket-total">
-                  <span>Retorno si gana <small>Incluye el importe registrado</small></span
-                  ><strong>{{
+              <div class="pt-2">
+                <div class="flex items-center justify-between gap-3 border-t border-[var(--border)] py-4 text-xs mt-2">
+                  <span class="text-[var(--muted)]">Retorno si gana <small class="block text-[11px] text-[var(--muted)]">Incluye el importe registrado</small></span
+                  ><strong class="text-2xl font-bold tracking-tight whitespace-nowrap text-[var(--text)]">{{
                     expectedReturn() === null ? '—' : vm.native(expectedReturn()!, inputCurrency())
                   }}</strong>
                 </div>
                 @if (expectedReturn() !== null && stake !== null) {
-                  <p class="field-help">
+                  <p class="text-xs text-[var(--muted)] my-1">
                     Ganancia estimada si gana:
-                    <strong>{{
+                    <strong class="text-[var(--positive)] font-semibold">{{
                       vm.native(expectedReturn()! - Math.round(stake * 100), inputCurrency())
                     }}</strong>
                   </p>
@@ -364,21 +382,21 @@
                 
                 <app-ticket-protection [league]="leagueTag" [betType]="betType" />
                 @if (vm.error()) {
-                  <div class="inline-ticket-error alert" role="alert">
+                  <div class="flex items-center justify-between gap-2.5 p-2.5 px-3.5 rounded-xl text-xs my-3 border border-[var(--negative)] bg-[color-mix(in_srgb,var(--negative)_12%,var(--surface))] text-[var(--negative)]" role="alert">
                     <span>{{ vm.error() }}</span>
-                    <button type="button" class="text-button" (click)="vm.error.set('')">✕</button>
+                    <button type="button" class="bg-transparent text-inherit border-none text-xs px-1.5 py-0.5 cursor-pointer font-bold" (click)="vm.error.set('')">✕</button>
                   </div>
                 }
-                <button class="primary register-button" [disabled]="vm.busy()">
+                <button class="primary w-full min-h-[46px] text-sm font-semibold rounded-full mt-3 inline-flex items-center justify-center gap-2 cursor-pointer" [disabled]="vm.busy()">
                   <app-icon name="plus" />{{ vm.busy() ? 'Guardando…' : 'Guardar apuesta' }}
                 </button>
               </div>
             </form>
           } @else {
-            <div class="empty-block">
-              <h3>Añade tu primera casa</h3>
-              <p>Confirma un depósito para comenzar tu registro.</p>
-              <a class="primary button-link" routerLink="/bank">Ir a mi bank</a>
+            <div class="p-8 text-center flex flex-col items-center gap-3">
+              <h3 class="text-lg font-bold text-[var(--text)] m-0">Añade tu primera casa</h3>
+              <p class="text-xs text-[var(--muted)] m-0">Confirma un depósito para comenzar tu registro.</p>
+              <a class="primary button-link mt-2" routerLink="/bank">Ir a mi bank</a>
             </div>
           }
         </section>
@@ -389,15 +407,15 @@
 @if (workspaceMode() === 'history') {
   <div>
     <app-csv-transfer />
-    <section class="panel history-panel">
-      <div class="section-heading">
+    <section class="panel p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+      <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div>
-          <span class="eyebrow">TUS REGISTROS</span>
-          <h2>Tus tickets</h2>
-          <p>{{ filteredBets().length }} de {{ vm.data().bets.length }} apuestas</p>
+          <span class="text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">TUS REGISTROS</span>
+          <h2 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0 mt-1">Tus tickets</h2>
+          <p class="text-xs text-[var(--muted)] mt-1 mb-0">{{ filteredBets().length }} de {{ vm.data().bets.length }} apuestas</p>
         </div>
         <input
-          class="search-input"
+          class="text-xs p-2.5 px-4 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none min-w-[240px]"
           type="search"
           aria-label="Buscar apuestas"
           placeholder="Buscar evento o casa…"
@@ -405,11 +423,16 @@
           (ngModelChange)="search.set($event)"
         />
       </div>
-      <div class="history-toolbar">
-        <div class="type-chips" role="group" aria-label="Tipo de apuesta en el historial">
+      <div class="flex items-center justify-between flex-wrap gap-3.5 mb-3">
+        <div class="flex gap-1.5 flex-wrap" role="group" aria-label="Tipo de apuesta en el historial">
           @for (option of historyTypes; track option.value) {
             <button
-              [class.active]="typeFilter() === option.value"
+              class="text-xs py-2 px-3.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] rounded-full hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
+              [class.!bg-[var(--accent-soft)]]="typeFilter() === option.value"
+              [class.!border-[var(--accent)]]="typeFilter() === option.value"
+              [class.!text-[var(--accent)]]="typeFilter() === option.value"
+              [class.font-semibold]="typeFilter() === option.value"
+              [class.shadow-sm]="typeFilter() === option.value"
               [attr.aria-pressed]="typeFilter() === option.value"
               (click)="typeFilter.set(option.value)"
             >
@@ -417,16 +440,17 @@
             </button>
           }
         </div>
-        <label class="history-toggle"
+        <label class="flex gap-2 items-center text-xs text-[var(--muted)] cursor-pointer"
           ><input
             type="checkbox"
+            class="rounded"
             [ngModel]="showHidden()"
             (ngModelChange)="showHidden.set($event)"
           />
           Ver eliminadas</label
         >
       </div>
-      <div class="tabs" role="group" aria-label="Filtrar por resultado">
+      <div class="tabs mb-4" role="group" aria-label="Filtrar por resultado">
         @for (tab of tabs; track tab.value) {
           <button
             [class.selected]="betFilter() === tab.value"
@@ -437,23 +461,23 @@
           </button>
         }
       </div>
-      <div class="table-wrap">
-        <table>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse text-xs">
           <thead>
-            <tr>
-              <th>Apuesta / casa</th>
-              <th>Apostado</th>
-              <th>Cuota</th>
-              <th>Resultado</th>
-              <th>Resultado neto</th>
+            <tr class="border-b border-[var(--border)] text-[var(--muted)]">
+              <th class="py-3 px-3 font-semibold">Apuesta / casa</th>
+              <th class="py-3 px-3 font-semibold">Apostado</th>
+              <th class="py-3 px-3 font-semibold">Cuota</th>
+              <th class="py-3 px-3 font-semibold">Resultado</th>
+              <th class="py-3 px-3 font-semibold">Resultado neto</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="divide-y divide-[var(--border)]">
             @for (b of filteredBets(); track b.id) {
-              <tr>
-                <td class="event-cell">
-                  <strong class="ticket-event" [title]="b.event">{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</strong
-                  ><small
+              <tr class="hover:bg-[var(--surface-high)]/40 transition-colors">
+                <td class="py-3 px-3 min-w-[230px]">
+                  <strong class="line-clamp-2 text-sm font-semibold text-[var(--text)] max-w-[380px] leading-relaxed" [title]="b.event">{{ b.event }} @if(b.public_record){<small class="inline-block ml-1.5 text-[10px] text-[var(--accent)] font-normal">Registro público sellado</small>}</strong
+                  ><small class="block text-[11px] text-[var(--muted)] mt-1"
                     >{{
                       b.bet_type === 'same_game'
                         ? 'Mismo partido'
@@ -462,81 +486,83 @@
                           : 'Simple'
                     }}
                     · {{ b.house }} · {{ timestamp(b.created) | date: 'dd/MM/yyyy HH:mm' }}</small
-                  ><small
+                  ><small class="block text-[10px] text-[var(--muted)]"
                     >{{ b.league_tag || 'Sin clasificar' }} ·
                     {{ b.market_tag || 'Sin clasificar' }}</small
                   >
-                  <details class="ticket-detail">
-                    <summary>Ver detalle</summary>
-                    <p>{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</p>
+                  <details class="mt-2 text-xs text-[var(--muted)]">
+                    <summary class="text-xs text-[var(--accent)] cursor-pointer font-medium select-none">Ver detalle</summary>
+                    <p class="text-xs text-[var(--muted)] my-1 whitespace-normal max-w-[380px]">{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</p>
                     @for (selection of b.same_game_selections ?? []; track $index) {
-                      <small>↳ {{ selection }}</small>
+                      <small class="block text-[11px] text-[var(--muted)]">↳ {{ selection }}</small>
                     }
                     @for (game of b.linked_games ?? []; track game.id) {
-                      <small>{{ game.away }} vs {{ game.home }}</small>
+                      <small class="block text-[11px] text-[var(--muted)]">{{ game.away }} vs {{ game.home }}</small>
                     }
-                    <button class="text-button" (click)="management.set({ bet: b, mode: 'tags' })">
-                      Editar mercados
-                    </button>
-                    @if (b.linked_games?.length) {
-                      <button class="text-button" (click)="scoreBet.set(b)">Ver marcadores</button>
-                    }
+                    <div class="flex gap-3 mt-1.5">
+                      <button class="text-button text-xs text-[var(--accent)] hover:underline" (click)="management.set({ bet: b, mode: 'tags' })">
+                        Editar mercados
+                      </button>
+                      @if (b.linked_games?.length) {
+                        <button class="text-button text-xs text-[var(--accent)] hover:underline" (click)="scoreBet.set(b)">Ver marcadores</button>
+                      }
+                    </div>
                   </details>
                 </td>
-                <td data-label="Apostado">
-                  {{ vm.native(b.stake, b.currency) }}
+                <td class="py-3 px-3 text-[var(--text)] whitespace-nowrap" data-label="Apostado">
+                  <span class="font-semibold">{{ vm.native(b.stake, b.currency) }}</span>
                   @if (b.released_stake) {
-                    <small
+                    <small class="block text-[10px] text-[var(--muted)]"
                       >Pendiente: {{ vm.native(b.remaining_stake ?? 0, b.currency) }} · Recibido
                       parcial: {{ vm.native(b.partial_payout ?? 0, b.currency) }}</small
                     >
                   }
                   @if (b.currency !== vm.currency()) {
-                    <small>≈ {{ vm.money(b.stake, b.currency) }}</small>
+                    <small class="block text-[10px] text-[var(--muted)]">≈ {{ vm.money(b.stake, b.currency) }}</small>
                   }
                 </td>
-                <td data-label="Cuota">
-                  {{
+                <td class="py-3 px-3 text-[var(--text)] whitespace-nowrap" data-label="Cuota">
+                  <span class="font-semibold">{{
                     b.american_odds ? (b.american_odds > 0 ? '+' : '') + b.american_odds : b.odds
-                  }}
+                  }}</span>
                   @if (b.american_odds) {
-                    <small>≈ {{ b.odds }} decimal</small>
+                    <small class="block text-[10px] text-[var(--muted)]">≈ {{ b.odds }} decimal</small>
                   }
                   @if (b.bonus) {
-                    <small>Extra: {{ vm.native(b.bonus, b.currency) }}</small>
+                    <small class="block text-[10px] text-[var(--accent)]">Extra: {{ vm.native(b.bonus, b.currency) }}</small>
                   }
                 </td>
-                <td data-label="Estado">
+                <td class="py-3 px-3 whitespace-nowrap" data-label="Estado">
                   <span [class]="'status ' + b.status">{{ vm.labels[b.status] }}</span>
                 </td>
-                <td data-label="Resultado">
+                <td class="py-3 px-3 whitespace-nowrap" data-label="Resultado">
                   @if (b.status === 'pending') {
-                    <details class="row-menu pending-menu">
-                      <summary>Resolver apuesta</summary>
-                      <div class="actions">
+                    <details class="row-menu pending-menu text-xs">
+                      <summary class="text-xs text-[var(--accent)] font-semibold cursor-pointer select-none">Resolver apuesta</summary>
+                      <div class="flex flex-wrap gap-1.5 mt-2.5">
                         @if (b.legs?.length) {
                           <button
-                            class="secondary"
+                            class="secondary text-[11px] py-1 px-2.5 rounded-full"
                             (click)="management.set({ bet: b, mode: 'legs' })"
                           >
                             Resolver selecciones
                           </button>
                         }
                         <button
-                          class="secondary"
+                          class="secondary text-[11px] py-1 px-2.5 rounded-full"
                           (click)="management.set({ bet: b, mode: 'partial' })"
                         >
                           Cashout parcial
                         </button>
                         @if (!b.legs?.length) {
                           <button
-                            class="primary"
+                            class="primary text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
                             [disabled]="vm.busy()"
                             (click)="reviewBet(b, 'won')"
                           >
                             Ganada</button
                           ><button
-                            class="danger-button"
+                            class="danger-button text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
                             [disabled]="vm.busy()"
                             (click)="reviewBet(b, 'lost')"
                           >
@@ -544,13 +570,13 @@
                           </button>
                         }
                         <button
-                          class="secondary"
+                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
                           [disabled]="vm.busy()"
                           (click)="reviewBet(b, 'void')"
                         >
                           Anulada</button
                         ><button
-                          class="secondary"
+                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
                           [disabled]="vm.busy()"
                           (click)="cashoutId = b.id; cashoutAmount = null"
                         >
@@ -559,53 +585,59 @@
                       </div>
                       @if (cashoutId === b.id) {
                         <form
-                          class="compact-form"
+                          class="mt-2.5 p-2 rounded-lg bg-[var(--surface-high)] flex flex-col gap-2 min-w-[180px]"
                           ngNativeValidate
                           (ngSubmit)="reviewBet(b, 'cashout', cashoutAmount ?? 0)"
                         >
-                          <label
+                          <label class="text-[11px] flex flex-col gap-1 text-[var(--muted)]"
                             >Retorno total ({{ b.currency }})<input
                               name="cashout"
                               type="number"
+                              class="text-xs p-1.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] outline-none"
                               [(ngModel)]="cashoutAmount"
                               min="0"
                               max="9999999999.99"
                               step="0.01"
                               required /></label
-                          ><button class="primary" [disabled]="vm.busy()">Revisar</button
-                          ><button type="button" class="secondary" (click)="cashoutId = null">
-                            Volver
-                          </button>
+                          ><div class="flex gap-2">
+                            <button class="primary text-[11px] py-1 px-3 rounded-full font-semibold" [disabled]="vm.busy()">Revisar</button>
+                            <button type="button" class="secondary text-[11px] py-1 px-3 rounded-full" (click)="cashoutId = null">
+                              Volver
+                            </button>
+                          </div>
                         </form>
                       }
                     </details>
                   } @else {
                     <strong
-                      [class.positive]="b.payout >= b.stake"
-                      [class.negative]="b.payout < b.stake"
+                      class="block font-bold text-sm"
+                      [class.text-[var(--positive)]]="b.payout >= b.stake"
+                      [class.text-[var(--negative)]]="b.payout < b.stake"
                       >{{ vm.native(b.payout - b.stake, b.currency) }}</strong
-                    ><small>Retorno: {{ vm.native(b.payout, b.currency) }}</small>
-                    <details class="row-menu">
-                      <summary>Gestionar apuesta</summary>
-                      <button
-                        class="text-button"
-                        (click)="management.set({ bet: b, mode: 'correct' })"
-                      >
-                        Corregir / anular</button
-                      ><button
-                        class="text-button"
-                        [disabled]="vm.busy()"
-                        (click)="reviewHistory(b)"
-                      >
-                        {{ b.history_hidden ? 'Restaurar al historial' : 'Eliminar del historial' }}
-                      </button>
+                    ><small class="block text-[11px] text-[var(--muted)]">Retorno: {{ vm.native(b.payout, b.currency) }}</small>
+                    <details class="mt-1 text-xs text-[var(--muted)]">
+                      <summary class="text-xs text-[var(--muted)] cursor-pointer select-none">Gestionar apuesta</summary>
+                      <div class="flex flex-col gap-1 mt-1.5">
+                        <button
+                          class="text-button text-xs text-[var(--accent)] hover:underline text-left"
+                          (click)="management.set({ bet: b, mode: 'correct' })"
+                        >
+                          Corregir / anular</button
+                        ><button
+                          class="text-button text-xs text-[var(--muted)] hover:underline text-left"
+                          [disabled]="vm.busy()"
+                          (click)="reviewHistory(b)"
+                        >
+                          {{ b.history_hidden ? 'Restaurar al historial' : 'Eliminar del historial' }}
+                        </button>
+                      </div>
                     </details>
                   }
                 </td>
               </tr>
             } @empty {
               <tr>
-                <td colspan="5" class="empty">No hay apuestas para este filtro.</td>
+                <td colspan="5" class="py-8 text-center text-xs text-[var(--muted)]">No hay apuestas para este filtro.</td>
               </tr>
             }
           </tbody>

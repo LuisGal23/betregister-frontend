@@ -29,7 +29,7 @@ export interface MatchAnalysis {
   standalone: true,
   imports: [CommonModule, FormsModule, DatePipe, IconComponent],
   templateUrl: './matches-page.component.html',
-  styleUrl: './matches-page.component.css',
+  host: { class: 'block w-full' },
 })
 export class MatchesPageComponent implements OnInit {
   private sports = inject(SportsService);

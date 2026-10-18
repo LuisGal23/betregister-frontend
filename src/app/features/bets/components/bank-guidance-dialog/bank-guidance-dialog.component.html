@@ -2,13 +2,14 @@
   #dialog
   aria-labelledby="bank-guidance-title"
   (cancel)="$event.preventDefault(); dismiss.emit()"
+  class="w-[min(540px,calc(100vw-28px))] max-h-[90dvh] overflow-auto p-5 sm:p-7 border border-border rounded-2xl bg-bg text-text shadow-2xl backdrop:bg-black/75 backdrop:backdrop-blur-sm"
 >
-  <header>
-    <span>DETALLE DE EXPOSICIÓN</span
-    ><button
+  <header class="flex items-center justify-between gap-3.5 mb-4">
+    <span class="text-[10px] tracking-widest text-text-muted font-bold uppercase">DETALLE DE EXPOSICIÓN</span>
+    <button
       autofocus
       type="button"
-      class="secondary"
+      class="secondary !text-xs !py-1.5 !px-3.5 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
       aria-label="Cerrar detalle de bank"
       (click)="dismiss.emit()"
     >

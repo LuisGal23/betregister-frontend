@@ -2,8 +2,8 @@ import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-icon',
+  host: { class: 'inline-flex w-5 h-5 shrink-0' },
   templateUrl: './icon.component.html',
-  styleUrl: './icon.component.css',
 })
 export class IconComponent {
   name = input('overview');
