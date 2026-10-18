@@ -1,0 +1,297 @@
+<div class="matches-page">
+  <!-- Top Ticker Bar inspired by reference design -->
+  @if (tickerMatches().length) {
+    <div class="ticker-rail" aria-label="Partidos destacados">
+      <div class="ticker-track">
+        @for (item of tickerMatches(); track item.id) {
+          <button type="button" class="ticker-pill" (click)="addToTicket(item)">
+            <span class="ticker-teams">
+              <strong>{{ shortCode(item.home) }}</strong>
+              <small>{{ item.state === 'live' || item.state === 'final' ? (item.home_score ?? 0) + '-' + (item.away_score ?? 0) : 'vs' }}</small>
+              <strong>{{ shortCode(item.away) }}</strong>
+            </span>
+            <span class="ticker-badge" [class.live]="item.state === 'live'">
+              {{ item.state === 'live' ? 'VIVO' : item.state === 'final' ? 'FIN' : (item.start | date:'HH:mm') }}
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Header & Filters -->
+  <header class="matches-header">
+    <div class="header-main">
+      <div class="header-badge">
+        <span class="pulse-dot"></span>
+        <span>AUDITORÍA EN VIVO · APIS OFICIALES</span>
+      </div>
+      <h1>Partidos del día</h1>
+      <p>Explora marcadores, probabilidades estimadas por nuestro modelo y selecciona cualquier encuentro para armar tu ticket con control de bank.</p>
+    </div>
+
+    <div class="header-actions">
+      <!-- Quick Date Switcher -->
+      <div class="date-pills" role="group" aria-label="Fecha de partidos">
+        <button type="button" class="pill-btn" (click)="setDateOffset(-1)">Ayer</button>
+        <button type="button" class="pill-btn active" (click)="setDateOffset(0)">Hoy</button>
+        <button type="button" class="pill-btn" (click)="setDateOffset(1)">Mañana</button>
+        <input 
+          type="date" 
+          class="date-input" 
+          [ngModel]="selectedDate()" 
+          (ngModelChange)="selectedDate.set($event); loadMatches()" 
+          aria-label="Seleccionar fecha"
+        />
+      </div>
+
+      <!-- Live Toggle -->
+      <button 
+        type="button" 
+        class="live-toggle" 
+        [class.active]="onlyLive()" 
+        (click)="onlyLive.set(!onlyLive())"
+      >
+        <span class="live-indicator"></span>
+        <span>Solo en vivo</span>
+        @if (stats().live > 0) {
+          <span class="live-count">{{ stats().live }}</span>
+        }
+      </button>
+
+      <!-- Refresh -->
+      <button type="button" class="refresh-btn" [disabled]="loading()" (click)="loadMatches()" aria-label="Actualizar partidos">
+        <app-icon name="arrow" class="spin-icon" />
+      </button>
+    </div>
+  </header>
+
+  <!-- League Categories Tabs -->
+  <nav class="category-tabs" aria-label="Categorías deportivas">
+    @for (cat of categories; track cat.id) {
+      <button 
+        type="button" 
+        class="cat-tab" 
+        [class.active]="selectedCategory() === cat.id"
+        (click)="setCategory(cat.id)"
+      >
+        <span>{{ cat.label }}</span>
+      </button>
+    }
+  </nav>
+
+  <!-- Search / Counter Bar -->
+  <div class="search-bar">
+    <input 
+      type="search" 
+      placeholder="Buscar equipo o torneo…" 
+      [ngModel]="searchQuery()" 
+      (ngModelChange)="searchQuery.set($event)"
+      class="search-input"
+    />
+    <span class="matches-count">{{ filteredGames().length }} partidos encontrados</span>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Consultando proveedores y actualizando probabilidades…</p>
+    </div>
+  }
+
+  <!-- Error Alert -->
+  @if (error()) {
+    <div class="alert error-alert" role="alert">
+      <span>{{ error() }}</span>
+      <button type="button" class="text-button" (click)="loadMatches()">Reintentar</button>
+    </div>
+  }
+
+  <!-- Games Grid -->
+  @if (!loading() && filteredGames().length) {
+    <div class="matches-grid">
+      @for (game of filteredGames(); track game.id) {
+        @let analysis = analyzeGame(game);
+        <article class="match-card">
+          <!-- Card Header / Meta -->
+          <div class="card-meta">
+            <div class="meta-left">
+              <span class="meta-date">
+                {{ game.start | date:'EEE d MMM · HH:mm' : undefined : 'es' }} CDMX
+              </span>
+              <span class="meta-venue">{{ game.league_name }}</span>
+            </div>
+            
+            <div class="meta-right">
+              @if (game.state === 'live') {
+                <span class="status-pill live-pill">
+                  <span class="pulse-dot red"></span> EN VIVO
+                </span>
+              } @else if (game.state === 'final') {
+                <span class="status-pill final-pill">FINAL</span>
+              } @else {
+                <span class="status-pill scheduled-pill">
+                  <span class="pulse-dot cyan"></span> POR JUGARSE
+                </span>
+              }
+
+              <button 
+                type="button" 
+                class="quick-add-btn" 
+                title="Añadir al ticket de apuestas" 
+                (click)="addToTicket(game)"
+              >
+                <app-icon name="plus" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Teams & Score Matchup -->
+          <div class="matchup-body">
+            <!-- Home Team (Visita) -->
+            <div class="team-col home">
+              <div class="team-crest">
+                @if (game.home_logo) {
+                  <img [src]="game.home_logo" [alt]="game.home" loading="lazy" />
+                } @else {
+                  <span class="crest-placeholder">{{ shortCode(game.home) }}</span>
+                }
+              </div>
+              <span class="team-code">{{ shortCode(game.home) }}</span>
+              <strong class="team-name">{{ game.home }}</strong>
+              <small class="team-role">visita</small>
+            </div>
+
+            <!-- Score / Versus Center -->
+            <div class="center-score">
+              @if (game.state === 'live' || game.state === 'final') {
+                <div class="score-display">
+                  <span>{{ game.home_score ?? 0 }}</span>
+                  <span class="dash">–</span>
+                  <span>{{ game.away_score ?? 0 }}</span>
+                </div>
+                @if (game.detail) {
+                  <small class="game-detail">{{ game.detail }}</small>
+                }
+              } @else {
+                <span class="vs-label">VS</span>
+                <span class="start-time">{{ game.start | date:'HH:mm' }}</span>
+              }
+            </div>
+
+            <!-- Away Team (Local) -->
+            <div class="team-col away">
+              <div class="team-crest">
+                @if (game.away_logo) {
+                  <img [src]="game.away_logo" [alt]="game.away" loading="lazy" />
+                } @else {
+                  <span class="crest-placeholder">{{ shortCode(game.away) }}</span>
+                }
+              </div>
+              <span class="team-code">{{ shortCode(game.away) }}</span>
+              <strong class="team-name">{{ game.away }}</strong>
+              <small class="team-role">local</small>
+            </div>
+          </div>
+
+          <!-- Split Probability Bar (FabLabs style) -->
+          <div class="prob-section">
+            <div class="prob-labels">
+              <span class="prob-left" [class.favored]="analysis.favorite === 'home'">
+                {{ analysis.homeProb }}% {{ shortCode(game.home) }}
+              </span>
+              <span class="prob-right" [class.favored]="analysis.favorite === 'away'">
+                {{ shortCode(game.away) }} {{ analysis.awayProb }}%
+              </span>
+            </div>
+            <div class="prob-split-bar" aria-hidden="true">
+              <div class="prob-bar-home" [style.width.%]="analysis.homeProb"></div>
+              <div class="prob-bar-away" [style.width.%]="analysis.awayProb"></div>
+            </div>
+          </div>
+
+          <!-- Highlighted Pick / Prediction Box -->
+          <div class="pick-box">
+            <div class="pick-head">
+              <strong>{{ analysis.pickLabel }}</strong>
+              <span class="pick-badge">
+                {{ game.state === 'final' ? 'FINALIZADO' : 'POR JUGARSE' }}
+              </span>
+            </div>
+            <div class="pick-meta">
+              <span>{{ analysis.favorite === 'home' ? analysis.homeProb : analysis.awayProb }}% probabilidad</span>
+              <span>·</span>
+              <span>Confianza {{ analysis.confidence }}</span>
+            </div>
+          </div>
+
+          <!-- Key Lines Grid (2x2) -->
+          <div class="stats-grid">
+            <div class="stat-cell">
+              <span class="stat-label">MARCADOR ESTIMADO</span>
+              <strong class="stat-value">
+                {{ shortCode(game.home) }} {{ analysis.estHomeScore }}–{{ analysis.estAwayScore }} {{ shortCode(game.away) }}
+              </strong>
+            </div>
+
+            <div class="stat-cell">
+              <span class="stat-label">TOTAL ESTIMADO</span>
+              <strong class="stat-value">{{ analysis.estTotal }}</strong>
+            </div>
+
+            <div class="stat-cell">
+              <span class="stat-label">LÍNEA DE TOTAL</span>
+              <strong class="stat-value">{{ analysis.totalLine }}</strong>
+            </div>
+
+            <div class="stat-cell">
+              <span class="stat-label">HÁNDICAP LOCAL</span>
+              <strong class="stat-value">{{ analysis.handicap }}</strong>
+            </div>
+          </div>
+
+          <!-- Lines with Highest Win Probability -->
+          <div class="alt-lines">
+            <span class="alt-title">LÍNEAS CON MÁS PROBABILIDAD DE ACERTAR</span>
+            <div class="alt-row">
+              <span class="alt-name">{{ analysis.altLine1.text }}</span>
+              <span class="alt-prob">{{ analysis.altLine1.prob }}%</span>
+              <span class="alt-status" [class.won]="analysis.altLine1.status === 'Acertó'">
+                {{ analysis.altLine1.status }}
+              </span>
+            </div>
+            <div class="alt-row">
+              <span class="alt-name">{{ analysis.altLine2.text }}</span>
+              <span class="alt-prob">{{ analysis.altLine2.prob }}%</span>
+              <span class="alt-status" [class.won]="analysis.altLine2.status === 'Acertó'">
+                {{ analysis.altLine2.status }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Card Action Button -->
+          <div class="card-footer">
+            <button 
+              type="button" 
+              class="primary ticket-cta-btn" 
+              (click)="addToTicket(game)"
+            >
+              <app-icon name="plus" />
+              <span>Añadir al ticket y registrar</span>
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  } @else if (!loading() && !filteredGames().length) {
+    <div class="empty-state">
+      <div class="empty-icon">⚽</div>
+      <h3>No hay partidos en esta categoría para la fecha seleccionada</h3>
+      <p>Prueba cambiando de fecha (Hoy / Mañana) o seleccionando otra liga deportiva.</p>
+      <button type="button" class="secondary pill-btn" (click)="setCategory('all')">
+        Ver todas las ligas
+      </button>
+    </div>
+  }
+</div>

@@ -288,77 +288,58 @@ body {
   color: var(--accent);
 }
 
-/* KPIs / Overview Cards */
+/* KPIs / Overview Cards - Clean, modern, high hierarchy */
 :root .main-content .headline-kpis {
-  gap: 14px;
+  gap: 12px;
 }
 
 :root .main-content .headline-kpis article {
   position: relative;
-  padding: 22px;
-  min-height: 140px;
+  padding: 18px 20px;
+  min-height: 110px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  border-radius: 20px;
+  border-radius: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, transform 0.15s ease;
 }
 
-:root .main-content .headline-kpis article:before {
-  content: '↗';
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  width: 28px;
-  height: 28px;
-  background: rgba(41, 184, 245, 0.15);
-  border: 1px solid rgba(41, 184, 245, 0.3);
-  color: var(--accent);
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
-:root .main-content .headline-kpis article:nth-child(2) {
-  background: linear-gradient(145deg, rgba(41, 184, 245, 0.08), var(--surface));
-  border-color: rgba(41, 184, 245, 0.2);
-}
-
-:root .main-content .headline-kpis article:nth-child(3) {
-  background: linear-gradient(145deg, rgba(245, 158, 11, 0.08), var(--surface));
-}
-
-:root .main-content .headline-kpis article:nth-child(3):before {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: var(--warning);
-  content: '%';
-}
-
-:root .main-content .headline-kpis article:nth-child(4):before {
-  content: '✓';
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  color: var(--violet);
+:root .main-content .headline-kpis article:hover {
+  border-color: rgba(41, 184, 245, 0.35);
+  transform: translateY(-1px);
 }
 
 :root .main-content .headline-kpis strong {
-  font-size: 26px;
-  margin: 6px 0;
-  letter-spacing: -0.8px;
+  font-size: clamp(20px, 1.8vw, 26px);
+  margin: 6px 0 2px;
+  letter-spacing: -0.6px;
   font-variant-numeric: tabular-nums;
   font-weight: 700;
+  color: var(--text);
+}
+
+:root .main-content .headline-kpis strong.positive {
+  color: #10b981;
+}
+
+:root .main-content .headline-kpis strong.negative {
+  color: #f43f5e;
 }
 
 :root .main-content .headline-kpis span {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   color: var(--muted);
 }
 
 :root .main-content .headline-kpis small {
   font-size: 11px;
-  line-height: 1.5;
+  line-height: 1.4;
   color: var(--muted);
 }
 

@@ -42,8 +42,9 @@ export class ShellComponent implements OnInit {
   );
   links = [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
-    { path: 'bank', label: 'Mi bank', icon: 'bank' },
+    { path: 'matches', label: 'Partidos del día', icon: 'calendar' },
     { path: 'tickets', label: 'Registrar ticket', icon: 'plus' },
+    { path: 'bank', label: 'Mi bank', icon: 'bank' },
     { path: 'history', label: 'Mis apuestas', icon: 'bets' },
     { path: 'insights', label: 'Análisis', icon: 'trend' },
     { path: 'challenges', label: 'Retos', icon: 'flag' },

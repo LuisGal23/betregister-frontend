@@ -1,168 +1,253 @@
-<div class="auth-stage" [class.registering]="registering()">
-  <section class="story" aria-live="polite">
-    @if (registering()) {
-      <h1>Empieza<br />tu registro.</h1>
-      <p>Una cuenta para organizar los saldos y resultados de tus apuestas.</p>
-    } @else {
-      <h1>Tu registro<br />de apuestas.</h1>
-      <p>Saldos por casa, movimientos y resultados. Todo en el mismo lugar.</p>
-    }
-
-    <!-- Vista previa ilustrativa de la app -->
-    <div class="chart-panel" role="img" aria-label="Ejemplo de gráfica de crecimiento del bank">
-      <div class="chart-head">
-        <div>
-          <span class="chart-label">Bank total</span>
-          <strong class="chart-figure">$12,480.00</strong>
-        </div>
-        <span class="delta">+8.4% este mes</span>
+<div class="auth-wrapper">
+  <div class="auth-container">
+    <!-- Left Column: Value Preview (FabLabs Analytics Aesthetic) -->
+    <section class="auth-showcase" aria-hidden="true">
+      <div class="showcase-badge">
+        <span class="pulse-dot"></span>
+        <span>CONTROL AUDITADO</span>
       </div>
 
-      <svg viewBox="0 0 480 190" preserveAspectRatio="none" class="chart" aria-hidden="true">
-        <defs>
-          <linearGradient id="brArea" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#7dd3a8" stop-opacity="0.22" />
-            <stop offset="1" stop-color="#7dd3a8" stop-opacity="0" />
-          </linearGradient>
-        </defs>
-        <g class="grid-lines">
-          <line x1="0" y1="30" x2="480" y2="30" />
-          <line x1="0" y1="80" x2="480" y2="80" />
-          <line x1="0" y1="130" x2="480" y2="130" />
-          <line x1="0" y1="180" x2="480" y2="180" />
-        </g>
-        <path
-          class="area"
-          d="M0,150 C40,148 60,120 100,124 S160,150 200,118 S260,90 300,98 S360,60 400,52 S450,36 476,30 L476,180 L0,180 Z"
-          fill="url(#brArea)"
-        />
-        <path
-          class="line"
-          pathLength="1"
-          d="M0,150 C40,148 60,120 100,124 S160,150 200,118 S260,90 300,98 S360,60 400,52 S450,36 476,30"
-        />
-        <circle class="dot-halo" cx="476" cy="30" r="9" />
-        <circle class="dot" cx="476" cy="30" r="4" />
-      </svg>
+      <h1 class="showcase-title">
+        Tu registro<br />
+        <span class="accent-text">de apuestas.</span>
+      </h1>
+      <p class="showcase-sub">
+        Saldos por casa, movimientos y resultados de partidos. Todo en el mismo lugar y sin hojas de cálculo confusas.
+      </p>
 
-      <div class="split">
-        <div class="split-bar" aria-hidden="true">
-          <span style="width: 62%"></span>
-          <span style="width: 38%"></span>
+      <!-- Bankroll Glance Card -->
+      <div class="bank-glance-card">
+        <div class="glance-head">
+          <div>
+            <span class="glance-label">Bank total</span>
+            <strong class="glance-figure">$12,480.00</strong>
+          </div>
+          <span class="glance-delta">+8.4% este mes</span>
         </div>
-        <ul class="split-legend">
-          <li><i class="k1"></i>Novibet <b>62%</b></li>
-          <li><i class="k2"></i>Playdoit <b>38%</b></li>
-        </ul>
+
+        <svg viewBox="0 0 480 160" preserveAspectRatio="none" class="glance-chart">
+          <defs>
+            <linearGradient id="authChartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#29b8f5" stop-opacity="0.25" />
+              <stop offset="100%" stop-color="#29b8f5" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path
+            class="chart-area"
+            d="M0,130 C40,126 60,105 100,108 S160,130 200,98 S260,70 300,78 S360,45 400,38 S450,25 476,20 L476,160 L0,160 Z"
+            fill="url(#authChartGrad)"
+          />
+          <path
+            class="chart-line"
+            d="M0,130 C40,126 60,105 100,108 S160,130 200,98 S260,70 300,78 S360,45 400,38 S450,25 476,20"
+          />
+          <circle class="chart-dot-glow" cx="476" cy="20" r="8" />
+          <circle class="chart-dot" cx="476" cy="20" r="3.5" />
+        </svg>
+
+        <div class="glance-split">
+          <div class="split-bar">
+            <span class="split-seg seg-cyan" style="width: 62%"></span>
+            <span class="split-seg seg-slate" style="width: 38%"></span>
+          </div>
+          <div class="split-legend">
+            <span class="leg-item"><i class="dot-cyan"></i> Novibet <b>62%</b></span>
+            <span class="leg-item"><i class="dot-slate"></i> Playdoit <b>38%</b></span>
+          </div>
+        </div>
       </div>
-      <span class="sample-tag">Vista de ejemplo</span>
-    </div>
 
-    <ul class="auth-details">
-      <li>Bank separado por casa</li>
-      <li>Registro en pesos o dólares</li>
-      <li>Historial y seguimiento de resultados</li>
-    </ul>
-  </section>
+      <!-- Feature Bullet Points -->
+      <ul class="showcase-bullets">
+        <li>
+          <span class="bullet-check">✓</span>
+          <span>Bank segregado por casa con stop-loss</span>
+        </li>
+        <li>
+          <span class="bullet-check">✓</span>
+          <span>Partidos del día y ligas integradas vía API</span>
+        </li>
+        <li>
+          <span class="bullet-check">✓</span>
+          <span>Registro en pesos o dólares con yield y ROI auditado</span>
+        </li>
+      </ul>
+    </section>
 
-  <form ngNativeValidate class="auth-card" (ngSubmit)="submit()">
-    <h2>{{ auth.verification() ? 'Verifica tu correo' : registering() ? 'Crear cuenta' : 'Iniciar sesión' }}</h2>
-    <p class="auth-sub">
-      {{
-        auth.verification() ? 'Enviamos un código a ' + email + '. Revisa también la carpeta de spam.' : registering() ? 'Introduce tu correo y elige una contraseña.' : 'Accede a tus registros.'
-      }}
-    </p>
+    <!-- Right Column: Auth Form -->
+    <section class="auth-card">
+      @if (!auth.verification()) {
+        <!-- Segmented Tab Switcher -->
+        <div class="auth-tabs" role="tablist">
+          <button 
+            type="button" 
+            role="tab"
+            class="auth-tab" 
+            [class.active]="!registering()" 
+            [attr.aria-selected]="!registering()"
+            (click)="setMode(false)"
+          >
+            Iniciar sesión
+          </button>
+          <button 
+            type="button" 
+            role="tab"
+            class="auth-tab" 
+            [class.active]="registering()" 
+            [attr.aria-selected]="registering()"
+            (click)="setMode(true)"
+          >
+            Crear cuenta
+          </button>
+        </div>
+      }
 
-    @if (vm.error()) {
-      <div class="alert" role="alert">{{ vm.error() }}</div>
-    }
+      <div class="form-header">
+        <h2>
+          {{ auth.verification() ? 'Verifica tu correo' : registering() ? 'Crea tu cuenta' : 'Bienvenido de nuevo' }}
+        </h2>
+        <p class="form-sub">
+          {{
+            auth.verification()
+              ? 'Enviamos un código de 8 dígitos a ' + email + '.'
+              : registering()
+                ? 'Introduce tu correo y crea una contraseña para empezar.'
+                : 'Ingresa tus credenciales para acceder a tus registros.'
+          }}
+        </p>
+      </div>
 
-    @if (vm.notice()) { <p role="status">{{ vm.notice() }}</p> }
-    @if (auth.verification()) {
-      <label>
-        <span>Código de 8 dígitos</span>
-        <input name="verificationCode" type="text" inputmode="numeric" autocomplete="one-time-code"
-          [(ngModel)]="code" required pattern="[0-9]{8}" minlength="8" maxlength="8" placeholder="00000000" />
-      </label>
-      <p class="auth-sub">El código vence en 10 minutos y solo puede usarse una vez. No lo compartas.</p>
-      <button type="button" class="text-button" [disabled]="vm.busy() || waitSeconds() > 0" (click)="auth.resend()">
-        {{ waitSeconds() > 0 ? 'Reenviar en ' + waitSeconds() + ' s' : 'Reenviar código' }}
-      </button>
-      <button type="button" class="text-button" [disabled]="vm.busy()" (click)="back()">Volver y cambiar correo</button>
-    } @else {
-    <label>
-      <span>Correo electrónico</span>
-      <input
-        name="email"
-        type="email"
-        [(ngModel)]="email"
-        required
-        maxlength="254"
-        autocomplete="email"
-        placeholder="tu@correo.com"
-      />
-    </label>
+      <!-- Error and Notice Banners -->
+      @if (vm.error()) {
+        <div class="alert error-box" role="alert">
+          <span>{{ vm.error() }}</span>
+          <button type="button" class="close-btn" (click)="vm.error.set('')">✕</button>
+        </div>
+      }
+      @if (vm.notice()) {
+        <div class="notice-box" role="status">
+          <span>{{ vm.notice() }}</span>
+        </div>
+      }
 
-    <label>
-      <span>Contraseña</span>
-      <div class="password-field">
-        <input
-          name="password"
-          [type]="reveal() ? 'text' : 'password'"
-          [(ngModel)]="password"
-          minlength="10"
-          maxlength="128"
-          required
-          [attr.autocomplete]="registering() ? 'new-password' : 'current-password'"
-          placeholder="Mínimo 10 caracteres"
-        />
-        <button
-          type="button"
-          class="icon-button"
-          [attr.aria-label]="reveal() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
-          [attr.aria-pressed]="reveal()"
-          (click)="toggleReveal()"
-        >
-          <app-icon name="eye" />
+      <form ngNativeValidate class="form-body" (ngSubmit)="submit()">
+        @if (auth.verification()) {
+          <label class="field-group">
+            <span class="field-label">Código de 8 dígitos</span>
+            <input 
+              name="verificationCode" 
+              type="text" 
+              inputmode="numeric" 
+              autocomplete="one-time-code"
+              [(ngModel)]="code" 
+              required 
+              pattern="[0-9]{8}" 
+              minlength="8" 
+              maxlength="8" 
+              placeholder="00000000"
+              class="form-input code-input"
+            />
+          </label>
+          <p class="code-hint">El código vence en 10 minutos y solo puede usarse una vez.</p>
+          
+          <button type="button" class="text-btn" [disabled]="vm.busy() || waitSeconds() > 0" (click)="auth.resend()">
+            {{ waitSeconds() > 0 ? 'Reenviar en ' + waitSeconds() + ' s' : 'Reenviar código por correo' }}
+          </button>
+          <button type="button" class="text-btn secondary-btn" [disabled]="vm.busy()" (click)="back()">
+            Volver y corregir correo
+          </button>
+        } @else {
+          <!-- Email Field -->
+          <label class="field-group">
+            <span class="field-label">Correo electrónico</span>
+            <input
+              name="email"
+              type="email"
+              [(ngModel)]="email"
+              required
+              maxlength="254"
+              autocomplete="email"
+              placeholder="tu@correo.com"
+              class="form-input"
+            />
+          </label>
+
+          <!-- Password Field -->
+          <label class="field-group">
+            <span class="field-label">Contraseña</span>
+            <div class="password-wrapper">
+              <input
+                name="password"
+                [type]="reveal() ? 'text' : 'password'"
+                [(ngModel)]="password"
+                minlength="10"
+                maxlength="128"
+                required
+                [attr.autocomplete]="registering() ? 'new-password' : 'current-password'"
+                placeholder="Mínimo 10 caracteres"
+                class="form-input password-input"
+              />
+              <button
+                type="button"
+                class="toggle-reveal-btn"
+                [attr.aria-label]="reveal() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                (click)="toggleReveal()"
+              >
+                <app-icon name="eye" />
+              </button>
+            </div>
+          </label>
+
+          <!-- Confirm Password (Registration Only) -->
+          @if (registering()) {
+            <label class="field-group">
+              <span class="field-label">Confirma tu contraseña</span>
+              <input
+                name="confirmPassword"
+                type="password"
+                [(ngModel)]="confirmPassword"
+                minlength="10"
+                maxlength="128"
+                required
+                autocomplete="new-password"
+                placeholder="Repite tu contraseña"
+                class="form-input"
+              />
+            </label>
+
+            <!-- Legal checks -->
+            <div class="legal-checks">
+              <label class="checkbox-row">
+                <input type="checkbox" name="adult" [(ngModel)]="adult" required />
+                <span>Confirmo que tengo 18 años o más.</span>
+              </label>
+              <label class="checkbox-row">
+                <input type="checkbox" name="accepted" [(ngModel)]="accepted" required />
+                <span>Acepto los <a routerLink="/terms" target="_blank">Términos de uso</a> y la <a routerLink="/privacy" target="_blank">Privacidad</a>.</span>
+              </label>
+            </div>
+          }
+        }
+
+        <p class="age-notice">18+ · Solo mayores de edad. Las apuestas implican riesgo financiero.</p>
+
+        <!-- Submit Button -->
+        <button type="submit" class="primary auth-submit-btn" [disabled]="vm.busy()">
+          <span>
+            {{ vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? 'Crear mi cuenta' : 'Iniciar sesión' }}
+          </span>
+          <app-icon name="arrow" />
         </button>
-      </div>
-    </label>
+      </form>
 
-    @if (registering()) {
-      <label>
-        <span>Confirma tu contraseña</span>
-        <input
-          name="confirmPassword"
-          type="password"
-          [(ngModel)]="confirmPassword"
-          minlength="10"
-          maxlength="128"
-          required
-          autocomplete="new-password"
-          placeholder="Repite tu contraseña"
-        />
-      </label>
-    }
-
-    }
-    @if(registering() && !auth.verification()){
-    <label class="legal-check"><input type="checkbox" name="adult" [(ngModel)]="adult" required /> Confirmo que tengo 18 años o más.</label>
-    <label class="legal-check"><input type="checkbox" name="accepted" [(ngModel)]="accepted" required /><span>Acepto los <a routerLink="/terms" target="_blank">Términos de uso</a> y he leído el <a routerLink="/privacy" target="_blank">Aviso de privacidad</a>.</span></label>}
-    <p class="age-reminder">18+ · Solo para mayores de edad. Las apuestas implican riesgo de perder dinero.</p>
-    <button class="primary auth-submit" [disabled]="vm.busy()">
-      <span>{{
-        vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? 'Enviar código' : 'Iniciar sesión'
-      }}</span>
-      <app-icon name="arrow" />
-    </button>
-
-    @if (!auth.verification()) {
-    <div class="auth-switch">
-      <span>{{ registering() ? '¿Ya tienes una cuenta?' : '¿No tienes cuenta?' }}</span>
-      <button type="button" class="text-button" [disabled]="vm.busy()" (click)="toggle()">
-        {{ registering() ? 'Inicia sesión' : 'Crear cuenta nueva' }}
-      </button>
-    </div>
-    }
-  </form>
+      @if (!auth.verification()) {
+        <div class="form-footer">
+          <span>{{ registering() ? '¿Ya tienes una cuenta registrada?' : '¿Aún no tienes cuenta?' }}</span>
+          <button type="button" class="switch-link" [disabled]="vm.busy()" (click)="toggle()">
+            {{ registering() ? 'Inicia sesión aquí' : 'Crear cuenta nueva' }}
+          </button>
+        </div>
+      }
+    </section>
+  </div>
 </div>

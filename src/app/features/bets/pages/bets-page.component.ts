@@ -17,6 +17,7 @@ import type { GameReference } from '../../sports/models/sports.model';
 import { CsvTransferComponent } from '../components/csv-transfer/csv-transfer.component';
 import { BetManagementComponent } from '../components/bet-management/bet-management.component';
 import { Component, ElementRef, inject } from '@angular/core';
+import { SportsService } from '../../sports/services/sports.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
@@ -67,6 +68,7 @@ export class BetsPageComponent {
       this.challengeError.set(true);
     }
   }
+  sportsService = inject(SportsService);
   constructor() {
     if (!this.historyRoute) void this.loadChallenges();
     inject(ActivatedRoute)
@@ -83,6 +85,13 @@ export class BetsPageComponent {
             : 'all',
         );
       });
+    const pending = this.sportsService.pendingMatch();
+    if (pending) {
+      this.workspaceMode.set('register');
+      this.chooseGames([pending]);
+      this.sportsService.setPendingMatch(null);
+      setTimeout(() => this.focusTicket(), 150);
+    }
   }
   private element = inject<ElementRef<HTMLElement>>(ElementRef);
   focusTicket() {

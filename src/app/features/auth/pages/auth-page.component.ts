@@ -35,6 +35,10 @@ export class AuthPageComponent implements OnDestroy {
     this.confirmPassword = '';
     this.reveal.set(false);
   }
+  setMode(register: boolean) {
+    if (this.registering() === register) return;
+    this.toggle();
+  }
   toggleReveal() {
     this.reveal.update((v) => !v);
   }

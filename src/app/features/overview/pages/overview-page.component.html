@@ -12,6 +12,9 @@
     <p>Saldos, resultados y actividad reciente.</p>
   </div>
   <div class="quick-actions">
+    <a class="button-link" routerLink="/matches"
+      ><app-icon name="calendar" /> Partidos del día</a
+    >
     <a routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }"
       ><app-icon name="plus" /> Registrar movimiento</a
     >

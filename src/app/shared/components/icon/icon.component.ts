@@ -8,6 +8,7 @@ import { Component, input } from '@angular/core';
 export class IconComponent {
   name = input('overview');
   paths: Record<string, string> = {
+    calendar: 'M19 4H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z M16 2v4 M8 2v4 M3 10h18',
     settings: 'M4 7h16 M4 17h16 M8 4v6 M16 14v6',
     chat: 'M4 4h16v12H9l-5 4z M8 8h8 M8 12h5',
     flag: 'M5 21V3 M5 3h14l-3 5 3 5H5',

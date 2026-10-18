@@ -36,56 +36,82 @@
 }
 .bank-performance {
   display: grid;
-  grid-template-columns: 30% minmax(0, 1fr);
+  grid-template-columns: 32% minmax(0, 1fr);
   padding: 0;
-  background: #102c22;
-  color: #e9fff5;
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   overflow: hidden;
   margin: 20px 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
 }
 .bank-summary {
   padding: 28px 24px;
-  border-right: 1px solid #295143;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   align-items: start;
+  background: var(--surface-high);
 }
 .detail-trigger {
   background: transparent;
-  color: inherit;
+  color: var(--muted);
+  border: none;
   padding: 0;
   text-align: left;
   justify-content: start;
   font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.detail-trigger:hover {
+  color: var(--text);
 }
 .bank-number {
-  font-size: clamp(24px, 3vw, 35px);
-  font-weight: 650;
-  letter-spacing: -1px;
+  font-size: clamp(24px, 2.5vw, 32px);
+  font-weight: 700;
+  letter-spacing: -0.8px;
   white-space: nowrap;
-  margin: 20px 0 12px;
+  margin: 14px 0 10px;
+  color: var(--text) !important;
+  font-variant-numeric: tabular-nums;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 .period-profit {
-  font-size: 11px;
-  color: #65e5bd;
-  background: #174f3a;
-  padding: 7px 10px;
-  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-variant-numeric: tabular-nums;
+}
+.period-profit.negative {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.12);
+  border-color: rgba(244, 63, 94, 0.25);
 }
 .bank-summary p {
-  font-size: 10px;
-  line-height: 1.6;
-  color: #9ac4b2;
-  margin: 44px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 24px 0 0;
 }
 .bank-curve {
-  padding: 22px 22px 12px;
+  padding: 24px;
   align-self: center;
   min-width: 0;
 }
 .bank-curve summary {
-  font-size: 10px;
-  color: #8cae9e;
+  font-size: 11px;
+  color: var(--muted);
   cursor: pointer;
 }
 .bank-curve details {

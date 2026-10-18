@@ -30,6 +30,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'matches',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/sports/pages/matches-page/matches-page.component').then(
+        (m) => m.MatchesPageComponent,
+      ),
+  },
+  {
+    path: 'partidos',
+    redirectTo: 'matches',
+  },
+  {
     path: 'bank',
     canActivate: [authGuard],
     loadComponent: () =>
