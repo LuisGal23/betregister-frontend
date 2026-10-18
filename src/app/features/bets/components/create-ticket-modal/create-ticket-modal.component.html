@@ -208,13 +208,13 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="flex justify-end items-center gap-3 px-5 sm:px-7 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
-        <button type="button" class="py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] text-[13px] font-medium cursor-pointer transition-all duration-200 active:scale-95" (click)="close()">
+      <div class="flex justify-end items-center gap-2.5 px-4 sm:px-7 py-3.5 sm:py-4 border-t border-[var(--border)] bg-[var(--surface)]">
+        <button type="button" class="flex-1 sm:flex-initial py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] text-[13px] font-medium cursor-pointer transition-all duration-200 active:scale-95 text-center" (click)="close()">
           Cancelar
         </button>
         <button 
           type="button" 
-          class="action-pill-btn primary min-h-[44px] px-6" 
+          class="action-pill-btn primary flex-1 sm:flex-initial min-h-[44px] px-6 justify-center" 
           [disabled]="vm.busy()"
           (click)="saveTicket()"
         >

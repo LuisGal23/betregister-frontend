@@ -45,10 +45,10 @@
   <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
 
     <!-- LEFT COLUMN: Profile Edit Form -->
-    <form (ngSubmit)="save()" class="flex flex-col gap-6">
+    <form (ngSubmit)="save()" class="flex flex-col gap-5 sm:gap-6">
 
       <!-- SECTION 1: IDENTIDAD BÁSICA -->
-      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+      <section class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-4 sm:gap-5">
         <div class="flex items-center justify-between border-b border-border/50 pb-3">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
@@ -97,14 +97,14 @@
         <div class="flex flex-col gap-1.5 pt-2 border-t border-border/40">
           <label class="text-xs font-bold text-muted">Correo Electrónico (Cuenta privada)</label>
           <div class="flex items-center justify-between p-2.5 px-3 rounded-xl bg-surface-high/40 border border-border text-xs text-muted">
-            <span class="font-mono">{{ vm.data().profile.email }}</span>
-            <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">Privado</span>
+            <span class="font-mono text-xs truncate max-w-[220px] sm:max-w-none">{{ vm.data().profile.email }}</span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold shrink-0">Privado</span>
           </div>
         </div>
       </section>
 
       <!-- SECTION 2: AVATAR / FOTO DE PERFIL -->
-      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+      <section class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-4 sm:gap-5">
         <div class="flex items-center justify-between border-b border-border/50 pb-3">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
@@ -113,21 +113,21 @@
           <span class="text-xs text-muted">Sube tu foto o elige un avatar</span>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-center gap-5">
+        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-5">
           <!-- Current Avatar Preview -->
-          <div class="relative w-24 h-24 rounded-3xl bg-surface-high border-2 border-accent/40 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
+          <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-surface-high border-2 border-accent/40 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
             @if (avatarUrl()) {
               <img [src]="avatarUrl()" alt="Avatar" class="w-full h-full object-cover" (error)="onAvatarError($event)" />
             } @else {
-              <span class="text-3xl font-black text-accent uppercase font-mono">
+              <span class="text-2xl sm:text-3xl font-black text-accent uppercase font-mono">
                 {{ (username() || 'U').slice(0, 2) }}
               </span>
             }
           </div>
 
-          <div class="flex flex-col gap-2.5 w-full">
+          <div class="flex flex-col gap-2.5 w-full text-center sm:text-left">
             <span class="text-xs font-bold text-text">Sube tu propia foto o logo desde tu dispositivo</span>
-            <div class="flex flex-wrap items-center gap-2.5">
+            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
               <input
                 #fileInput
                 type="file"
@@ -138,10 +138,10 @@
               <button
                 type="button"
                 (click)="fileInput.click()"
-                class="action-pill-btn primary py-2 px-4 text-xs inline-flex items-center gap-2 shadow-sm"
+                class="action-pill-btn primary flex-1 sm:flex-initial py-2 px-4 text-xs inline-flex items-center justify-center gap-2 shadow-sm"
               >
                 <span>📁</span>
-                <span>Subir imagen desde tu equipo</span>
+                <span>Subir imagen desde equipo</span>
               </button>
 
               @if (avatarUrl()) {
@@ -155,7 +155,7 @@
               }
             </div>
             <p class="text-[11px] text-muted leading-relaxed">
-              Formatos admitidos: PNG, JPG, WebP. La imagen se optimiza y almacena de forma segura directamente sin riesgos de URLs externas ni inyecciones.
+              Formatos admitidos: PNG, JPG, WebP. Almacenada de forma segura directamente sin riesgos de URLs externas ni inyecciones.
             </p>
           </div>
         </div>
@@ -163,12 +163,12 @@
         <!-- Quick Presets with Categories -->
         <div class="flex flex-col gap-3 pt-3 border-t border-border/40">
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span class="text-xs font-bold text-text">O elige un avatar de la biblioteca libre de derechos:</span>
+            <span class="text-xs font-bold text-text">O elige un avatar de la biblioteca libre:</span>
             
-            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
               <button
                 type="button"
-                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                class="pill-filter-btn shrink-0 text-[11px] py-1 px-2.5"
                 [class.active]="avatarCategory() === 'all'"
                 (click)="avatarCategory.set('all')"
               >
@@ -176,7 +176,7 @@
               </button>
               <button
                 type="button"
-                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                class="pill-filter-btn shrink-0 text-[11px] py-1 px-2.5"
                 [class.active]="avatarCategory() === 'tipsters'"
                 (click)="avatarCategory.set('tipsters')"
               >
@@ -184,7 +184,7 @@
               </button>
               <button
                 type="button"
-                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                class="pill-filter-btn shrink-0 text-[11px] py-1 px-2.5"
                 [class.active]="avatarCategory() === 'sports'"
                 (click)="avatarCategory.set('sports')"
               >
@@ -192,7 +192,7 @@
               </button>
               <button
                 type="button"
-                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                class="pill-filter-btn shrink-0 text-[11px] py-1 px-2.5"
                 [class.active]="avatarCategory() === 'animals'"
                 (click)="avatarCategory.set('animals')"
               >
@@ -201,21 +201,21 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+          <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2 sm:gap-2.5">
             @for (preset of filteredPresets(); track preset.id) {
               <button
                 type="button"
-                class="flex flex-col items-center gap-2 p-2.5 rounded-2xl border transition-all cursor-pointer hover:border-accent hover:bg-surface-high group"
+                class="flex flex-col items-center gap-1.5 sm:gap-2 p-2 sm:p-2.5 rounded-xl sm:rounded-2xl border transition-all cursor-pointer hover:border-accent hover:bg-surface-high group"
                 [class.border-accent]="avatarUrl() === preset.url"
                 [class.bg-accent/15]="avatarUrl() === preset.url"
                 [class.border-border]="avatarUrl() !== preset.url"
                 [class.bg-surface-high/40]="avatarUrl() !== preset.url"
                 (click)="selectPresetAvatar(preset.url)"
               >
-                <div class="relative w-11 h-11 rounded-full overflow-hidden bg-surface shadow-sm transition-transform group-hover:scale-105">
+                <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-surface shadow-sm transition-transform group-hover:scale-105">
                   <img [src]="preset.url" [alt]="preset.label" class="w-full h-full object-cover" />
                 </div>
-                <span class="text-[10px] font-bold text-text truncate max-w-full">{{ preset.label }}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold text-text truncate max-w-full">{{ preset.label }}</span>
               </button>
             }
           </div>
@@ -223,7 +223,7 @@
       </section>
 
       <!-- SECTION 3: BIOGRAFÍA & ESPECIALIDAD -->
-      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+      <section class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-4 sm:gap-5">
         <div class="flex items-center justify-between border-b border-border/50 pb-3">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
@@ -248,11 +248,11 @@
         <!-- Favorite sports -->
         <div class="flex flex-col gap-2 pt-2 border-t border-border/40">
           <span class="text-xs font-bold text-text">Deportes de Especialidad (Tus favoritos)</span>
-          <div class="flex flex-wrap gap-2">
+          <div class="flex flex-wrap gap-1.5 sm:gap-2">
             @for (sport of allSports; track sport) {
               <button
                 type="button"
-                class="pill-filter-btn text-xs py-1.5 px-3.5"
+                class="pill-filter-btn text-xs py-1.5 px-3 sm:px-3.5"
                 [class.active]="favoriteSports().includes(sport)"
                 (click)="toggleSport(sport)"
               >
@@ -299,7 +299,7 @@
       </section>
 
       <!-- SECTION 4: CONFIGURACIÓN TIPSTER & PRIVACIDAD -->
-      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+      <section class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-4 sm:gap-5">
         <div class="flex items-center justify-between border-b border-border/50 pb-3">
           <div class="flex items-center gap-2">
             <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
@@ -307,9 +307,9 @@
           </div>
         </div>
 
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-3 sm:gap-4">
           <!-- Public Tipster Switch -->
-          <label class="flex items-start justify-between gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
+          <label class="flex items-start justify-between gap-3 sm:gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
             <div class="flex flex-col">
               <span class="text-xs font-bold text-text">Activar Perfil Público de Tipster</span>
               <span class="text-[11px] text-muted">Permite que otros usuarios descubran tus pronósticos y estadísticas verificadas en la Comunidad.</span>
@@ -318,12 +318,12 @@
               type="checkbox"
               [(ngModel)]="publicProfileEnabled"
               name="publicProfileEnabled"
-              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5"
+              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5 shrink-0"
             />
           </label>
 
           <!-- Units Mode Switch -->
-          <label class="flex items-start justify-between gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
+          <label class="flex items-start justify-between gap-3 sm:gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
             <div class="flex flex-col">
               <span class="text-xs font-bold text-text">Mostrar Bankroll en Unidades (u) y Yield (%)</span>
               <span class="text-[11px] text-muted">Oculta tus montos reales en pesos/dólares a la comunidad para total privacidad, mostrando únicamente tu rentabilidad porcentual y unidades ganadas.</span>
@@ -332,7 +332,7 @@
               type="checkbox"
               [(ngModel)]="showBankUnits"
               name="showBankUnits"
-              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5"
+              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5 shrink-0"
             />
           </label>
         </div>
@@ -342,7 +342,7 @@
       <div class="flex items-center justify-end gap-3 pt-2">
         <button
           type="submit"
-          class="action-pill-btn primary py-2.5 px-7 text-xs font-bold inline-flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
+          class="action-pill-btn primary w-full sm:w-auto py-2.5 px-7 text-xs font-bold inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
           [disabled]="saving()"
         >
           @if (saving()) {
@@ -367,17 +367,17 @@
         </div>
 
         <!-- Social Tipster Profile Card -->
-        <div class="relative overflow-hidden p-6 rounded-3xl bg-surface border border-accent/40 shadow-2xl backdrop-blur-xl flex flex-col gap-4">
+        <div class="relative overflow-hidden p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-accent/40 shadow-2xl backdrop-blur-xl flex flex-col gap-3.5 sm:gap-4">
           <!-- Ambient Aura -->
           <div class="card-ambient-aura" aria-hidden="true" style="--home-aura: #29b8f5; --away-aura: #10b981;"></div>
 
           <!-- Header with Avatar and User -->
-          <div class="flex items-center gap-3.5 relative z-1">
-            <div class="relative w-16 h-16 rounded-2xl bg-surface-high border-2 border-accent/60 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
+          <div class="flex items-center gap-3 sm:gap-3.5 relative z-1">
+            <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-surface-high border-2 border-accent/60 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
               @if (avatarUrl()) {
                 <img [src]="avatarUrl()" alt="Avatar Preview" class="w-full h-full object-cover" (error)="onAvatarError($event)" />
               } @else {
-                <span class="text-xl font-black text-accent uppercase font-mono">
+                <span class="text-lg sm:text-xl font-black text-accent uppercase font-mono">
                   {{ (username() || 'U').slice(0, 2) }}
                 </span>
               }
@@ -385,7 +385,7 @@
 
             <div class="flex flex-col min-w-0">
               <div class="flex items-center gap-1.5">
-                <span class="text-base font-black text-text truncate">
+                <span class="text-sm sm:text-base font-black text-text truncate">
                   {{ displayName() || username() || 'Mi Usuario' }}
                 </span>
                 <span class="w-3.5 h-3.5 rounded-full bg-accent text-[9px] text-black font-black grid place-items-center" title="Tipster de la Comunidad">✓</span>
@@ -416,7 +416,7 @@
           }
 
           <!-- Verified Bankroll Stats Grid -->
-          <div class="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-surface-high/60 border border-border/80 relative z-1 text-center">
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-2xl bg-surface-high/60 border border-border/80 relative z-1 text-center">
             <div class="flex flex-col">
               <span class="text-[9px] font-bold text-muted uppercase">YIELD</span>
               <strong class="text-xs font-mono font-bold text-emerald-400 mt-0.5">{{ userStats().yield }}</strong>

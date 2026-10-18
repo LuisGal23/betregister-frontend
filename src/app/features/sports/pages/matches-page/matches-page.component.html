@@ -109,12 +109,12 @@
   </header>
 
   <!-- League Categories Tabs (Full width & animated as requested) -->
-  <div class="flex flex-col gap-2.5 p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-sm">
-    <nav class="flex w-full gap-2 p-1 bg-surface-high rounded-full border border-border flex-wrap sm:flex-nowrap" aria-label="Categorías deportivas">
+  <div class="flex flex-col gap-2.5 p-2 sm:p-4 rounded-2xl bg-surface border border-border shadow-sm">
+    <nav class="flex w-full gap-1.5 sm:gap-2 p-1 bg-surface-high rounded-xl sm:rounded-full border border-border overflow-x-auto scrollbar-none" aria-label="Categorías deportivas">
       @for (cat of categories; track cat.id) {
         <button 
           type="button" 
-          class="flex-1 py-2.5 px-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-center whitespace-nowrap cursor-pointer border border-transparent hover:-translate-y-0.5 active:scale-95"
+          class="shrink-0 flex-1 min-w-fit py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-center whitespace-nowrap cursor-pointer border border-transparent hover:-translate-y-0.5 active:scale-95"
           [class.!bg-accent]="selectedCategory() === cat.id"
           [class.!text-white]="selectedCategory() === cat.id"
           [class.shadow-[0_4px_18px_rgba(41,184,245,0.38)]]="selectedCategory() === cat.id"
@@ -217,38 +217,38 @@
 
   <!-- Games Grid -->
   @if (!loading() && filteredGames().length) {
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       @for (game of filteredGames(); track game.id) {
         @let analysis = analyzeGame(game);
-        <article class="relative flex flex-col gap-4.5 p-6 rounded-2xl bg-surface border border-border shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl" [ngStyle]="cardAuraStyle(game)">
+        <article class="relative flex flex-col gap-3.5 sm:gap-4.5 p-3.5 sm:p-6 rounded-2xl bg-surface border border-border shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl" [ngStyle]="cardAuraStyle(game)">
           <!-- Animated Team Color Gradient Aura Backdrop -->
           <div class="card-ambient-aura" aria-hidden="true"></div>
 
           <!-- Card Header / Meta -->
-          <div class="flex justify-between items-center gap-3 relative z-1">
-            <div class="flex items-center gap-2.5 flex-wrap">
-              <span class="text-[11px] font-bold tracking-wider uppercase text-muted">
+          <div class="flex justify-between items-center gap-2 sm:gap-3 relative z-1">
+            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap min-w-0">
+              <span class="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-muted truncate">
                 {{ formatMatchDate(game.start) }}
               </span>
-              <span class="text-[11px] text-muted pl-2.5 border-l border-border">{{ game.league_name }}</span>
+              <span class="text-[10px] sm:text-[11px] text-muted pl-2 border-l border-border truncate max-w-[120px] sm:max-w-none">{{ game.league_name }}</span>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
               @if (game.state === 'live') {
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-red-500/15 text-red-500 border border-red-500/35">
+                <span class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-wide bg-red-500/15 text-red-500 border border-red-500/35">
                   <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> EN VIVO
                 </span>
               } @else if (game.state === 'final') {
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-surface-high text-muted border border-border">FINAL</span>
+                <span class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-wide bg-surface-high text-muted border border-border">FINAL</span>
               } @else {
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-accent/10 text-accent border border-accent/30">
+                <span class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold tracking-wide bg-accent/10 text-accent border border-accent/30">
                   <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> POR JUGARSE
                 </span>
               }
 
               <button 
                 type="button" 
-                class="w-7 h-7 rounded-full bg-surface-high border border-border text-text flex items-center justify-center cursor-pointer transition-transform hover:bg-accent hover:text-white hover:border-accent hover:scale-110" 
+                class="w-7 h-7 rounded-full bg-surface-high border border-border text-text flex items-center justify-center cursor-pointer transition-transform hover:bg-accent hover:text-white hover:border-accent hover:scale-110 shrink-0" 
                 title="Añadir al ticket de apuestas" 
                 (click)="addToTicket(game)"
               >
@@ -258,32 +258,32 @@
           </div>
 
           <!-- Teams & Score Matchup with Big Borderless Logos -->
-          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-4 py-1 relative z-1">
+          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 py-1 relative z-1">
             <!-- Home Team (Visita) -->
-            <div class="flex flex-col items-start text-left">
-              <div class="relative w-14 h-14 flex items-center justify-center mb-2 overflow-visible">
+            <div class="flex flex-col items-start text-left min-w-0">
+              <div class="relative w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center mb-1.5 sm:mb-2 overflow-visible">
                 @if (game.home_logo) {
                   <img [src]="game.home_logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)] hover:scale-110 transition-transform duration-300" />
                 }
-                <span class="text-lg font-black tracking-tight" [style.color]="teamColor(game.home, game.home_color)">
+                <span class="text-base sm:text-lg font-black tracking-tight" [style.color]="teamColor(game.home, game.home_color)">
                   {{ shortCode(game.home) }}
                 </span>
               </div>
-              <span class="text-[11px] font-bold tracking-wider text-muted mb-0.5">{{ shortCode(game.home) }}</span>
-              <strong class="text-sm sm:text-base font-semibold text-text leading-tight">{{ game.home }}</strong>
-              <small class="text-[11px] text-muted mt-1">visita</small>
+              <span class="text-[10px] sm:text-[11px] font-bold tracking-wider text-muted mb-0.5">{{ shortCode(game.home) }}</span>
+              <strong class="text-xs sm:text-base font-semibold text-text leading-tight line-clamp-2">{{ game.home }}</strong>
+              <small class="text-[10px] sm:text-[11px] text-muted mt-0.5 sm:mt-1">visita</small>
             </div>
 
             <!-- Score / Versus Center -->
-            <div class="flex flex-col items-center justify-center min-w-[90px]">
+            <div class="flex flex-col items-center justify-center min-w-[70px] sm:min-w-[90px] px-1 sm:px-2">
               @if (game.state === 'live' || game.state === 'final') {
-                <div class="flex items-center gap-2 text-2xl sm:text-3xl font-bold font-mono tracking-tight text-text">
+                <div class="flex items-center gap-1.5 sm:gap-2 text-xl sm:text-3xl font-bold font-mono tracking-tight text-text">
                   <span>{{ game.home_score ?? 0 }}</span>
                   <span class="text-muted font-normal">–</span>
                   <span>{{ game.away_score ?? 0 }}</span>
                 </div>
                 @if (game.detail) {
-                  <small class="text-[11px] text-accent font-semibold mt-1 text-center">{{ game.detail }}</small>
+                  <small class="text-[10px] sm:text-[11px] text-accent font-semibold mt-1 text-center truncate max-w-[85px] sm:max-w-none">{{ game.detail }}</small>
                 }
               } @else {
                 <span class="text-xs font-bold tracking-widest text-muted">VS</span>
@@ -292,18 +292,18 @@
             </div>
 
             <!-- Away Team (Local) -->
-            <div class="flex flex-col items-end text-right">
-              <div class="relative w-14 h-14 flex items-center justify-center mb-2 overflow-visible">
+            <div class="flex flex-col items-end text-right min-w-0">
+              <div class="relative w-11 h-11 sm:w-14 sm:h-14 flex items-center justify-center mb-1.5 sm:mb-2 overflow-visible">
                 @if (game.away_logo) {
                   <img [src]="game.away_logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-[0_6px_14px_rgba(0,0,0,0.45)] hover:scale-110 transition-transform duration-300" />
                 }
-                <span class="text-lg font-black tracking-tight" [style.color]="teamColor(game.away, game.away_color)">
+                <span class="text-base sm:text-lg font-black tracking-tight" [style.color]="teamColor(game.away, game.away_color)">
                   {{ shortCode(game.away) }}
                 </span>
               </div>
-              <span class="text-[11px] font-bold tracking-wider text-muted mb-0.5">{{ shortCode(game.away) }}</span>
-              <strong class="text-sm sm:text-base font-semibold text-text leading-tight">{{ game.away }}</strong>
-              <small class="text-[11px] text-muted mt-1">local</small>
+              <span class="text-[10px] sm:text-[11px] font-bold tracking-wider text-muted mb-0.5">{{ shortCode(game.away) }}</span>
+              <strong class="text-xs sm:text-base font-semibold text-text leading-tight line-clamp-2">{{ game.away }}</strong>
+              <small class="text-[10px] sm:text-[11px] text-muted mt-0.5 sm:mt-1">local</small>
             </div>
           </div>
 
