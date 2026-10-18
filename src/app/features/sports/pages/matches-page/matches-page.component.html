@@ -153,6 +153,22 @@
         }
       </div>
     }
+
+    <!-- Sub-leagues Pills (When Selecciones / Amistosos is selected) -->
+    @if (selectedCategory() === 'intl') {
+      <div class="sub-leagues-bar full-width-subtabs" role="tablist" aria-label="Torneos internacionales específicos">
+        @for (sub of intlLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="sub-pill" 
+            [class.active]="selectedSubLeague() === sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
+    }
   </div>
 
   <!-- Search / Counter Bar -->
@@ -349,6 +365,154 @@
               </span>
             </div>
           </div>
+
+          <!-- Details Toggle Button (Odds, Players, Head-to-Head) -->
+          <div class="pt-2">
+            <button 
+              type="button" 
+              class="details-toggle-btn"
+              (click)="toggleDetails(game)"
+            >
+              <app-icon [name]="expandedMatchId() === game.id ? 'check' : 'plus'" />
+              <span>{{ expandedMatchId() === game.id ? 'Ocultar Cuotas y Jugadores' : 'Ver Cuotas Oficiales y Jugadores' }}</span>
+            </button>
+          </div>
+
+          <!-- Expanded Details Section -->
+          @if (expandedMatchId() === game.id) {
+            <div class="expanded-panel">
+              @if (loadingDetails()[game.id]) {
+                <div class="flex items-center justify-center py-6 gap-2 text-xs text-muted">
+                  <div class="w-4 h-4 rounded-full border-2 border-accent border-t-transparent animate-spin"></div>
+                  <span>Consultando cuotas en vivo y estadísticas de jugadores…</span>
+                </div>
+              } @else if (matchDetails()[game.id]; as details) {
+                <!-- Real Bookmaker Odds Chips -->
+                @if (details.odds; as odds) {
+                  <div class="odds-section">
+                    <div class="odds-header">
+                      <span>CUOTAS DE CASAS DE APUESTAS</span>
+                      <span class="odds-provider-badge">{{ odds.provider }}</span>
+                    </div>
+                    <div class="odds-grid">
+                      <!-- Moneyline -->
+                      @if (odds.moneyline.home_decimal) {
+                        <button type="button" class="odd-chip" (click)="addMoneylineBet(game, 'home', odds.moneyline.home_decimal)">
+                          <span class="odd-chip-label">{{ shortCode(game.home) }} (ML)</span>
+                          <strong class="odd-chip-val">{{ odds.moneyline.home_decimal }}</strong>
+                        </button>
+                      }
+                      @if (odds.moneyline.draw_decimal) {
+                        <button type="button" class="odd-chip" (click)="addMoneylineBet(game, 'draw', odds.moneyline.draw_decimal)">
+                          <span class="odd-chip-label">Empate</span>
+                          <strong class="odd-chip-val">{{ odds.moneyline.draw_decimal }}</strong>
+                        </button>
+                      }
+                      @if (odds.moneyline.away_decimal) {
+                        <button type="button" class="odd-chip" (click)="addMoneylineBet(game, 'away', odds.moneyline.away_decimal)">
+                          <span class="odd-chip-label">{{ shortCode(game.away) }} (ML)</span>
+                          <strong class="odd-chip-val">{{ odds.moneyline.away_decimal }}</strong>
+                        </button>
+                      }
+
+                      <!-- Spread / Hándicap -->
+                      @if (odds.spread.home_line != null && odds.spread.home_decimal) {
+                        <button type="button" class="odd-chip" (click)="addSpreadBet(game, 'home', odds.spread.home_line, odds.spread.home_decimal)">
+                          <span class="odd-chip-label">{{ shortCode(game.home) }} {{ formatLine(odds.spread.home_line) }}</span>
+                          <strong class="odd-chip-val">{{ odds.spread.home_decimal }}</strong>
+                        </button>
+                      }
+                      @if (odds.spread.away_line != null && odds.spread.away_decimal) {
+                        <button type="button" class="odd-chip" (click)="addSpreadBet(game, 'away', odds.spread.away_line, odds.spread.away_decimal)">
+                          <span class="odd-chip-label">{{ shortCode(game.away) }} {{ formatLine(odds.spread.away_line) }}</span>
+                          <strong class="odd-chip-val">{{ odds.spread.away_decimal }}</strong>
+                        </button>
+                      }
+
+                      <!-- Totals (Over / Under) -->
+                      @if (odds.total.line != null && odds.total.over_decimal) {
+                        <button type="button" class="odd-chip" (click)="addTotalBet(game, 'over', odds.total.line, odds.total.over_decimal)">
+                          <span class="odd-chip-label">Más de {{ odds.total.line }}</span>
+                          <strong class="odd-chip-val">{{ odds.total.over_decimal }}</strong>
+                        </button>
+                      }
+                      @if (odds.total.line != null && odds.total.under_decimal) {
+                        <button type="button" class="odd-chip" (click)="addTotalBet(game, 'under', odds.total.line, odds.total.under_decimal)">
+                          <span class="odd-chip-label">Menos de {{ odds.total.line }}</span>
+                          <strong class="odd-chip-val">{{ odds.total.under_decimal }}</strong>
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Player Statistics & Props List -->
+                @if (details.players.length > 0) {
+                  <div class="flex flex-col gap-2">
+                    <div class="players-section-title">
+                      <span>JUGADORES DESTACADOS Y PROPS</span>
+                      <small class="text-accent">{{ details.players.length }} disponibles</small>
+                    </div>
+                    <div class="players-list">
+                      @for (p of details.players.slice(0, 10); track p.athlete_id || p.name) {
+                        <div class="player-item">
+                          <div class="player-info">
+                            @if (p.headshot) {
+                              <img [src]="p.headshot" [alt]="p.name" class="player-photo" (error)="onLogoError($event)" />
+                            }
+                            <div class="player-names">
+                              <strong class="player-name">{{ p.name }}</strong>
+                              <span class="player-sub">{{ p.team_name }} · {{ p.position || 'Jugador' }} @if (p.jersey) { #{{ p.jersey }} }</span>
+                            </div>
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="player-stat-tag">{{ p.display_stat }}</span>
+                            <button 
+                              type="button" 
+                              class="prop-bet-btn" 
+                              title="Registrar prop de jugador" 
+                              (click)="addPlayerBet(game, p, p.category_label || p.category)"
+                            >
+                              + Apostar
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Team Comparison Stats -->
+                @if (details.team_stats.length > 0) {
+                  <div class="flex flex-col gap-2">
+                    <div class="players-section-title">
+                      <span>ESTADÍSTICAS COMPARATIVAS</span>
+                    </div>
+                    <div class="overflow-hidden rounded-xl border border-border">
+                      <table class="team-stats-table">
+                        <thead>
+                          <tr class="bg-surface">
+                            <th>{{ shortCode(game.home) }}</th>
+                            <th>Métrica</th>
+                            <th>{{ shortCode(game.away) }}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          @for (st of details.team_stats.slice(0, 8); track st.name) {
+                            <tr>
+                              <td class="font-bold text-accent">{{ st.home }}</td>
+                              <td>{{ st.name }}</td>
+                              <td class="font-bold text-muted">{{ st.away }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          }
 
           <!-- Card Action Button -->
           <div class="mt-1 relative z-1">

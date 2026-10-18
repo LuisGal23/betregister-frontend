@@ -76,8 +76,23 @@ export class CreateTicketModalComponent {
     effect(() => {
       if (this.modal.isOpen()) {
         const initial = this.modal.initialGame();
+        const option = this.modal.initialOption();
         if (initial) {
           this.chooseGames([initial]);
+        }
+        if (option) {
+          if (option.odds) {
+            this.odds = Number(option.odds);
+          }
+          if (option.eventLabel) {
+            this.event = option.eventLabel;
+          }
+          if (this.selections.length > 0) {
+            if (option.market) this.selections[0].market = option.market;
+            if (option.pick) this.selections[0].pick = option.pick;
+            if (option.line !== undefined && option.line !== null) this.selections[0].line = option.line;
+            if (option.description) this.selections[0].description = option.description;
+          }
         }
         if (!this.selectedHouse && this.vm.data().houses.length > 0) {
           this.selectedHouse = String(this.vm.data().houses[0].id);
@@ -130,6 +145,7 @@ export class CreateTicketModalComponent {
               'qualifiers-concacaf': 'Selecciones',
               mlb: 'MLB',
               nfl: 'NFL',
+              nba: 'NBA',
               mls: 'MLS',
               kbo: 'KBO',
               ligamx: 'Liga MX',

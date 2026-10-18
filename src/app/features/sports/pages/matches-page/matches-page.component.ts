@@ -6,7 +6,7 @@ import { SportsService } from '../../services/sports.service';
 import { LedgerState } from '../../../../core/services/ledger-state.service';
 import { TicketModalService } from '../../../bets/services/ticket-modal.service';
 import { zoneDay } from '../../../../shared/utils/zone.utils';
-import type { SportsGame } from '../../models/sports.model';
+import type { SportsGame, MatchDetails, PlayerStat } from '../../models/sports.model';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
 
 export interface MatchAnalysis {
@@ -37,11 +37,13 @@ export class MatchesPageComponent implements OnInit {
   private ticketModal = inject(TicketModalService);
   vm = inject(LedgerState);
 
-  // Categories as requested: NFL, Ligas Europeas, Liga MX, MLS, MLB, etc.
+  // Categories: NFL, NBA, Ligas Europeas, Selecciones / Amistosos, Liga MX, MLS, MLB
   categories = [
     { id: 'all', label: 'Todos' },
     { id: 'nfl', label: 'NFL', leagues: ['nfl'] },
+    { id: 'nba', label: 'NBA', leagues: ['nba'] },
     { id: 'europe', label: 'Ligas Europeas', leagues: ['premier', 'laliga', 'champions', 'seriea', 'bundesliga', 'ligue1', 'europa'] },
+    { id: 'intl', label: 'Selecciones / Amistosos', leagues: ['nations', 'concacaf-nations', 'friendlies', 'worldcup', 'euro', 'copa-america', 'gold-cup', 'qualifiers-uefa', 'qualifiers-conmebol', 'qualifiers-concacaf'] },
     { id: 'ligamx', label: 'Liga MX', leagues: ['ligamx'] },
     { id: 'mls', label: 'MLS', leagues: ['mls'] },
     { id: 'mlb', label: 'MLB', leagues: ['mlb'] },
@@ -58,6 +60,16 @@ export class MatchesPageComponent implements OnInit {
     { id: 'europa', label: 'Europa League' },
   ];
 
+  intlLeagues = [
+    { id: 'all', label: 'Todos internacionales' },
+    { id: 'nations', label: 'Nations League UEFA' },
+    { id: 'concacaf-nations', label: 'Nations Concacaf' },
+    { id: 'friendlies', label: 'Amistosos FIFA' },
+    { id: 'qualifiers-uefa', label: 'Eliminatorias UEFA' },
+    { id: 'qualifiers-conmebol', label: 'Eliminatorias CONMEBOL' },
+    { id: 'qualifiers-concacaf', label: 'Eliminatorias Concacaf' },
+  ];
+
   selectedCategory = signal<string>('all');
   selectedSubLeague = signal<string>('all');
   selectedDate = signal<string>('');
@@ -67,6 +79,11 @@ export class MatchesPageComponent implements OnInit {
   error = signal('');
 
   games = signal<SportsGame[]>([]);
+
+  // Expanded match for stats, odds, and player props
+  expandedMatchId = signal<string | null>(null);
+  matchDetails = signal<Record<string, MatchDetails>>({});
+  loadingDetails = signal<Record<string, boolean>>({});
 
   // Ticker for top quick match previews
   tickerMatches = computed(() => this.games().slice(0, 8));
@@ -81,6 +98,7 @@ export class MatchesPageComponent implements OnInit {
     return this.games().filter((g) => {
       if (live && g.state !== 'live') return false;
       if (cat === 'europe' && sub !== 'all' && g.league !== sub) return false;
+      if (cat === 'intl' && sub !== 'all' && g.league !== sub) return false;
       if (activeCat && activeCat.leagues && !activeCat.leagues.includes(g.league)) return false;
       if (q && !`${g.home} ${g.away} ${g.league_name}`.toLowerCase().includes(q)) return false;
       return true;
@@ -204,24 +222,27 @@ export class MatchesPageComponent implements OnInit {
     const active = this.categories.find((c) => c.id === cat);
     const targetLeagues = active && active.leagues 
       ? active.leagues 
-      : ['nfl', 'premier', 'laliga', 'champions', 'ligamx', 'mls', 'mlb', 'seriea', 'bundesliga'];
+      : ['nfl', 'nba', 'premier', 'laliga', 'champions', 'ligamx', 'mls', 'mlb', 'seriea', 'bundesliga', 'nations', 'friendlies'];
 
     try {
       const results: SportsGame[] = [];
-      const fetchList = targetLeagues.slice(0, 6); // bounded concurrency
-      
-      const promises = fetchList.map(async (l) => {
-        try {
-          const res = await this.sports.events(l, day);
-          return res?.events ?? [];
-        } catch {
-          return [];
+      // Fetch in concurrent batches
+      const batchSize = 4;
+      for (let i = 0; i < targetLeagues.length; i += batchSize) {
+        const batch = targetLeagues.slice(i, i + batchSize);
+        const batchResponses = await Promise.all(
+          batch.map(async (l) => {
+            try {
+              const res = await this.sports.events(l, day);
+              return res?.events ?? [];
+            } catch {
+              return [];
+            }
+          })
+        );
+        for (const list of batchResponses) {
+          results.push(...list);
         }
-      });
-
-      const responses = await Promise.all(promises);
-      for (const list of responses) {
-        results.push(...list);
       }
 
       // Deduplicate by ID
@@ -242,9 +263,29 @@ export class MatchesPageComponent implements OnInit {
     }
   }
 
-  // Generate deterministic statistics & probabilities for the FabLabs card aesthetic
+  // Toggle details (real odds, probabilities & player statistics)
+  async toggleDetails(game: SportsGame) {
+    if (this.expandedMatchId() === game.id) {
+      this.expandedMatchId.set(null);
+      return;
+    }
+    this.expandedMatchId.set(game.id);
+    if (!this.matchDetails()[game.id]) {
+      this.loadingDetails.update((m) => ({ ...m, [game.id]: true }));
+      try {
+        const details = await this.sports.details(game.league, game.id);
+        this.matchDetails.update((m) => ({ ...m, [game.id]: details }));
+      } catch (e) {
+        console.error('Error loading match details', e);
+      } finally {
+        this.loadingDetails.update((m) => ({ ...m, [game.id]: false }));
+      }
+    }
+  }
+
+  // Generate deterministic statistics & probabilities, overriding with verified API data when available
   analyzeGame(g: SportsGame): MatchAnalysis {
-    // Generate pseudo-deterministic values from game id
+    const d = this.matchDetails()[g.id];
     let hash = 0;
     for (let i = 0; i < g.id.length; i++) {
       hash = (hash << 5) - hash + g.id.charCodeAt(i);
@@ -254,45 +295,65 @@ export class MatchesPageComponent implements OnInit {
     const isAmerican = g.sport === 'Americano';
     const isBaseball = g.sport === 'Béisbol';
 
-    // Model home/away probability
-    const bias = (seed % 28) - 14; // -14 to +14
-    let homeProb = Math.min(78, Math.max(28, 52 + bias));
-    let awayProb = 100 - homeProb;
+    // Model home/away probability or use real verified provider data
+    let homeProb: number;
+    let awayProb: number;
+
+    if (d && d.probabilities && d.probabilities.home_pct != null) {
+      homeProb = Math.round(d.probabilities.home_pct);
+      awayProb = Math.round(d.probabilities.away_pct);
+    } else {
+      const bias = (seed % 28) - 14;
+      homeProb = Math.min(78, Math.max(28, 52 + bias));
+      awayProb = 100 - homeProb;
+    }
 
     const favorite = homeProb >= awayProb ? 'home' : 'away';
     const favTeam = favorite === 'home' ? g.home : g.away;
     const favProb = Math.max(homeProb, awayProb);
     const confidence = favProb >= 65 ? 'alta' : favProb >= 55 ? 'moderada' : 'baja';
 
-    let estHomeScore: number;
-    let estAwayScore: number;
-    let estTotal: number;
-    let totalLine: number;
-    let handicap: string;
+    let estHomeScore = 0;
+    let estAwayScore = 0;
+    let estTotal = 0;
+    let totalLine = 2.5;
+    let handicap = '';
 
-    if (isAmerican) {
+    if (d && d.odds && d.odds.total && d.odds.total.line != null) {
+      totalLine = Number(d.odds.total.line);
+    } else if (isAmerican) {
+      totalLine = 44.5;
+    } else if (isBaseball) {
+      totalLine = 7.5;
+    } else {
+      totalLine = 2.5;
+    }
+
+    if (d && d.odds && d.odds.spread && d.odds.spread.home_line != null) {
+      handicap = `${this.shortCode(g.home)} ${this.formatLine(d.odds.spread.home_line)}`;
+    } else if (isAmerican) {
       const baseTotal = 38 + (seed % 16);
       const diff = Math.round((favProb - 50) / 4);
       estHomeScore = favorite === 'home' ? Math.round(baseTotal / 2 + diff) : Math.round(baseTotal / 2 - diff);
       estAwayScore = favorite === 'home' ? Math.round(baseTotal / 2 - diff) : Math.round(baseTotal / 2 + diff);
       estTotal = estHomeScore + estAwayScore;
-      totalLine = estTotal + 0.5;
       handicap = favorite === 'home' ? `${this.shortCode(g.home)} -${Math.max(1.5, diff + 0.5)}` : `${this.shortCode(g.away)} -${Math.max(1.5, diff + 0.5)}`;
     } else if (isBaseball) {
       const diff = (seed % 3) + 1;
       estHomeScore = favorite === 'home' ? 4 + diff : 3;
       estAwayScore = favorite === 'home' ? 3 : 4 + diff;
       estTotal = estHomeScore + estAwayScore;
-      totalLine = estTotal + 0.5;
       handicap = favorite === 'home' ? `${this.shortCode(g.home)} -1.5` : `${this.shortCode(g.away)} -1.5`;
     } else {
-      // Soccer
       estHomeScore = favorite === 'home' ? 2 : 1;
       estAwayScore = favorite === 'home' ? 1 : 2;
       estTotal = estHomeScore + estAwayScore;
-      totalLine = 2.5;
       handicap = favorite === 'home' ? `${this.shortCode(g.home)} -0.5` : `${this.shortCode(g.away)} -0.5`;
     }
+
+    estTotal = estTotal || Math.round(totalLine);
+    estHomeScore = estHomeScore || Math.round(estTotal / 2);
+    estAwayScore = estAwayScore || (estTotal - estHomeScore);
 
     return {
       homeProb,
@@ -327,8 +388,80 @@ export class MatchesPageComponent implements OnInit {
     return name.slice(0, 3).toUpperCase();
   }
 
+  formatLine(line: any): string {
+    const n = Number(line);
+    if (isNaN(n)) return String(line ?? '');
+    return n > 0 ? `+${n}` : `${n}`;
+  }
+
   // Preselect match and open Ticket Modal directly
   addToTicket(game: SportsGame) {
     this.ticketModal.open(game);
+  }
+
+  // Direct betting on Moneyline from Sportsbook Odds
+  addMoneylineBet(game: SportsGame, side: 'home' | 'away' | 'draw', oddDec?: number | null) {
+    const pickName = side === 'home' ? game.home : side === 'away' ? game.away : 'Empate';
+    const pickVal = side === 'home' ? 'Local' : side === 'away' ? 'Visitante' : 'Empate';
+    this.ticketModal.open({
+      game,
+      market: 'ML',
+      pick: pickVal,
+      odds: oddDec ? Number(oddDec) : null,
+      eventLabel: `${game.home} vs ${game.away} · Gana ${pickName}`,
+    });
+  }
+
+  // Direct betting on Spread (Hándicap)
+  addSpreadBet(game: SportsGame, side: 'home' | 'away', line: any, oddDec?: number | null) {
+    const teamName = side === 'home' ? game.home : game.away;
+    const numLine = Number(line) || 0;
+    this.ticketModal.open({
+      game,
+      market: 'Hándicap',
+      pick: side === 'home' ? 'Local' : 'Visitante',
+      line: numLine,
+      odds: oddDec ? Number(oddDec) : null,
+      eventLabel: `${teamName} (${numLine > 0 ? '+' : ''}${numLine})`,
+    });
+  }
+
+  // Direct betting on Over / Under
+  addTotalBet(game: SportsGame, side: 'over' | 'under', line: any, oddDec?: number | null) {
+    const numLine = Number(line) || 0;
+    const market = game.sport === 'Americano' ? 'Puntos' : game.sport === 'Béisbol' ? 'Carreras' : 'Goles';
+    const pick = side === 'over' ? 'Más de' : 'Menos de';
+    this.ticketModal.open({
+      game,
+      market,
+      pick,
+      line: numLine,
+      odds: oddDec ? Number(oddDec) : null,
+      eventLabel: `${game.home} vs ${game.away} · ${pick} ${numLine} ${market}`,
+    });
+  }
+
+  // Direct betting on Player Props
+  addPlayerBet(game: SportsGame, player: PlayerStat, statCategory: string, line?: number, pick = 'Más de', odds = 1.85) {
+    let market = 'Otro';
+    const catLower = (statCategory || '').toLowerCase();
+    if (catLower.includes('triple')) market = 'Triples';
+    else if (catLower.includes('rebote')) market = 'Rebotes';
+    else if (catLower.includes('asistencia')) market = 'Asistencias';
+    else if (catLower.includes('punto')) market = 'Puntos';
+    else if (catLower.includes('yarda')) market = 'Yardas';
+    else if (catLower.includes('gol')) market = 'Goles';
+    else if (catLower.includes('hit')) market = 'Hits';
+    else if (catLower.includes('ponche')) market = 'Ponches';
+
+    this.ticketModal.open({
+      game,
+      market,
+      pick: market === 'Otro' ? '' : pick,
+      line: line ?? null,
+      odds: Number(odds) || 1.85,
+      description: `${player.name} (${player.position || player.team_name}): ${statCategory} ${pick} ${line ?? ''}`.trim(),
+      eventLabel: `${player.name} · ${statCategory} (${game.home} vs ${game.away})`,
+    });
   }
 }
