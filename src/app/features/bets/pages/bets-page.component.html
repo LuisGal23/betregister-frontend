@@ -1,43 +1,156 @@
 <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0">{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Registrar ticket' }}</h1>
-    <p class="text-xs text-[var(--muted)] mt-1 mb-0">Anota tus tickets y resultados. Las apuestas se realizan fuera de BetRegister.</p>
+    <h1 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0">Mis apuestas</h1>
+    <p class="text-xs text-[var(--muted)] mt-1 mb-0">Control de tickets, marcadores y resolución de resultados.</p>
   </div>
-  <div class="flex gap-1 border border-[var(--border)] rounded-full p-1 bg-[var(--surface)] max-[600px]:w-full" role="group" aria-label="Vista de apuestas">
+  <div class="flex items-center gap-2.5 flex-wrap">
+    <!-- Auto-resolver con API -->
     <button
       type="button"
-      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 cursor-pointer"
-      [class.!bg-[var(--accent)]]="workspaceMode() === 'register'"
-      [class.!text-[var(--on-accent)]]="workspaceMode() === 'register'"
-      [class.font-semibold]="workspaceMode() === 'register'"
-      [class.shadow-md]="workspaceMode() === 'register'"
-      [attr.aria-pressed]="workspaceMode() === 'register'"
-      routerLink="/tickets"
+      class="action-pill-btn primary text-xs py-2 px-3.5 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+      [disabled]="resolvingAuto() || vm.busy()"
+      (click)="autoResolveBets()"
+      title="Verificar marcadores oficiales vía ESPN/MLB y resolver automáticamente"
     >
-      Registrar ticket</button
-    ><button
+      <app-icon [name]="resolvingAuto() ? 'clock' : 'trend'" [class.animate-spin]="resolvingAuto()" class="w-4 h-4" />
+      <span>{{ resolvingAuto() ? 'Verificando marcadores…' : 'Auto-resolver con API' }}</span>
+    </button>
+
+    <!-- Botón Exportar CSV -->
+    <a
+      class="secondary button-link text-xs py-2 px-3.5 flex items-center gap-1.5"
+      href="/api/export/bets.csv"
+      download="apuestas.csv"
+      title="Descargar archivo CSV de todas las apuestas"
+    >
+      <app-icon name="arrow" class="w-3.5 h-3.5 rotate-90" />
+      <span>Exportar CSV</span>
+    </a>
+
+    <!-- Botón Importar CSV -->
+    <button
       type="button"
-      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 flex items-center justify-center gap-2 cursor-pointer"
-      [class.!bg-[var(--accent)]]="workspaceMode() === 'history'"
-      [class.!text-[var(--on-accent)]]="workspaceMode() === 'history'"
-      [class.font-semibold]="workspaceMode() === 'history'"
-      [class.shadow-md]="workspaceMode() === 'history'"
-      [attr.aria-pressed]="workspaceMode() === 'history'"
-      routerLink="/history"
+      class="secondary text-xs py-2 px-3.5 cursor-pointer flex items-center gap-1.5"
+      [class.!border-[var(--accent)]]="showCsvTransfer()"
+      [class.!text-[var(--accent)]]="showCsvTransfer()"
+      (click)="showCsvTransfer.update(v => !v)"
+      title="Importar archivo CSV de apuestas"
     >
-      Mis tickets <span class="text-[11px] text-[var(--text)] bg-[var(--surface-high)] px-2 py-0.5 rounded-full">{{ vm.data().bets.length }}</span>
+      <app-icon name="settings" class="w-3.5 h-3.5" />
+      <span>{{ showCsvTransfer() ? 'Ocultar importador' : 'Importar CSV' }}</span>
     </button>
   </div>
 </div>
-<div class="flex items-center gap-2 flex-wrap mb-6 p-2 bg-[var(--surface)] border border-[var(--border)] rounded-[14px] max-[600px]:gap-0.5" aria-label="Tu actividad de apuestas">
-  <button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('pending')">
-    <span class="w-[7px] h-[7px] rounded-full bg-[var(--accent)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().pending }}</strong> En juego
-    <span class="ml-3 text-[var(--accent)] max-[600px]:hidden">→</span></button
-  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('won')">
-    <span class="w-[7px] h-[7px] rounded-full bg-[var(--positive)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().won }}</strong> Ganadas</button
-  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('lost')">
-    <span class="w-[7px] h-[7px] rounded-full bg-[var(--negative)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().lost }}</strong> Perdidas</button
-  ><small class="ml-auto px-3 text-[11px] text-[var(--muted)] max-[1050px]:hidden">Tu historial visible · todas las fechas</small>
+
+<!-- Visual Activity Counters (4 Visual Cards) -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6" aria-label="Resumen de actividad">
+  <!-- Card 1: En juego / Pendientes -->
+  <button
+    type="button"
+    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    [class.!border-accent]="betFilter() === 'pending'"
+    [class.!bg-accent/5]="betFilter() === 'pending'"
+    [class.shadow-md]="betFilter() === 'pending'"
+    (click)="showResult('pending')"
+  >
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
+        <span>En juego</span>
+      </span>
+      <span class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Pendientes</span>
+    </div>
+    <div class="my-1">
+      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums">
+        {{ activity().pending }}
+      </strong>
+    </div>
+    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+      <span>En riesgo:</span>
+      <strong class="font-mono text-text font-semibold">{{ vm.format(activity().pendingStake) }}</strong>
+    </div>
+  </button>
+
+  <!-- Card 2: Ganadas -->
+  <button
+    type="button"
+    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-emerald-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    [class.!border-emerald-500]="betFilter() === 'won'"
+    [class.!bg-emerald-500/5]="betFilter() === 'won'"
+    [class.shadow-md]="betFilter() === 'won'"
+    (click)="showResult('won')"
+  >
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
+        <span>Ganadas</span>
+      </span>
+      <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Acertadas</span>
+    </div>
+    <div class="my-1">
+      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-400 font-mono tabular-nums">
+        {{ activity().won }}
+      </strong>
+    </div>
+    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+      <span>Ganancia neta:</span>
+      <strong class="font-mono text-emerald-400 font-semibold">+{{ vm.format(activity().wonProfit) }}</strong>
+    </div>
+  </button>
+
+  <!-- Card 3: Perdidas -->
+  <button
+    type="button"
+    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-rose-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    [class.!border-rose-500]="betFilter() === 'lost'"
+    [class.!bg-rose-500/5]="betFilter() === 'lost'"
+    [class.shadow-md]="betFilter() === 'lost'"
+    (click)="showResult('lost')"
+  >
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></span>
+        <span>Perdidas</span>
+      </span>
+      <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Falladas</span>
+    </div>
+    <div class="my-1">
+      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-400 font-mono tabular-nums">
+        {{ activity().lost }}
+      </strong>
+    </div>
+    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+      <span>Perdido:</span>
+      <strong class="font-mono text-rose-400 font-semibold">-{{ vm.format(activity().lostStake) }}</strong>
+    </div>
+  </button>
+
+  <!-- Card 4: Efectividad / Win Rate -->
+  <button
+    type="button"
+    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    [class.!border-accent]="betFilter() === 'all'"
+    [class.!bg-accent/5]="betFilter() === 'all'"
+    [class.shadow-md]="betFilter() === 'all'"
+    (click)="showResult('all')"
+  >
+    <div class="flex items-center justify-between gap-2 mb-2">
+      <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+        <span>Win Rate</span>
+      </span>
+      <span class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Efectividad</span>
+    </div>
+    <div class="my-1 flex items-baseline gap-2">
+      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums">
+        {{ activity().winRate }}%
+      </strong>
+    </div>
+    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+      <span>Total apuestas:</span>
+      <strong class="font-mono text-text font-semibold">{{ activity().total }} tickets</strong>
+    </div>
+  </button>
 </div>
 @if (workspaceMode() === 'register') {
   <app-screenshot-import (draft)="applyScreenshot($event)" />
@@ -406,7 +519,11 @@
 }
 @if (workspaceMode() === 'history') {
   <div>
-    <app-csv-transfer />
+    @if (showCsvTransfer()) {
+      <div class="mb-5 animate-fade-in-up">
+        <app-csv-transfer />
+      </div>
+    }
     <section class="panel p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
       <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
         <div>
@@ -533,105 +650,154 @@
                   }
                 </td>
                 <td class="py-3 px-3 whitespace-nowrap" data-label="Estado">
-                  <span [class]="'status ' + b.status">{{ vm.labels[b.status] }}</span>
+                  @if (b.status === 'pending') {
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-accent/10 border border-accent/30 text-accent">
+                      <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+                      <span>En juego</span>
+                    </span>
+                  } @else if (b.status === 'won') {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                      <span>✓ Ganada</span>
+                    </span>
+                  } @else if (b.status === 'lost') {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/15 border border-rose-500/30 text-rose-400">
+                      <span>✕ Perdida</span>
+                    </span>
+                  } @else if (b.status === 'void') {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-surface-high border border-border text-muted">
+                      <span>Anulada</span>
+                    </span>
+                  } @else {
+                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/15 border border-sky-500/30 text-sky-400">
+                      <span>Cashout</span>
+                    </span>
+                  }
                 </td>
                 <td class="py-3 px-3 whitespace-nowrap" data-label="Resultado">
                   @if (b.status === 'pending') {
-                    <details class="row-menu pending-menu text-xs">
-                      <summary class="text-xs text-[var(--accent)] font-semibold cursor-pointer select-none">Resolver apuesta</summary>
-                      <div class="flex flex-wrap gap-1.5 mt-2.5">
-                        @if (b.legs?.length) {
-                          <button
-                            class="secondary text-[11px] py-1 px-2.5 rounded-full"
-                            (click)="management.set({ bet: b, mode: 'legs' })"
-                          >
-                            Resolver selecciones
-                          </button>
-                        }
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      @if (!b.legs?.length) {
                         <button
-                          class="secondary text-[11px] py-1 px-2.5 rounded-full"
-                          (click)="management.set({ bet: b, mode: 'partial' })"
+                          type="button"
+                          class="py-1 px-3 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 hover:bg-emerald-500 hover:text-white transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
+                          [disabled]="vm.busy()"
+                          (click)="reviewBet(b, 'won')"
+                          title="Marcar como ganada"
                         >
-                          Cashout parcial
+                          <span>✓ Ganada</span>
                         </button>
-                        @if (!b.legs?.length) {
-                          <button
-                            class="primary text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
-                            [disabled]="vm.busy()"
-                            (click)="reviewBet(b, 'won')"
-                          >
-                            Ganada</button
-                          ><button
-                            class="danger-button text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
-                            [disabled]="vm.busy()"
-                            (click)="reviewBet(b, 'lost')"
-                          >
-                            Perdida
-                          </button>
-                        }
                         <button
-                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
+                          type="button"
+                          class="py-1 px-3 rounded-full text-xs font-semibold bg-rose-500/15 border border-rose-500/35 text-rose-400 hover:bg-rose-500 hover:text-white transition-all duration-200 cursor-pointer active:scale-95 flex items-center gap-1 shadow-sm"
                           [disabled]="vm.busy()"
-                          (click)="reviewBet(b, 'void')"
+                          (click)="reviewBet(b, 'lost')"
+                          title="Marcar como perdida"
                         >
-                          Anulada</button
-                        ><button
-                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
-                          [disabled]="vm.busy()"
-                          (click)="cashoutId = b.id; cashoutAmount = null"
-                        >
-                          Cashout
+                          <span>✕ Perdida</span>
                         </button>
-                      </div>
-                      @if (cashoutId === b.id) {
-                        <form
-                          class="mt-2.5 p-2 rounded-lg bg-[var(--surface-high)] flex flex-col gap-2 min-w-[180px]"
-                          ngNativeValidate
-                          (ngSubmit)="reviewBet(b, 'cashout', cashoutAmount ?? 0)"
+                      } @else {
+                        <button
+                          type="button"
+                          class="action-pill-btn primary text-xs py-1 px-3"
+                          (click)="management.set({ bet: b, mode: 'legs' })"
                         >
-                          <label class="text-[11px] flex flex-col gap-1 text-[var(--muted)]"
-                            >Retorno total ({{ b.currency }})<input
-                              name="cashout"
-                              type="number"
-                              class="text-xs p-1.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] outline-none"
-                              [(ngModel)]="cashoutAmount"
-                              min="0"
-                              max="9999999999.99"
-                              step="0.01"
-                              required /></label
-                          ><div class="flex gap-2">
-                            <button class="primary text-[11px] py-1 px-3 rounded-full font-semibold" [disabled]="vm.busy()">Revisar</button>
-                            <button type="button" class="secondary text-[11px] py-1 px-3 rounded-full" (click)="cashoutId = null">
-                              Volver
-                            </button>
-                          </div>
-                        </form>
+                          <span>Resolver selecciones</span>
+                        </button>
                       }
-                    </details>
+
+                      <details class="relative inline-block text-xs">
+                        <summary class="py-1 px-2.5 rounded-full border border-border bg-surface-high hover:border-accent text-muted hover:text-text cursor-pointer transition-colors select-none font-medium text-[11px]">
+                          Más ▾
+                        </summary>
+                        <div class="absolute right-0 top-full mt-1.5 p-2 rounded-xl bg-surface border border-border shadow-xl z-30 flex flex-col gap-1 min-w-[160px] animate-fade-in-up">
+                          <button
+                            type="button"
+                            class="text-xs text-left px-2.5 py-1.5 rounded-lg text-text hover:bg-surface-high cursor-pointer transition-colors border-none bg-transparent"
+                            [disabled]="vm.busy()"
+                            (click)="reviewBet(b, 'void')"
+                          >
+                            Anulada / Push
+                          </button>
+                          <button
+                            type="button"
+                            class="text-xs text-left px-2.5 py-1.5 rounded-lg text-text hover:bg-surface-high cursor-pointer transition-colors border-none bg-transparent"
+                            [disabled]="vm.busy()"
+                            (click)="cashoutId = b.id; cashoutAmount = null"
+                          >
+                            Anotar Cashout
+                          </button>
+                          <button
+                            type="button"
+                            class="text-xs text-left px-2.5 py-1.5 rounded-lg text-text hover:bg-surface-high cursor-pointer transition-colors border-none bg-transparent"
+                            (click)="management.set({ bet: b, mode: 'partial' })"
+                          >
+                            Cashout parcial
+                          </button>
+                          @if (b.linked_games?.length) {
+                            <button
+                              type="button"
+                              class="text-xs text-left px-2.5 py-1.5 rounded-lg text-accent hover:bg-surface-high cursor-pointer transition-colors border-none bg-transparent font-medium border-t border-border mt-1 pt-1.5"
+                              (click)="scoreBet.set(b)"
+                            >
+                              Ver marcadores API
+                            </button>
+                          }
+                        </div>
+                      </details>
+                    </div>
+
+                    @if (cashoutId === b.id) {
+                      <form
+                        class="mt-2.5 p-2.5 rounded-xl bg-surface-high border border-border flex flex-col gap-2 min-w-[190px] animate-fade-in-up"
+                        ngNativeValidate
+                        (ngSubmit)="reviewBet(b, 'cashout', cashoutAmount ?? 0)"
+                      >
+                        <label class="text-[11px] flex flex-col gap-1 text-muted"
+                          >Importe cobrado ({{ b.currency }})<input
+                            name="cashout"
+                            type="number"
+                            class="text-xs p-1.5 rounded-lg bg-surface border border-border text-text outline-none font-mono"
+                            [(ngModel)]="cashoutAmount"
+                            min="0"
+                            max="9999999999.99"
+                            step="0.01"
+                            required /></label
+                        ><div class="flex gap-2">
+                          <button class="primary text-xs py-1 px-3 rounded-full font-semibold" [disabled]="vm.busy()">Confirmar</button>
+                          <button type="button" class="secondary text-xs py-1 px-3 rounded-full" (click)="cashoutId = null">
+                            Cancelar
+                          </button>
+                        </div>
+                      </form>
+                    }
                   } @else {
-                    <strong
-                      class="block font-bold text-sm"
-                      [class.text-[var(--positive)]]="b.payout >= b.stake"
-                      [class.text-[var(--negative)]]="b.payout < b.stake"
-                      >{{ vm.native(b.payout - b.stake, b.currency) }}</strong
-                    ><small class="block text-[11px] text-[var(--muted)]">Retorno: {{ vm.native(b.payout, b.currency) }}</small>
-                    <details class="mt-1 text-xs text-[var(--muted)]">
-                      <summary class="text-xs text-[var(--muted)] cursor-pointer select-none">Gestionar apuesta</summary>
-                      <div class="flex flex-col gap-1 mt-1.5">
+                    <div>
+                      <strong
+                        class="block font-bold text-sm font-mono"
+                        [class.text-emerald-400]="b.payout >= b.stake"
+                        [class.text-rose-400]="b.payout < b.stake"
+                      >
+                        {{ b.payout >= b.stake ? '+' : '' }}{{ vm.native(b.payout - b.stake, b.currency) }}
+                      </strong>
+                      <small class="block text-[11px] text-muted font-mono">Retorno: {{ vm.native(b.payout, b.currency) }}</small>
+                      <div class="flex items-center gap-2 mt-1">
                         <button
-                          class="text-button text-xs text-[var(--accent)] hover:underline text-left"
+                          type="button"
+                          class="text-button text-[11px] text-accent hover:underline cursor-pointer"
                           (click)="management.set({ bet: b, mode: 'correct' })"
                         >
-                          Corregir / anular</button
-                        ><button
-                          class="text-button text-xs text-[var(--muted)] hover:underline text-left"
+                          Corregir
+                        </button>
+                        <button
+                          type="button"
+                          class="text-button text-[11px] text-muted hover:text-rose-400 hover:underline cursor-pointer"
                           [disabled]="vm.busy()"
                           (click)="reviewHistory(b)"
                         >
-                          {{ b.history_hidden ? 'Restaurar al historial' : 'Eliminar del historial' }}
+                          {{ b.history_hidden ? 'Restaurar' : 'Eliminar' }}
                         </button>
                       </div>
-                    </details>
+                    </div>
                   }
                 </td>
               </tr>

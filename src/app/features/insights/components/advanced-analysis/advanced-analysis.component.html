@@ -1,99 +1,125 @@
 @if (mode() === 'clv') {
-  <section class="panel mb-5">
-    <h2 class="text-base font-semibold text-text mb-1">¿Conseguiste una cuota mejor que el cierre?</h2>
-    <p class="text-xs text-muted leading-relaxed">
-      Solo tickets simples. Captura la cuota decimal de cierre del mismo mercado, selección, línea y
-      casa. Un cierre diferente no es comparable.
-    </p>
-    <div class="flex items-center gap-4.5 my-5">
-      <strong class="text-3xl font-bold font-mono text-accent">{{ percent(beaten()) }}</strong>
-      <span class="text-xs text-muted"
-        >con cuota jugada superior al cierre · {{ points().length }} comparaciones manuales</span
-      >
+  <section class="p-5 sm:p-7 rounded-3xl bg-surface border border-border shadow-xl mb-6">
+    <div class="mb-4">
+      <span class="eyebrow !text-accent font-mono font-bold">VALOR ESPERADO & CIERRE</span>
+      <h2 class="text-lg sm:text-xl font-black text-text mt-1">¿Conseguiste una cuota mejor que el cierre de mercado?</h2>
+      <p class="text-xs text-muted leading-relaxed mt-1">
+        Aplica para apuestas simples. Compara la cuota a la que entraste contra la cuota decimal oficial previa al inicio del evento.
+      </p>
     </div>
+
+    <div class="flex items-center gap-4 my-6 p-4 rounded-2xl bg-surface-high/60 border border-border/80">
+      <strong class="text-3xl sm:text-4xl font-black font-mono text-accent">{{ percent(beaten()) }}</strong>
+      <div class="flex flex-col">
+        <span class="text-xs font-bold text-text">Tasa de superación al cierre (CLV)</span>
+        <span class="text-[11px] text-muted">{{ points().length }} comparaciones manuales registradas en tu historial</span>
+      </div>
+    </div>
+
     @if (points().length) {
-      <svg
-        viewBox="0 0 410 415"
-        class="block max-w-[440px] w-full mx-auto"
-        role="img"
-        aria-label="Cuota jugada horizontal y cuota de cierre vertical. Debajo de la diagonal, la cuota jugada fue mayor."
-      >
-        <path d="M35 35V365H365 M35 365L365 35" fill="none" stroke="var(--border)" />
-        @for (p of points(); track p.bet.id) {
-          <circle
-            [attr.cx]="coord(p.x)"
-            [attr.cy]="400 - coord(p.y)"
-            r="5"
-            [attr.fill]="
-              p.clv > 0 ? 'var(--positive)' : p.clv < 0 ? 'var(--negative)' : 'var(--muted)'
-            "
-          >
-            <title>
-              #{{ p.bet.id }} {{ p.bet.event }} · Jugada {{ p.x }} · Cierre {{ p.y }} · CLV
-              {{ percent(p.clv) }}
-            </title>
-          </circle>
-        }
-        <text x="35" y="388" fill="var(--muted)" font-size="11">1</text>
-        <text x="355" y="388" fill="var(--muted)" font-size="11">{{ extent().toFixed(2) }}</text>
-        <text x="115" y="409" fill="var(--muted)" font-size="11">Cuota jugada →</text>
-        <text x="36" y="20" fill="var(--muted)" font-size="11">Cuota de cierre ↑ · {{ extent().toFixed(2) }}</text>
-      </svg>
+      <div class="p-4 rounded-2xl bg-surface-high/40 border border-border flex justify-center">
+        <svg
+          viewBox="0 0 410 415"
+          class="block max-w-[440px] w-full mx-auto"
+          role="img"
+          aria-label="Cuota jugada horizontal y cuota de cierre vertical."
+        >
+          <path d="M35 35V365H365 M35 365L365 35" fill="none" stroke="var(--border)" stroke-width="2" />
+          @for (p of points(); track p.bet.id) {
+            <circle
+              [attr.cx]="coord(p.x)"
+              [attr.cy]="400 - coord(p.y)"
+              r="6"
+              [attr.fill]="
+                p.clv > 0 ? '#10b981' : p.clv < 0 ? '#ef4444' : 'var(--muted)'
+              "
+              class="hover:scale-125 transition-transform"
+            >
+              <title>
+                #{{ p.bet.id }} {{ p.bet.event }} · Jugada {{ p.x }} · Cierre {{ p.y }} · CLV {{ percent(p.clv) }}
+              </title>
+            </circle>
+          }
+          <text x="35" y="388" fill="var(--muted)" font-size="11">1.00</text>
+          <text x="345" y="388" fill="var(--muted)" font-size="11">{{ extent().toFixed(2) }}</text>
+          <text x="120" y="409" fill="var(--muted)" font-size="11" font-weight="bold">Cuota jugada →</text>
+          <text x="36" y="20" fill="var(--muted)" font-size="11" font-weight="bold">Cuota de cierre ↑ · {{ extent().toFixed(2) }}</text>
+        </svg>
+      </div>
     } @else {
-      <p class="empty">Todavía no has registrado cuotas de cierre.</p>
+      <div class="py-10 text-center text-muted text-xs bg-surface-high/30 rounded-2xl border border-dashed border-border">
+        <p class="font-medium text-text">Todavía no has registrado cuotas de cierre en tus tickets simples.</p>
+        <p class="mt-1 text-[11px]">Puedes ingresar la cuota de cierre en la tabla inferior para calcular tu CLV.</p>
+      </div>
     }
-    <p class="field-help mt-4">
-      CLV = (cuota jugada / cuota de cierre − 1) × 100. Es una comparación descriptiva, sin ajuste
-      del margen de la casa. Ningún porcentaje garantiza rentabilidad.
+    
+    <p class="text-[11px] text-muted mt-4">
+      CLV = (cuota jugada / cuota de cierre − 1) × 100. Superar consistentemente la cuota de cierre es un indicador fundamental de apostador rentable a largo plazo.
     </p>
   </section>
-  <section class="panel">
-    <h2 class="text-base font-semibold text-text mb-4">Cuotas de cierre manuales</h2>
-    <div class="table-wrap">
-      <table>
+
+  <section class="p-5 sm:p-7 rounded-3xl bg-surface border border-border shadow-xl">
+    <h3 class="text-base font-bold text-text mb-3">Registrar Cuotas de Cierre en Tickets Simples</h3>
+    <div class="table-wrap overflow-x-auto">
+      <table class="w-full text-left">
         <thead>
-          <tr>
-            <th>Ticket</th>
-            <th>Jugada</th>
-            <th>Cierre</th>
-            <th>CLV</th>
-            <th></th>
+          <tr class="border-b border-border text-xs text-muted">
+            <th class="py-2 px-3">Ticket</th>
+            <th class="py-2 px-3">Cuota Jugada</th>
+            <th class="py-2 px-3">Cuota Cierre</th>
+            <th class="py-2 px-3">CLV %</th>
+            <th class="py-2 px-3 text-right">Acción</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody class="divide-y divide-border/40 text-xs">
           @for (b of comparable(); track b.id) {
-            <tr>
-              <td>#{{ b.id }} · {{ b.event }}</td>
-              <td>{{ b.odds }}</td>
-              <td>{{ b.closing_odds ?? 'Sin captura' }}</td>
-              <td>{{ b.closing_odds ? percent((+b.odds / +b.closing_odds - 1) * 100) : '—' }} @if(b.closing_odds && +b.odds > +b.closing_odds){<small class="positive block text-xs">Cuota superior al cierre declarado</small>}</td>
-              <td><button class="secondary text-xs py-1.5 px-3" (click)="begin(b)">Editar</button></td>
+            <tr class="hover:bg-surface-high transition-colors">
+              <td class="py-2.5 px-3">
+                <strong class="text-text block truncate max-w-xs">#{{ b.id }} · {{ b.event }}</strong>
+              </td>
+              <td class="py-2.5 px-3 font-mono font-bold">{{ b.odds }}</td>
+              <td class="py-2.5 px-3 font-mono text-muted">{{ b.closing_odds ?? 'Sin captura' }}</td>
+              <td class="py-2.5 px-3 font-mono font-bold">
+                @if (b.closing_odds) {
+                  <span [class.text-emerald-400]="+b.odds > +b.closing_odds" [class.text-red-400]="+b.odds < +b.closing_odds">
+                    {{ percent((+b.odds / +b.closing_odds - 1) * 100) }}
+                  </span>
+                } @else {
+                  <span class="text-muted">—</span>
+                }
+              </td>
+              <td class="py-2.5 px-3 text-right">
+                <button type="button" class="action-pill-btn py-1 px-3 text-xs" (click)="begin(b)">
+                  {{ b.closing_odds ? 'Editar' : 'Capturar' }}
+                </button>
+              </td>
             </tr>
             @if (editing() === b.id) {
-              <tr>
-                <td colspan="5">
-                  <form ngNativeValidate (ngSubmit)="save(b.id)" class="flex items-end flex-wrap gap-3 py-2">
-                    <label class="m-0 text-xs font-medium"
-                      >Cuota decimal al cierre<input
+              <tr class="bg-surface-high/70">
+                <td colspan="5" class="p-3">
+                  <form ngNativeValidate (ngSubmit)="save(b.id)" class="flex items-center flex-wrap gap-3">
+                    <label class="text-xs font-semibold text-text flex items-center gap-2">
+                      <span>Cuota decimal de cierre:</span>
+                      <input
                         type="number"
                         name="closing"
                         min="1.0001"
                         max="10000"
                         step="0.0001"
                         [(ngModel)]="closing"
-                        class="mt-1"
-                        placeholder="Deja vacío para quitarla" /></label
-                    ><button class="primary text-xs py-2 px-4" [disabled]="vm.busy()">Guardar</button
-                    ><button type="button" class="secondary text-xs py-2 px-4" (click)="editing.set(null)">
-                      Cancelar
-                    </button>
+                        class="h-8 px-2.5 rounded-lg bg-surface border border-border text-xs text-text w-32 outline-none focus:border-accent font-mono"
+                        placeholder="Ej. 1.95" 
+                      />
+                    </label>
+                    <button class="action-pill-btn primary py-1 px-3 text-xs" [disabled]="vm.busy()">Guardar</button>
+                    <button type="button" class="action-pill-btn py-1 px-3 text-xs" (click)="editing.set(null)">Cancelar</button>
                   </form>
                 </td>
               </tr>
             }
           } @empty {
             <tr>
-              <td colspan="5" class="empty">No hay tickets simples con estos filtros.</td>
+              <td colspan="5" class="py-6 text-center text-muted">No hay tickets simples para evaluar en este filtro.</td>
             </tr>
           }
         </tbody>
@@ -101,73 +127,158 @@
     </div>
   </section>
 } @else if (mode() === 'patterns') {
-  <section class="panel">
-    <h2 class="text-base font-semibold text-text mb-1">Patrones de tu historial</h2>
-    <p class="text-xs text-muted leading-relaxed mb-4">
-      Se calculan con tus tickets cerrados y los filtros activos. Son observaciones, no predicciones
-      ni un diagnóstico de tu conducta.
-    </p>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-4.5">
-      @for (
-        item of [
-          { label: 'Parlays de más de 4 selecciones', data: longParlays() },
-          { label: 'Apuestas simples', data: singles() },
-        ];
-        track item.label
-      ) {
-        <article class="bg-surface-high border border-border rounded-xl p-4.5 min-w-0">
-          <h3 class="text-xs font-semibold text-text mb-3">{{ item.label }}</h3>
-          <strong class="block text-2xl font-bold font-mono my-2 text-text" [class.negative]="(item.data.yield ?? 0) < 0"
-            >{{ percent(item.data.yield) }} yield</strong
+  <section class="p-5 sm:p-7 rounded-3xl bg-surface border border-border shadow-xl mb-6">
+    <div class="mb-4">
+      <span class="eyebrow !text-accent font-mono font-bold">PATRONES DE COMPORTAMIENTO</span>
+      <h2 class="text-lg sm:text-xl font-black text-text mt-1">Patrones Observados en tu Historial</h2>
+      <p class="text-xs text-muted leading-relaxed mt-1">
+        Métricas analíticas calculadas a partir de tus tickets cerrados para detectar sesgos y hábitos de apuesta.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <!-- Long parlays -->
+      <article class="bg-surface-high/60 border border-border rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-muted">RIESGO ACUMULATIVO</span>
+          <h3 class="text-sm font-bold text-text mt-1">Parlays de más de 4 selecciones</h3>
+          <strong 
+            class="block text-2xl sm:text-3xl font-black font-mono my-2" 
+            [class.text-red-400]="(longParlays().yield ?? 0) < 0"
+            [class.text-emerald-400]="(longParlays().yield ?? 0) > 0"
+            [class.text-text]="(longParlays().yield ?? 0) === 0"
           >
-          <p class="text-xs text-muted">{{ item.data.count }} tickets · {{ vm.format(item.data.profit) }} netos</p>
-          @if (item.data.count < 20) {
-            <small class="block text-[10px] text-muted mt-2">Muestra pequeña: evita sacar conclusiones todavía.</small>
-          }
-        </article>
-      }
-      <article class="bg-surface-high border border-border rounded-xl p-4.5 min-w-0">
-        <h3 class="text-xs font-semibold text-text mb-3">Horario de las pérdidas</h3>
-        <strong class="block text-2xl font-bold font-mono my-2 text-text">{{ percent(late().percent) }}</strong>
-        <p class="text-xs text-muted leading-relaxed">
-          {{ late().count }} de {{ late().total }} tickets con pérdida se registraron entre 22:00 y
-          02:00, en tu zona horaria.
-        </p>
-        <small class="block text-[10px] text-muted mt-2">La frecuencia por sí sola no demuestra que el horario sea la causa.</small>
+            {{ percent(longParlays().yield) }} yield
+          </strong>
+          <p class="text-xs text-muted">
+            {{ longParlays().count }} tickets · {{ vm.format(longParlays().profit) }} netos
+          </p>
+        </div>
+        @if (longParlays().count < 10) {
+          <small class="block text-[10px] text-muted mt-3 pt-2 border-t border-border/40">Muestra pequeña: volumen bajo de combinadas largas.</small>
+        }
+      </article>
+
+      <!-- Singles -->
+      <article class="bg-surface-high/60 border border-border rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-accent">DISCIPLINA BASE</span>
+          <h3 class="text-sm font-bold text-text mt-1">Apuestas Simples / Derechas</h3>
+          <strong 
+            class="block text-2xl sm:text-3xl font-black font-mono my-2" 
+            [class.text-red-400]="(singles().yield ?? 0) < 0"
+            [class.text-emerald-400]="(singles().yield ?? 0) > 0"
+            [class.text-text]="(singles().yield ?? 0) === 0"
+          >
+            {{ percent(singles().yield) }} yield
+          </strong>
+          <p class="text-xs text-muted">
+            {{ singles().count }} tickets · {{ vm.format(singles().profit) }} netos
+          </p>
+        </div>
+        <small class="block text-[10px] text-muted mt-3 pt-2 border-t border-border/40">{{ percent(singles().win) }} tasa de acierto en apuestas simples.</small>
+      </article>
+
+      <!-- Late night betting losses -->
+      <article class="bg-surface-high/60 border border-border rounded-2xl p-5 flex flex-col justify-between">
+        <div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-amber-400">HORARIO CRÍTICO</span>
+          <h3 class="text-sm font-bold text-text mt-1">Pérdidas Nocturnas (22:00 - 02:00)</h3>
+          <strong class="block text-2xl sm:text-3xl font-black font-mono my-2 text-amber-400">
+            {{ percent(late().percent) }}
+          </strong>
+          <p class="text-xs text-muted leading-relaxed">
+            {{ late().count }} de {{ late().total }} tickets con pérdida fueron registrados en horario nocturno tardío.
+          </p>
+        </div>
+        <small class="block text-[10px] text-muted mt-3 pt-2 border-t border-border/40">Cuidado con apostar por impulso o fatiga a altas horas.</small>
       </article>
     </div>
   </section>
 } @else {
-  <section class="panel mb-5">
-    <h2 class="text-base font-semibold text-text mb-4">Rendimiento por cuota</h2>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+  <!-- MODE: 'odds' (RENDIMIENTO POR CUOTA Y MAPA DE DEPORTE) -->
+  <section class="p-5 sm:p-7 rounded-3xl bg-surface border border-border shadow-xl mb-6">
+    <div class="mb-4">
+      <span class="eyebrow !text-accent font-mono font-bold">RANGOS DE CUOTA</span>
+      <h2 class="text-lg sm:text-xl font-black text-text mt-1">Rendimiento por Rango de Cuota Decimal</h2>
+      <p class="text-xs text-muted leading-relaxed mt-1">
+        Descubre en qué rango de cuota obtienes tu mayor rentabilidad y tasa de acierto.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
       @for (b of bands(); track b.label) {
-        <article class="bg-surface-high border border-border rounded-xl p-4.5 min-w-0">
-          <h3 class="text-xs font-semibold text-text mb-3">{{ b.label }}</h3>
-          <strong class="block text-2xl font-bold font-mono my-2 text-text" [class.negative]="(b.yield ?? 0) < 0" [class.positive]="(b.yield ?? 0) > 0"
-            >{{ percent(b.yield) }} yield</strong
-          >
-          <p class="text-xs text-muted">{{ b.count }} cerradas · {{ percent(b.win) }} acierto</p>
+        <article class="bg-surface-high/60 border border-border rounded-2xl p-5 flex flex-col justify-between hover:border-accent/40 transition-colors">
+          <div>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-muted">SEGMENTO</span>
+            <h3 class="text-base font-bold text-text mt-1">{{ b.label }}</h3>
+            <strong 
+              class="block text-3xl font-black font-mono my-2" 
+              [class.text-emerald-400]="(b.yield ?? 0) > 0" 
+              [class.text-red-400]="(b.yield ?? 0) < 0"
+              [class.text-muted]="(b.yield ?? 0) === 0"
+            >
+              {{ percent(b.yield) }} yield
+            </strong>
+
+            @if (b.profit !== null && b.profit !== undefined) {
+              <span 
+                class="text-xs font-mono font-bold block"
+                [class.text-emerald-400]="b.profit > 0"
+                [class.text-red-400]="b.profit < 0"
+              >
+                {{ (b.profit > 0 ? '+' : '') + vm.format(b.profit) }} netos
+              </span>
+            }
+          </div>
+
+          <div class="pt-3 border-t border-border/40 mt-3 flex items-center justify-between text-xs text-muted">
+            <span>{{ b.count }} cerradas</span>
+            <span class="font-semibold text-text">{{ percent(b.win) }} acierto</span>
+          </div>
         </article>
       }
     </div>
   </section>
-  <details class="panel collapsible">
-    <summary>Mapa de deporte, liga y mercado</summary>
-    <p class="field-help mt-2">
-      Neto del ticket completo en cada mercado que contiene. Las celdas de parlays se solapan: no
-      sumes sus importes.
-    </p>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 mt-4.5">
+
+  <!-- MAPA DE DEPORTE, LIGA Y MERCADO -->
+  <section class="p-5 sm:p-7 rounded-3xl bg-surface border border-border shadow-xl">
+    <div class="mb-4">
+      <span class="eyebrow !text-accent font-mono font-bold">MATRIZ CRUZADA</span>
+      <h3 class="text-base sm:text-lg font-bold text-text mt-1">Mapa de Rendimiento por Deporte, Liga y Mercado</h3>
+      <p class="text-xs text-muted mt-0.5">
+        Distribución cruzada de los tickets cerrados en cada combinación de deporte, liga y mercado.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 mt-4">
       @for (cell of heat(); track cell.label) {
-        <article class="bg-surface-high border border-border rounded-xl p-4.5 min-w-0" [class.border-l-4]="cell.profit !== null && cell.profit !== 0" [class.border-l-red-500]="(cell.profit ?? 0) < 0" [class.border-l-emerald-500]="(cell.profit ?? 0) > 0">
-          <span class="block text-xs font-medium text-text break-words">{{ cell.label }}</span
-          ><strong class="block text-xl font-bold font-mono my-2 text-text">{{ vm.format(cell.profit) }}</strong
-          ><small class="block text-[11px] text-muted">{{ cell.count }} tickets · {{ percent(cell.yield) }} yield</small>
+        <article 
+          class="bg-surface-high/50 border border-border rounded-2xl p-4 flex flex-col justify-between"
+          [class.border-l-4]="cell.profit !== null && cell.profit !== 0" 
+          [class.border-l-red-500]="(cell.profit ?? 0) < 0" 
+          [class.border-l-emerald-500]="(cell.profit ?? 0) > 0"
+        >
+          <div>
+            <span class="block text-xs font-bold text-text break-words">{{ cell.label }}</span>
+            <strong 
+              class="block text-xl font-black font-mono my-1.5"
+              [class.text-emerald-400]="(cell.profit ?? 0) > 0"
+              [class.text-red-400]="(cell.profit ?? 0) < 0"
+              [class.text-muted]="(cell.profit ?? 0) === 0"
+            >
+              {{ (cell.profit ?? 0) > 0 ? '+' : '' }}{{ vm.format(cell.profit) }}
+            </strong>
+          </div>
+          <small class="block text-[11px] text-muted font-mono pt-2 border-t border-border/30">
+            {{ cell.count }} tickets · {{ percent(cell.yield) }} yield
+          </small>
         </article>
       } @empty {
-        <p class="text-xs text-muted py-4">Sin apuestas cerradas para estos filtros.</p>
+        <div class="py-8 text-center text-muted text-xs col-span-full">
+          <p>Sin apuestas cerradas para estos filtros.</p>
+        </div>
       }
     </div>
-  </details>
+  </section>
 }

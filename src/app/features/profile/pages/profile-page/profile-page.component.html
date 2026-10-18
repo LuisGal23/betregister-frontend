@@ -1,0 +1,455 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Top Header -->
+  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border/60">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="eyebrow !text-accent font-mono font-bold">AJUSTES DE CUENTA</span>
+        <span class="text-xs text-muted">·</span>
+        <span class="text-xs text-muted font-medium">Identidad Pública</span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-text mt-1">
+        Mi Perfil de Usuario & Tipster
+      </h1>
+      <p class="text-xs sm:text-sm text-muted mt-1 max-w-2xl">
+        Configura tu nombre de usuario, foto de perfil e información sobre tu estrategia para interactuar en la comunidad.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a routerLink="/community" class="action-pill-btn py-2 px-4 text-xs inline-flex items-center gap-1.5">
+        <span>🌐 Ver Comunidad Tipsters</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Notification Alerts -->
+  @if (success()) {
+    <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs flex items-center justify-between gap-3 animate-fade-in">
+      <div class="flex items-center gap-2">
+        <app-icon name="check" class="text-emerald-400 text-sm" />
+        <span class="font-bold">{{ success() }}</span>
+      </div>
+      <button type="button" class="text-emerald-400 font-bold hover:underline" (click)="success.set('')">✕</button>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center justify-between gap-3">
+      <span>{{ error() }}</span>
+      <button type="button" class="text-red-400 font-bold hover:underline" (click)="error.set('')">✕</button>
+    </div>
+  }
+
+  <!-- Main Content Grid (Form + Live Preview Card) -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-8">
+
+    <!-- LEFT COLUMN: Profile Edit Form -->
+    <form (ngSubmit)="save()" class="flex flex-col gap-6">
+
+      <!-- SECTION 1: IDENTIDAD BÁSICA -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+        <div class="flex items-center justify-between border-b border-border/50 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+            <h2 class="text-base font-bold text-text">Identidad en la Plataforma</h2>
+          </div>
+          <span class="text-xs text-muted">Visible para otros usuarios</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <!-- Username -->
+          <div class="flex flex-col gap-1.5">
+            <label for="username-input" class="text-xs font-bold text-text">Nombre de Usuario (@username)</label>
+            <div class="flex items-center rounded-xl bg-surface-high border border-border focus-within:border-accent overflow-hidden transition-colors">
+              <span class="px-3 text-xs font-mono font-bold text-accent select-none bg-accent/10 border-r border-border h-10 grid place-items-center">@</span>
+              <input
+                id="username-input"
+                type="text"
+                [ngModel]="username()"
+                (ngModelChange)="username.set($event)"
+                name="username"
+                required
+                placeholder="Ej. ElMagoDelGol"
+                class="w-full h-10 px-3 bg-transparent text-xs text-text outline-none font-semibold"
+              />
+            </div>
+            <span class="text-[10px] text-muted">Reemplaza tu correo en la navegación y en el feed social.</span>
+          </div>
+
+          <!-- Display Name -->
+          <div class="flex flex-col gap-1.5">
+            <label for="display-name-input" class="text-xs font-bold text-text">Nombre Público / Alias</label>
+            <input
+              id="display-name-input"
+              type="text"
+              [ngModel]="displayName()"
+              (ngModelChange)="displayName.set($event)"
+              name="displayName"
+              placeholder="Ej. Carlos Pérez"
+              class="w-full h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent font-semibold transition-colors"
+            />
+            <span class="text-[10px] text-muted">Nombre o alias completo que acompañará tus pronósticos.</span>
+          </div>
+        </div>
+
+        <!-- Email (Read only) -->
+        <div class="flex flex-col gap-1.5 pt-2 border-t border-border/40">
+          <label class="text-xs font-bold text-muted">Correo Electrónico (Cuenta privada)</label>
+          <div class="flex items-center justify-between p-2.5 px-3 rounded-xl bg-surface-high/40 border border-border text-xs text-muted">
+            <span class="font-mono">{{ vm.data().profile.email }}</span>
+            <span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 font-semibold">Privado</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 2: AVATAR / FOTO DE PERFIL -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+        <div class="flex items-center justify-between border-b border-border/50 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+            <h2 class="text-base font-bold text-text">Foto de Perfil & Avatar</h2>
+          </div>
+          <span class="text-xs text-muted">Sube tu foto o elige un avatar</span>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-5">
+          <!-- Current Avatar Preview -->
+          <div class="relative w-24 h-24 rounded-3xl bg-surface-high border-2 border-accent/40 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
+            @if (avatarUrl()) {
+              <img [src]="avatarUrl()" alt="Avatar" class="w-full h-full object-cover" (error)="onAvatarError($event)" />
+            } @else {
+              <span class="text-3xl font-black text-accent uppercase font-mono">
+                {{ (username() || 'U').slice(0, 2) }}
+              </span>
+            }
+          </div>
+
+          <div class="flex flex-col gap-2.5 w-full">
+            <span class="text-xs font-bold text-text">Sube tu propia foto o logo desde tu dispositivo</span>
+            <div class="flex flex-wrap items-center gap-2.5">
+              <input
+                #fileInput
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                class="hidden"
+                (change)="onFileUpload($event)"
+              />
+              <button
+                type="button"
+                (click)="fileInput.click()"
+                class="action-pill-btn primary py-2 px-4 text-xs inline-flex items-center gap-2 shadow-sm"
+              >
+                <span>📁</span>
+                <span>Subir imagen desde tu equipo</span>
+              </button>
+
+              @if (avatarUrl()) {
+                <button
+                  type="button"
+                  (click)="clearAvatar()"
+                  class="action-pill-btn py-2 px-3 text-xs text-red-400 hover:bg-red-500/10 hover:border-red-500/30 transition-colors"
+                >
+                  ✕ Quitar foto
+                </button>
+              }
+            </div>
+            <p class="text-[11px] text-muted leading-relaxed">
+              Formatos admitidos: PNG, JPG, WebP. La imagen se optimiza y almacena de forma segura directamente sin riesgos de URLs externas ni inyecciones.
+            </p>
+          </div>
+        </div>
+
+        <!-- Quick Presets with Categories -->
+        <div class="flex flex-col gap-3 pt-3 border-t border-border/40">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-xs font-bold text-text">O elige un avatar de la biblioteca libre de derechos:</span>
+            
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+              <button
+                type="button"
+                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                [class.active]="avatarCategory() === 'all'"
+                (click)="avatarCategory.set('all')"
+              >
+                Todos (18)
+              </button>
+              <button
+                type="button"
+                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                [class.active]="avatarCategory() === 'tipsters'"
+                (click)="avatarCategory.set('tipsters')"
+              >
+                🎯 Tipsters
+              </button>
+              <button
+                type="button"
+                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                [class.active]="avatarCategory() === 'sports'"
+                (click)="avatarCategory.set('sports')"
+              >
+                ⚽ Deportes
+              </button>
+              <button
+                type="button"
+                class="pill-filter-btn text-[11px] py-1 px-2.5"
+                [class.active]="avatarCategory() === 'animals'"
+                (click)="avatarCategory.set('animals')"
+              >
+                🦁 Mascotas
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5">
+            @for (preset of filteredPresets(); track preset.id) {
+              <button
+                type="button"
+                class="flex flex-col items-center gap-2 p-2.5 rounded-2xl border transition-all cursor-pointer hover:border-accent hover:bg-surface-high group"
+                [class.border-accent]="avatarUrl() === preset.url"
+                [class.bg-accent/15]="avatarUrl() === preset.url"
+                [class.border-border]="avatarUrl() !== preset.url"
+                [class.bg-surface-high/40]="avatarUrl() !== preset.url"
+                (click)="selectPresetAvatar(preset.url)"
+              >
+                <div class="relative w-11 h-11 rounded-full overflow-hidden bg-surface shadow-sm transition-transform group-hover:scale-105">
+                  <img [src]="preset.url" [alt]="preset.label" class="w-full h-full object-cover" />
+                </div>
+                <span class="text-[10px] font-bold text-text truncate max-w-full">{{ preset.label }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 3: BIOGRAFÍA & ESPECIALIDAD -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+        <div class="flex items-center justify-between border-b border-border/50 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+            <h2 class="text-base font-bold text-text">Biografía & Especialidad</h2>
+          </div>
+        </div>
+
+        <!-- Bio text -->
+        <div class="flex flex-col gap-1.5">
+          <label for="bio-input" class="text-xs font-bold text-text">Información sobre ti & Estrategia de apuestas</label>
+          <textarea
+            id="bio-input"
+            rows="3"
+            [ngModel]="bio()"
+            (ngModelChange)="bio.set($event)"
+            name="bio"
+            placeholder="Ej. Especialista en mercados de goles y hándicaps asiáticos en ligas europeas. Gestión estricta de bankroll a 1-2 unidades por pronóstico."
+            class="w-full p-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent resize-none leading-relaxed transition-colors"
+          ></textarea>
+        </div>
+
+        <!-- Favorite sports -->
+        <div class="flex flex-col gap-2 pt-2 border-t border-border/40">
+          <span class="text-xs font-bold text-text">Deportes de Especialidad (Tus favoritos)</span>
+          <div class="flex flex-wrap gap-2">
+            @for (sport of allSports; track sport) {
+              <button
+                type="button"
+                class="pill-filter-btn text-xs py-1.5 px-3.5"
+                [class.active]="favoriteSports().includes(sport)"
+                (click)="toggleSport(sport)"
+              >
+                {{ sport }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Social links -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-border/40">
+          <div class="flex flex-col gap-1.5">
+            <label for="telegram-input" class="text-xs font-bold text-text">Canal de Telegram</label>
+            <div class="flex items-center rounded-xl bg-surface-high border border-border focus-within:border-accent overflow-hidden transition-colors">
+              <span class="px-2.5 text-xs text-muted select-none">t.me/</span>
+              <input
+                id="telegram-input"
+                type="text"
+                [ngModel]="telegram()"
+                (ngModelChange)="telegram.set($event)"
+                name="telegram"
+                placeholder="CanalPicks"
+                class="w-full h-9 px-2 bg-transparent text-xs text-text outline-none font-medium"
+              />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label for="twitter-input" class="text-xs font-bold text-text">Perfil de X / Twitter</label>
+            <div class="flex items-center rounded-xl bg-surface-high border border-border focus-within:border-accent overflow-hidden transition-colors">
+              <span class="px-2.5 text-xs text-muted select-none">x.com/</span>
+              <input
+                id="twitter-input"
+                type="text"
+                [ngModel]="twitter()"
+                (ngModelChange)="twitter.set($event)"
+                name="twitter"
+                placeholder="usuario"
+                class="w-full h-9 px-2 bg-transparent text-xs text-text outline-none font-medium"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 4: CONFIGURACIÓN TIPSTER & PRIVACIDAD -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-5">
+        <div class="flex items-center justify-between border-b border-border/50 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+            <h2 class="text-base font-bold text-text">Privacidad & Modo Tipster</h2>
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-4">
+          <!-- Public Tipster Switch -->
+          <label class="flex items-start justify-between gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
+            <div class="flex flex-col">
+              <span class="text-xs font-bold text-text">Activar Perfil Público de Tipster</span>
+              <span class="text-[11px] text-muted">Permite que otros usuarios descubran tus pronósticos y estadísticas verificadas en la Comunidad.</span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="publicProfileEnabled"
+              name="publicProfileEnabled"
+              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5"
+            />
+          </label>
+
+          <!-- Units Mode Switch -->
+          <label class="flex items-start justify-between gap-4 p-3 rounded-2xl bg-surface-high/40 border border-border cursor-pointer hover:border-accent/40 transition-colors">
+            <div class="flex flex-col">
+              <span class="text-xs font-bold text-text">Mostrar Bankroll en Unidades (u) y Yield (%)</span>
+              <span class="text-[11px] text-muted">Oculta tus montos reales en pesos/dólares a la comunidad para total privacidad, mostrando únicamente tu rentabilidad porcentual y unidades ganadas.</span>
+            </div>
+            <input
+              type="checkbox"
+              [(ngModel)]="showBankUnits"
+              name="showBankUnits"
+              class="w-5 h-5 rounded accent-accent cursor-pointer mt-0.5"
+            />
+          </label>
+        </div>
+      </section>
+
+      <!-- Save Button -->
+      <div class="flex items-center justify-end gap-3 pt-2">
+        <button
+          type="submit"
+          class="action-pill-btn primary py-2.5 px-7 text-xs font-bold inline-flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
+          [disabled]="saving()"
+        >
+          @if (saving()) {
+            <span class="w-3.5 h-3.5 rounded-full border-2 border-white/20 border-t-white animate-spin"></span>
+            <span>Guardando cambios…</span>
+          } @else {
+            <app-icon name="check" class="text-sm" />
+            <span>Guardar Perfil de Usuario</span>
+          }
+        </button>
+      </div>
+
+    </form>
+
+    <!-- RIGHT COLUMN: LIVE PREVIEW CARD (Así te ven los demás) -->
+    <aside class="flex flex-col gap-4">
+      <div class="sticky top-20 flex flex-col gap-4">
+        
+        <div class="flex items-center justify-between">
+          <span class="eyebrow !text-accent font-mono font-bold">VISTA PREVIA EN VIVO</span>
+          <span class="text-[10px] text-muted">Cómo te ve la comunidad</span>
+        </div>
+
+        <!-- Social Tipster Profile Card -->
+        <div class="relative overflow-hidden p-6 rounded-3xl bg-surface border border-accent/40 shadow-2xl backdrop-blur-xl flex flex-col gap-4">
+          <!-- Ambient Aura -->
+          <div class="card-ambient-aura" aria-hidden="true" style="--home-aura: #29b8f5; --away-aura: #10b981;"></div>
+
+          <!-- Header with Avatar and User -->
+          <div class="flex items-center gap-3.5 relative z-1">
+            <div class="relative w-16 h-16 rounded-2xl bg-surface-high border-2 border-accent/60 shadow-xl overflow-hidden shrink-0 flex items-center justify-center">
+              @if (avatarUrl()) {
+                <img [src]="avatarUrl()" alt="Avatar Preview" class="w-full h-full object-cover" (error)="onAvatarError($event)" />
+              } @else {
+                <span class="text-xl font-black text-accent uppercase font-mono">
+                  {{ (username() || 'U').slice(0, 2) }}
+                </span>
+              }
+            </div>
+
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5">
+                <span class="text-base font-black text-text truncate">
+                  {{ displayName() || username() || 'Mi Usuario' }}
+                </span>
+                <span class="w-3.5 h-3.5 rounded-full bg-accent text-[9px] text-black font-black grid place-items-center" title="Tipster de la Comunidad">✓</span>
+              </div>
+              <span class="text-xs font-mono font-bold text-accent">
+                @{{ username() || 'username' }}
+              </span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold bg-accent/15 text-accent border border-accent/30 mt-1 self-start">
+                Pro Tipster
+              </span>
+            </div>
+          </div>
+
+          <!-- Bio -->
+          <p class="text-xs text-muted leading-relaxed relative z-1 line-clamp-3">
+            {{ bio() || 'Sin biografía aún. Añade tu estrategia y metodología de apuestas.' }}
+          </p>
+
+          <!-- Favorite Sports Chips -->
+          @if (favoriteSports().length > 0) {
+            <div class="flex flex-wrap gap-1.5 relative z-1">
+              @for (sport of favoriteSports(); track sport) {
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-surface-high border border-border text-muted">
+                  {{ sport }}
+                </span>
+              }
+            </div>
+          }
+
+          <!-- Verified Bankroll Stats Grid -->
+          <div class="grid grid-cols-3 gap-2 p-3 rounded-2xl bg-surface-high/60 border border-border/80 relative z-1 text-center">
+            <div class="flex flex-col">
+              <span class="text-[9px] font-bold text-muted uppercase">YIELD</span>
+              <strong class="text-xs font-mono font-bold text-emerald-400 mt-0.5">{{ userStats().yield }}</strong>
+            </div>
+            <div class="flex flex-col border-x border-border/60">
+              <span class="text-[9px] font-bold text-muted uppercase">ACIERTO</span>
+              <strong class="text-xs font-mono font-bold text-text mt-0.5">{{ userStats().winRate }}</strong>
+            </div>
+            <div class="flex flex-col">
+              <span class="text-[9px] font-bold text-muted uppercase">UNIDADES</span>
+              <strong class="text-xs font-mono font-bold text-accent mt-0.5">{{ userStats().unitsWon }}</strong>
+            </div>
+          </div>
+
+          <!-- Social Buttons -->
+          <div class="flex items-center gap-2 pt-1 relative z-1">
+            @if (telegram()) {
+              <a [href]="'https://t.me/' + telegram()" target="_blank" class="flex-1 text-center py-1.5 px-3 rounded-xl bg-surface-high hover:bg-accent/15 text-accent border border-border hover:border-accent text-xs font-semibold transition-all">
+                Telegram
+              </a>
+            }
+            @if (twitter()) {
+              <a [href]="'https://x.com/' + twitter()" target="_blank" class="flex-1 text-center py-1.5 px-3 rounded-xl bg-surface-high hover:bg-accent/15 text-accent border border-border hover:border-accent text-xs font-semibold transition-all">
+                X / Twitter
+              </a>
+            }
+          </div>
+
+        </div>
+
+      </div>
+    </aside>
+
+  </div>
+
+</div>

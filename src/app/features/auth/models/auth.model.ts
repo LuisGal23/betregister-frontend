@@ -19,4 +19,14 @@ export interface Profile {
   email: string;
   display_currency: Currency;
   manual_rate: string | null;
+  username?: string | null;
+  display_name?: string | null;
+  avatar_url?: string | null;
+  bio?: string | null;
+  telegram?: string | null;
+  twitter?: string | null;
+  favorite_sports?: string[];
+  is_tipster?: boolean;
+  public_profile_enabled?: boolean;
+  show_bank_units?: boolean;
 }

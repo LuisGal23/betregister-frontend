@@ -1,6 +1,7 @@
 /* BetRegister / Obsidian & Electric Cyan Theme (FabLabs Inspired). Shared across every route. */
 body {
   background: var(--bg);
+  color: var(--text);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   letter-spacing: -0.15px;
   -webkit-font-smoothing: antialiased;
@@ -13,6 +14,42 @@ body {
     linear-gradient(135deg, rgba(41, 184, 245, 0.015) 0%, transparent 40%),
     var(--bg);
   background-attachment: fixed;
+}
+
+:root[data-theme='light'] body {
+  background:
+    radial-gradient(ellipse 850px 450px at 15% 5%, rgba(2, 132, 199, 0.05), transparent 70%),
+    radial-gradient(ellipse 650px 400px at 85% 65%, rgba(2, 132, 199, 0.03), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Scroll-reveal animations for landing and marketing sections */
+.reveal-on-scroll {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-on-scroll.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 :root .main-content .panel,

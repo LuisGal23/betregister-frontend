@@ -2,36 +2,109 @@ import { SmartSettingsComponent } from '../components/smart-settings/smart-setti
 import { UnitsService } from '../../../core/services/units.service';
 import { ApiService } from '../../../core/services/api.service';
 import { TransactionsPageComponent } from '../../transactions/pages/transactions-page.component';
-import { Component, inject, signal } from '@angular/core';
+import { TransactionsService } from '../../transactions/services/transactions.service';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ResetBankComponent } from '../components/reset-bank/reset-bank.component';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
-import { ChartsComponent } from '../../overview/components/charts/charts.component';
 import { BankService } from '../services/bank.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import type { House } from '../models/house.model';
 import type { Currency } from '../../../shared/models/currency.model';
+
 @Component({
   selector: 'app-bank-page',
   imports: [
-    RouterLink, SmartSettingsComponent,
+    RouterLink,
+    SmartSettingsComponent,
     TransactionsPageComponent,
     FormsModule,
     ResetBankComponent,
     DatePipe,
     DecimalPipe,
     IconComponent,
-    ChartsComponent,
     ConfirmDialogComponent,
   ],
   templateUrl: './bank-page.component.html',
   host: { class: 'block space-y-6' },
 })
 export class BankPageComponent {
-  settingsOnly = !!inject(ActivatedRoute).snapshot.data['settings'];
+  private route = inject(ActivatedRoute);
+  settingsOnly = !!this.route.snapshot.data['settings'];
+  transactions = inject(TransactionsService);
+
+  activeTab = signal<'houses' | 'units' | 'movements'>(
+    (this.route.snapshot.queryParams['tab'] as 'houses' | 'units' | 'movements') || 'houses',
+  );
+  showAddHouse = signal(false);
+
+  // Donut chart computation for houses bankroll distribution
+  houseSlices = computed(() => {
+    const houses = this.vm.data().houses;
+    const total = houses.reduce((s, h) => s + (this.vm.converted(h.balance, h.currency) ?? 0), 0);
+    if (total <= 0) return [];
+    const colors = ['#29b8f5', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#6366f1'];
+    let currentPct = 0;
+    return houses.map((h, i) => {
+      const val = this.vm.converted(h.balance, h.currency) ?? 0;
+      const pct = (val / total) * 100;
+      const start = currentPct;
+      const end = currentPct + pct;
+      currentPct = end;
+      return {
+        id: h.id,
+        name: h.name,
+        currency: h.currency,
+        balance: h.balance,
+        converted: val,
+        percentage: Math.round(pct * 10) / 10,
+        color: colors[i % colors.length],
+        start,
+        end,
+      };
+    });
+  });
+
+  houseDonutGradient = computed(() => {
+    const slices = this.houseSlices();
+    if (!slices.length) return 'var(--surface-high)';
+    const parts = slices.map((s) => `${s.color} ${s.start}% ${s.end}%`);
+    return `conic-gradient(${parts.join(', ')})`;
+  });
+
+  // Donut chart computation for movements (Deposits vs Withdrawals)
+  movementSlices = computed(() => {
+    const deposits = this.transactions.confirmedTotal('deposit') ?? 0;
+    const withdrawals = this.transactions.confirmedTotal('withdrawal') ?? 0;
+    const total = deposits + withdrawals;
+    if (total <= 0) {
+      return {
+        depositsPct: 50,
+        withdrawalsPct: 50,
+        hasData: false,
+        deposits,
+        withdrawals,
+        total,
+        netFlow: deposits - withdrawals,
+        gradient: 'conic-gradient(var(--border) 0% 100%)',
+      };
+    }
+    const depositsPct = Math.round((deposits / total) * 1000) / 10;
+    const withdrawalsPct = Math.round((withdrawals / total) * 1000) / 10;
+    return {
+      depositsPct,
+      withdrawalsPct,
+      hasData: true,
+      deposits,
+      withdrawals,
+      total,
+      netFlow: deposits - withdrawals,
+      gradient: `conic-gradient(#10b981 0% ${depositsPct}%, #29b8f5 ${depositsPct}% 100%)`,
+    };
+  });
   movementTotal(house: number, kind: string) {
     return this.vm
       .data()
@@ -80,8 +153,11 @@ export class BankPageComponent {
   houseCurrency: Currency = 'MXN';
   manualRate: number | null = this.vm.rateManual();
   async addHouse() {
-    if (await this.bank.create({ name: this.houseName, currency: this.houseCurrency }))
+    if (!this.houseName.trim()) return;
+    if (await this.bank.create({ name: this.houseName.trim(), currency: this.houseCurrency })) {
       this.houseName = '';
+      this.showAddHouse.set(false);
+    }
   }
   async saveRate() {
     await this.bank.savePreferences(this.vm.currency(), this.manualRate);
