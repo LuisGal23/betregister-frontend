@@ -1,136 +1,125 @@
-<div class="period-controls" role="group" aria-label="Periodo de resultados">
-  @for (tab of analytics.tabs; track tab.value) {
-    <button
-      [class.selected]="analytics.period() === tab.value"
-      [attr.aria-pressed]="analytics.period() === tab.value"
-      (click)="analytics.period.set(tab.value)"
-    >
-      {{ tab.label }}
-    </button>
-  }
-  @if (analytics.period() !== 'all') {
-    <input
-      type="date"
-      aria-label="Fecha del periodo"
-      [ngModel]="analytics.anchor()"
-      (ngModelChange)="analytics.setAnchor($event)"
-    />
-  }
-</div>
-<div class="period-controls" role="group" aria-label="Unidad de la gráfica">
-  <button [class.selected]="!unitView()" (click)="unitView.set(false)">Dinero</button
-  ><button
-    [class.selected]="unitView()"
-    [disabled]="!units.value(vm.currency())"
-    (click)="unitView.set(true)"
-  >
-    Unidades
-  </button>
-</div>
-@if (unitView()) {
-  <p class="field-help">
-    Curva normalizada con la unidad actual: {{ vm.format(units.value(vm.currency())) }}. No
-    representa unidades históricas de cada ticket.
-  </p>
-}
-<details class="filter-disclosure">
-  <summary>
-    Filtrar resultados
-    @if (analytics.hasTagFilter() || analytics.includeArchived()) {
-      · Filtros activos
-    }
-  </summary>
-  <div class="period-controls" role="group" aria-label="Filtrar rendimiento por etiquetas">
-    <label
-      >Tipo de apuesta<select
-        [ngModel]="analytics.typeFilter()"
-        (ngModelChange)="analytics.typeFilter.set($event)"
-      >
-        <option value="">Todos</option>
-        <option value="simple">Simple</option>
-        <option value="parlay">Parlay</option>
-        <option value="same_game">Mismo partido</option>
-      </select></label
-    >
-    <label
-      >Deporte<select
-        [ngModel]="analytics.sportFilter()"
-        (ngModelChange)="analytics.sportFilter.set($event)"
-      >
-        <option value="">Todos</option>
-        @for (tag of analytics.sportTags; track tag) {
-          <option [value]="tag">{{ tag }}</option>
-        }
-      </select></label
-    >
-    <label
-      >Liga<select
-        [ngModel]="analytics.leagueFilter()"
-        (ngModelChange)="analytics.leagueFilter.set($event)"
-      >
-        <option value="">Todas</option>
-        @for (tag of analytics.leagueTags; track tag) {
-          <option [value]="tag">{{ tag }}</option>
-        }
-      </select></label
-    >
-    <label
-      >Mercado<select
-        [ngModel]="analytics.marketFilter()"
-        (ngModelChange)="analytics.marketFilter.set($event)"
-      >
-        <option value="">Todos</option>
-        @for (tag of analytics.marketTags; track tag) {
-          <option [value]="tag">{{ tag }}</option>
-        }
-      </select></label
-    >
-    @if (analytics.hasTagFilter()) {
-      <button
-        type="button"
-        (click)="
-          analytics.typeFilter.set('');
-          analytics.sportFilter.set('');
-          analytics.leagueFilter.set('');
-          analytics.marketFilter.set('')
-        "
-      >
-        Quitar filtros
-      </button>
-    }
-    <label class="archive-toggle"
-      ><input
-        type="checkbox"
-        [ngModel]="analytics.includeArchived()"
-        (ngModelChange)="analytics.includeArchived.set($event)"
-      />
-      Incluir casas eliminadas</label
-    >
-  </div>
-  <p class="field-help">
-    Los filtros se aplican a la curva, resultados y métricas. Tu bank y los saldos por casa siguen
-    mostrando el total.
-  </p>
-</details>
 <section class="bank-performance panel">
-  <div class="bank-summary">
-    <button
-      class="detail-trigger"
-      (click)="detail.set('bank')"
-      aria-label="Ver detalles de tu bank"
-    >
-      Tu bank · disponible + pendientes ↗</button
-    ><button
-      class="bank-number detail-trigger"
-      (click)="detail.set('bank')"
-      aria-label="Abrir detalle del saldo"
-    >
-      {{ vm.format(totalBank()) }}</button
-    ><span class="period-profit" [class.negative]="(analytics.profit() ?? 0) < 0"
-      >{{ vm.format(analytics.profit()) }} en el periodo</span
-    >
-    <p>Disponible y pendiente en todas tus casas.</p>
+  <!-- Internal Card Filter Toolbar -->
+  <div class="chart-toolbar">
+    <div class="toolbar-row primary-controls">
+      <!-- Period Pill Switcher -->
+      <div class="pill-group" role="group" aria-label="Periodo de resultados">
+        @for (tab of analytics.tabs; track tab.value) {
+          <button
+            type="button"
+            class="pill-tab"
+            [class.active]="analytics.period() === tab.value"
+            [attr.aria-pressed]="analytics.period() === tab.value"
+            (click)="analytics.period.set(tab.value)"
+          >
+            {{ tab.label }}
+          </button>
+        }
+        @if (analytics.period() !== 'all') {
+          <input
+            type="date"
+            class="pill-date-input"
+            aria-label="Fecha del periodo"
+            [ngModel]="analytics.anchor()"
+            (ngModelChange)="analytics.setAnchor($event)"
+          />
+        }
+      </div>
+
+      <!-- Money vs Units Segmented Pill -->
+      <div class="segmented-pill-control" role="group" aria-label="Unidad de la gráfica">
+        <button 
+          type="button" 
+          class="seg-btn"
+          [class.active]="!unitView()" 
+          (click)="unitView.set(false)"
+        >
+          Dinero
+        </button>
+        <button
+          type="button"
+          class="seg-btn"
+          [class.active]="unitView()"
+          [disabled]="!units.value(vm.currency())"
+          (click)="unitView.set(true)"
+        >
+          Unidades
+        </button>
+      </div>
+    </div>
+
+    <!-- Sport & League Pills (Replacing dropdown select) -->
+    <div class="toolbar-row filter-pills-row">
+      <div class="filter-pills-scroll">
+        <span class="filter-label">DEPORTE:</span>
+        <button 
+          type="button" 
+          class="filter-pill" 
+          [class.active]="!analytics.sportFilter()"
+          (click)="analytics.sportFilter.set(''); analytics.leagueFilter.set('')"
+        >
+          Todos
+        </button>
+        @for (sport of analytics.sportTags; track sport) {
+          <button 
+            type="button" 
+            class="filter-pill" 
+            [class.active]="analytics.sportFilter() === sport"
+            (click)="analytics.sportFilter.set(sport); analytics.leagueFilter.set('')"
+          >
+            {{ sport }}
+          </button>
+        }
+
+        <!-- Dynamic Leagues if Sport selected or active -->
+        @if (analytics.sportFilter() === 'Fútbol') {
+          <span class="filter-divider">|</span>
+          <span class="filter-label">LIGA:</span>
+          @for (league of ['Liga MX', 'Premier League', 'La Liga', 'MLS', 'Champions League']; track league) {
+            <button 
+              type="button" 
+              class="filter-pill sub" 
+              [class.active]="analytics.leagueFilter() === league"
+              (click)="analytics.leagueFilter.set(analytics.leagueFilter() === league ? '' : league)"
+            >
+              {{ league }}
+            </button>
+          }
+        }
+
+        <!-- Quick Clear if filter active -->
+        @if (analytics.hasTagFilter()) {
+          <button 
+            type="button" 
+            class="clear-filters-pill" 
+            (click)="analytics.typeFilter.set(''); analytics.sportFilter.set(''); analytics.leagueFilter.set(''); analytics.marketFilter.set('')"
+          >
+            ✕ Limpiar
+          </button>
+        }
+      </div>
+    </div>
   </div>
+
+  <div class="bank-performance-body">
+    <div class="bank-summary">
+      <button
+        class="detail-trigger"
+        (click)="detail.set('bank')"
+        aria-label="Ver detalles de tu bank"
+      >
+        Tu bank · disponible + pendientes ↗</button
+      ><button
+        class="bank-number detail-trigger"
+        (click)="detail.set('bank')"
+        aria-label="Abrir detalle del saldo"
+      >
+        {{ vm.format(totalBank()) }}</button
+      ><span class="period-profit" [class.negative]="(analytics.profit() ?? 0) < 0"
+        >{{ vm.format(analytics.profit()) }} en el periodo</span
+      >
+      <p>Disponible y pendiente en todas tus casas.</p>
+    </div>
   <div class="bank-curve">
     <div class="chart-caption">
       <h3>Evolución del resultado</h3>
@@ -172,6 +161,7 @@
         </table>
       </div>
     </details>
+  </div>
   </div>
 </section>
 <div class="summary-strip">

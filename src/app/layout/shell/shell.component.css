@@ -88,7 +88,8 @@
   flex-direction: column;
   gap: 5px;
 }
-.sidebar nav a {
+.sidebar nav a,
+.sidebar-ticket-btn {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -98,12 +99,18 @@
   font-size: 12px;
   border-radius: 8px;
   position: relative;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
   transition:
     background 0.25s,
     color 0.25s,
     transform 0.25s;
 }
-.sidebar nav a:hover {
+.sidebar nav a:hover,
+.sidebar-ticket-btn:hover {
   background: var(--surface-high);
   color: var(--accent);
   transform: translateX(2px);

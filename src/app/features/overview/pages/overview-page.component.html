@@ -12,15 +12,15 @@
     <p>Saldos, resultados y actividad reciente.</p>
   </div>
   <div class="quick-actions">
-    <a class="button-link" routerLink="/matches"
-      ><app-icon name="calendar" /> Partidos del día</a
-    >
-    <a routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }"
-      ><app-icon name="plus" /> Registrar movimiento</a
-    >
-    <a class="primary button-link" routerLink="/tickets"
-      ><app-icon name="plus" />Registrar ticket</a
-    >
+    <a class="action-pill-btn" routerLink="/matches">
+      <app-icon name="calendar" /><span>Partidos del día</span>
+    </a>
+    <a class="action-pill-btn" routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }">
+      <app-icon name="plus" /><span>Registrar movimiento</span>
+    </a>
+    <button type="button" class="action-pill-btn primary" (click)="ticketModal.open()">
+      <app-icon name="plus" /><span>Registrar ticket</span>
+    </button>
   </div>
 </div>
 <section class="headline-kpis" aria-label="Resultados generales de casas activas">
@@ -49,48 +49,8 @@
     ><small>Sin depósitos ni retiros</small>
   </article>
 </section>
-<div class="overview-main">
-  <div><app-charts /></div>
-  <aside class="pending-rail">
-    <section class="panel">
-      <div class="section-heading">
-        <div>
-          <h2>Tickets pendientes</h2>
-          <p>Hasta cinco tickets pendientes</p>
-        </div>
-        <a routerLink="/history">Ver todas ↗</a>
-      </div>
-      @if (!vm.pendingBets().slice(0, 5).length) {
-        <div class="empty-block">
-          <app-icon name="bets" />
-          <h3>No tienes apuestas pendientes</h3>
-          <p>Registra una apuesta para verla aquí.</p>
-          <a class="primary button-link" routerLink="/tickets">Registrar ticket</a>
-        </div>
-      } @else {
-        <div class="recent-list">
-          @for (b of vm.pendingBets().slice(0, 5); track b.id) {
-            <div class="recent-row">
-              <span class="mini-house">{{ b.house.slice(0, 1) }}</span>
-              <div class="recent-description">
-                <strong>{{ b.event }}</strong
-                ><small>{{ b.house }} · Cuota {{ b.odds }}</small>
-              </div>
-              <div class="recent-result">
-                <strong>{{ vm.money(b.stake, b.currency) }}</strong
-                ><span [class]="'status ' + b.status">Esperando resultado</span>
-                @if (b.linked_games?.length) {
-                  <button class="text-button" (click)="scoreBet.set(b)">
-                    Consultar marcador →
-                  </button>
-                }
-              </div>
-            </div>
-          }
-        </div>
-      }
-    </section>
-  </aside>
+<div class="overview-main full-width">
+  <app-charts />
 </div>
 
 <div class="two-column equal-columns overview-bottom">

@@ -51,13 +51,23 @@
       <span class="nav-label">MI ESPACIO</span>
       <nav aria-label="Navegación principal">
         @for (link of links; track link.path) {
-          <a
-            [routerLink]="'/' + link.path"
-            routerLinkActive="active"
-            ariaCurrentWhenActive="page"
-            (click)="closeMenu()"
-            ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
-          >
+          @if (link.path === 'tickets') {
+            <button
+              type="button"
+              class="sidebar-ticket-btn"
+              (click)="ticketModal.open(); closeMenu()"
+            >
+              <app-icon [name]="link.icon" /><span>{{ link.label }}</span>
+            </button>
+          } @else {
+            <a
+              [routerLink]="'/' + link.path"
+              routerLinkActive="active"
+              ariaCurrentWhenActive="page"
+              (click)="closeMenu()"
+              ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
+            >
+          }
         }
       </nav>
       <div class="sidebar-bottom">
@@ -166,6 +176,7 @@
   @if (tutorial() && !publicPage()) {
     <app-tutorial (dismiss)="closeTutorial()" />
   }
+  <app-create-ticket-modal />
   <footer [class.private-footer]="!publicPage()">
     BetRegister <span>Registro personal · 18+</span><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/support">Soporte</a><a routerLink="/delete-account">Eliminar cuenta</a>
   </footer>

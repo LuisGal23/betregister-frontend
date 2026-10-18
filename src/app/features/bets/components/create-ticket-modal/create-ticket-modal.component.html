@@ -1,0 +1,209 @@
+@if (modal.isOpen()) {
+  <div class="modal-backdrop" (click)="close()" (keydown.escape)="close()" tabindex="0" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <div class="modal-badge">
+            <span class="pulse-dot"></span>
+            <span>CONTROL DE BANKROLL</span>
+          </div>
+          <h2 id="modal-title">Registrar ticket</h2>
+        </div>
+        <button type="button" class="close-modal-btn" (click)="close()" aria-label="Cerrar modal">
+          ✕
+        </button>
+      </div>
+
+      <!-- Segmented Bet Type Switcher -->
+      <div class="type-segmented-bar" role="tablist">
+        @for (t of types; track t.id) {
+          <button 
+            type="button" 
+            role="tab"
+            class="type-btn" 
+            [class.active]="betType === t.id"
+            (click)="setType(t.id)"
+          >
+            <strong>{{ t.label }}</strong>
+            <small>{{ t.detail }}</small>
+          </button>
+        }
+      </div>
+
+      <div class="modal-scroll-body">
+        <!-- Selected Match Banner (if preselected from Partidos del día) -->
+        @if (selectedGames.length) {
+          <div class="selected-match-card">
+            <div class="match-info">
+              <span class="match-badge">PARTIDO SELECCIONADO</span>
+              <strong class="match-teams">
+                {{ selectedGames[0].away }} vs {{ selectedGames[0].home }}
+              </strong>
+              <small class="match-league">{{ selectedGames[0].league_name }} · {{ selectedGames[0].sport }}</small>
+            </div>
+            <button type="button" class="remove-match-btn" (click)="chooseGames([])" title="Quitar partido">
+              Quitar
+            </button>
+          </div>
+        } @else {
+          <!-- Match Picker Collapsible -->
+          <app-match-picker 
+            [limit]="betType === 'simple' || betType === 'same_game' ? 1 : 12"
+            (selection)="chooseGames($event)"
+          />
+        }
+
+        <!-- Selections Section -->
+        <div class="selections-block">
+          <div class="block-header">
+            <h3>Selecciones</h3>
+            @if (betType !== 'simple') {
+              <button 
+                type="button" 
+                class="add-selection-btn"
+                [disabled]="selections.length >= 20"
+                (click)="addSelection()"
+              >
+                + Añadir selección
+              </button>
+            }
+          </div>
+
+          @for (selection of selections; track $index; let i = $index) {
+            <div class="selection-card">
+              <div class="selection-head">
+                <span class="selection-index">{{ betType === 'simple' ? 'Selección única' : 'Selección #' + (i + 1) }}</span>
+                @if (selections.length > 1 && betType !== 'simple') {
+                  <button type="button" class="remove-btn" (click)="removeSelection(i)">Quitar</button>
+                }
+              </div>
+
+              <app-selection-editor 
+                [value]="selection" 
+                [index]="i" 
+                [games]="selectedGames"
+                [showManual]="betType !== 'same_game' || i === 0"
+                [showSport]="!selectedGames.length && betType === 'parlay' && leagueTag === 'Mixto'"
+              />
+
+              @if (betType === 'parlay' && !totalOddsMode) {
+                <label class="odds-leg-field">
+                  <span>Cuota decimal de esta selección</span>
+                  <input 
+                    [name]="'modalLegOdds' + i" 
+                    type="number" 
+                    [(ngModel)]="legs[i].odds"
+                    (ngModelChange)="updateOdds()"
+                    min="1.0001" 
+                    max="10000" 
+                    step="0.0001" 
+                    required 
+                    class="clean-input"
+                  />
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- AI Screenshot Importer Quick Assistant -->
+        <app-screenshot-import (draft)="applyScreenshot($event)" />
+
+        <!-- House and Financial Inputs Grid -->
+        <div class="financial-grid">
+          <!-- House Selector -->
+          <label class="field-item">
+            <span class="field-label">Casa de apuestas</span>
+            <select name="modalHouse" [(ngModel)]="selectedHouse" required class="clean-select">
+              <option value="" disabled>Selecciona una casa…</option>
+              @for (h of vm.data().houses; track h.id) {
+                <option [value]="h.id">
+                  {{ h.name }} ({{ h.currency }}) · Saldo: {{ vm.native(h.balance, h.currency) }}
+                </option>
+              }
+            </select>
+          </label>
+
+          <!-- Odds Format & Value -->
+          <div class="field-item">
+            <div class="label-with-switch">
+              <span class="field-label">Cuota {{ betType === 'parlay' && !totalOddsMode ? 'combinada' : '' }}</span>
+              <div class="odds-format-pill">
+                <button type="button" [class.active]="oddsFormat === 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
+                <button type="button" [class.active]="oddsFormat === 'american'" (click)="oddsFormat = 'american'">Am</button>
+              </div>
+            </div>
+            <input 
+              name="modalOdds" 
+              type="number" 
+              [(ngModel)]="odds"
+              [disabled]="betType === 'parlay' && !totalOddsMode"
+              placeholder="Ej. 1.85 o -110" 
+              required 
+              step="any"
+              class="clean-input"
+            />
+          </div>
+
+          <!-- Stake (Importe) -->
+          <div class="field-item">
+            <span class="field-label">Importe de la apuesta</span>
+            <input 
+              name="modalStake" 
+              type="number" 
+              [(ngModel)]="stake" 
+              placeholder="0.00" 
+              min="0.01" 
+              step="any" 
+              required 
+              class="clean-input"
+            />
+          </div>
+
+          <!-- Payout Preview -->
+          <div class="payout-card">
+            <span class="payout-label">Cobro potencial</span>
+            <strong class="payout-value">{{ vm.format(payout(), houseSelected()?.currency) }}</strong>
+            <small class="payout-sub">Ganancia neta: {{ vm.format(Math.max(0, payout() - (stake ?? 0)), houseSelected()?.currency) }}</small>
+          </div>
+        </div>
+
+        <!-- Bank Guidance and Protection -->
+        @if (selectedHouse) {
+          <app-bank-assistant 
+            [houseId]="selectedHouse" 
+            [stake]="stake"
+            [odds]="odds"
+            (houseIdChange)="selectedHouse = $event"
+          />
+        }
+        <app-ticket-protection [league]="leagueTag" [betType]="betType" />
+
+        <!-- Error Alert -->
+        @if (vm.error()) {
+          <div class="modal-error-alert" role="alert">
+            <span>{{ vm.error() }}</span>
+            <button type="button" class="dismiss-btn" (click)="vm.error.set('')">✕</button>
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="cancel-modal-btn" (click)="close()">
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="primary save-ticket-btn" 
+          [disabled]="vm.busy()"
+          (click)="saveTicket()"
+        >
+          <app-icon name="plus" />
+          <span>{{ vm.busy() ? 'Guardando…' : 'Guardar ticket' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+}

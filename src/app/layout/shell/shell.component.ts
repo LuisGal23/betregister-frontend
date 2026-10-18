@@ -8,6 +8,8 @@ import { LedgerState } from '../../core/services/ledger-state.service';
 import { AuthService } from '../../features/auth/services/auth.service';
 import { BankService } from '../../features/bank/services/bank.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
+import { CreateTicketModalComponent } from '../../features/bets/components/create-ticket-modal/create-ticket-modal.component';
+import { TicketModalService } from '../../features/bets/services/ticket-modal.service';
 @Component({
   selector: 'app-shell',
   imports: [
@@ -17,6 +19,7 @@ import { IconComponent } from '../../shared/components/icon/icon.component';
     RouterOutlet,
     FormsModule,
     IconComponent,
+    CreateTicketModalComponent,
   ],
   templateUrl: './shell.component.html',
   styleUrls: ['./shell.component.css', './mobile-navigation.css'],
@@ -26,6 +29,7 @@ export class ShellComponent implements OnInit {
   theme = inject(ThemeService);
   auth = inject(AuthService);
   bank = inject(BankService);
+  ticketModal = inject(TicketModalService);
   router = inject(Router);
   menuButton = viewChild<ElementRef<HTMLButtonElement>>('menuButton');
   sidebar = viewChild<ElementRef<HTMLElement>>('sidebar');

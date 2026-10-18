@@ -34,9 +34,191 @@
   font-size: 10px;
   margin: 4px 0 20px;
 }
+.chart-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--surface-high);
+  border-bottom: 1px solid var(--border);
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface);
+  padding: 3px;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+}
+
+.pill-tab {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pill-tab:hover {
+  color: var(--text);
+}
+
+.pill-tab.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.pill-date-input {
+  background: var(--surface-high);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 9999px;
+  margin-right: 4px;
+  outline: none;
+}
+
+.segmented-pill-control {
+  display: inline-flex;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 3px;
+}
+
+.seg-btn {
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seg-btn:hover:not(:disabled) {
+  color: var(--text);
+}
+
+.seg-btn.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.seg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.filter-pills-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.filter-pills-scroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
+}
+
+.filter-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.filter-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.filter-pill:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.filter-pill.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.filter-pill.sub {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+.filter-pill.sub.active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: #3b82f6;
+  color: #3b82f6;
+}
+
+.filter-divider {
+  color: var(--border);
+  font-weight: 300;
+  margin: 0 4px;
+}
+
+.clear-filters-pill {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #ef4444;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  cursor: pointer;
+  margin-left: auto;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-pill:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
 .bank-performance {
-  display: grid;
-  grid-template-columns: 32% minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   padding: 0;
   background: var(--surface);
   color: var(--text);
@@ -45,6 +227,12 @@
   overflow: hidden;
   margin: 20px 0;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
+}
+
+.bank-performance-body {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  width: 100%;
 }
 .bank-summary {
   padding: 28px 24px;
@@ -420,7 +608,7 @@
   overflow-wrap: anywhere;
 }
 @container (max-width:700px) {
-  .bank-performance {
+  .bank-performance-body {
     grid-template-columns: 1fr;
   }
   .bank-summary {

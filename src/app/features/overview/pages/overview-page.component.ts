@@ -12,6 +12,7 @@ import { LedgerState } from '../../../core/services/ledger-state.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { OverviewService } from '../services/overview.service';
 import { ChartsComponent } from '../components/charts/charts.component';
+import { TicketModalService } from '../../bets/services/ticket-modal.service';
 @Component({
   selector: 'app-overview-page',
   imports: [
@@ -28,6 +29,7 @@ import { ChartsComponent } from '../components/charts/charts.component';
 export class OverviewPageComponent {
   router = inject(Router);
   route = inject(ActivatedRoute);
+  ticketModal = inject(TicketModalService);
   money = signal('');
   scoreBet = signal<Bet | null>(null);
   constructor() {

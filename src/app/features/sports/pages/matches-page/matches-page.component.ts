@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SportsService } from '../../services/sports.service';
 import { LedgerState } from '../../../../core/services/ledger-state.service';
+import { TicketModalService } from '../../../bets/services/ticket-modal.service';
 import { zoneDay } from '../../../../shared/utils/zone.utils';
 import type { SportsGame } from '../../models/sports.model';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
@@ -33,6 +34,7 @@ export interface MatchAnalysis {
 export class MatchesPageComponent implements OnInit {
   private sports = inject(SportsService);
   private router = inject(Router);
+  private ticketModal = inject(TicketModalService);
   vm = inject(LedgerState);
 
   // Categories as requested: NFL, Ligas Europeas, Liga MX, MLS, MLB, etc.
@@ -45,7 +47,19 @@ export class MatchesPageComponent implements OnInit {
     { id: 'mlb', label: 'MLB', leagues: ['mlb'] },
   ];
 
+  europeanLeagues = [
+    { id: 'all', label: 'Todas europeas' },
+    { id: 'laliga', label: 'La Liga' },
+    { id: 'premier', label: 'Premier League' },
+    { id: 'champions', label: 'Champions League' },
+    { id: 'seriea', label: 'Serie A' },
+    { id: 'bundesliga', label: 'Bundesliga' },
+    { id: 'ligue1', label: 'Ligue 1' },
+    { id: 'europa', label: 'Europa League' },
+  ];
+
   selectedCategory = signal<string>('all');
+  selectedSubLeague = signal<string>('all');
   selectedDate = signal<string>('');
   onlyLive = signal(false);
   searchQuery = signal('');
@@ -61,10 +75,12 @@ export class MatchesPageComponent implements OnInit {
     const q = this.searchQuery().toLowerCase().trim();
     const live = this.onlyLive();
     const cat = this.selectedCategory();
+    const sub = this.selectedSubLeague();
     const activeCat = this.categories.find((c) => c.id === cat);
 
     return this.games().filter((g) => {
       if (live && g.state !== 'live') return false;
+      if (cat === 'europe' && sub !== 'all' && g.league !== sub) return false;
       if (activeCat && activeCat.leagues && !activeCat.leagues.includes(g.league)) return false;
       if (q && !`${g.home} ${g.away} ${g.league_name}`.toLowerCase().includes(q)) return false;
       return true;
@@ -89,6 +105,29 @@ export class MatchesPageComponent implements OnInit {
 
   setCategory(catId: string) {
     this.selectedCategory.set(catId);
+    this.selectedSubLeague.set('all');
+  }
+
+  setSubLeague(leagueId: string) {
+    this.selectedSubLeague.set(leagueId);
+  }
+
+  formatMatchDate(iso: string): string {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      const dayName = d.toLocaleDateString('es-MX', { weekday: 'short' });
+      const dayNum = d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
+      const time = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+      return `${dayName} ${dayNum} · ${time} CDMX`.toUpperCase();
+    } catch {
+      return iso;
+    }
+  }
+
+  onLogoError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    if (img) img.style.display = 'none';
   }
 
   setDateOffset(offsetDays: number) {
@@ -231,9 +270,8 @@ export class MatchesPageComponent implements OnInit {
     return name.slice(0, 3).toUpperCase();
   }
 
-  // Preselect match and jump straight to /tickets
+  // Preselect match and open Ticket Modal directly
   addToTicket(game: SportsGame) {
-    this.sports.setPendingMatch(game);
-    void this.router.navigate(['/tickets'], { queryParams: { from: 'matches' } });
+    this.ticketModal.open(game);
   }
 }

@@ -67,18 +67,36 @@
   </header>
 
   <!-- League Categories Tabs -->
-  <nav class="category-tabs" aria-label="Categorías deportivas">
-    @for (cat of categories; track cat.id) {
-      <button 
-        type="button" 
-        class="cat-tab" 
-        [class.active]="selectedCategory() === cat.id"
-        (click)="setCategory(cat.id)"
-      >
-        <span>{{ cat.label }}</span>
-      </button>
+  <div class="filter-controls-container">
+    <nav class="category-tabs" aria-label="Categorías deportivas">
+      @for (cat of categories; track cat.id) {
+        <button 
+          type="button" 
+          class="cat-tab" 
+          [class.active]="selectedCategory() === cat.id"
+          (click)="setCategory(cat.id)"
+        >
+          <span>{{ cat.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <!-- Sub-leagues Pills (When Ligas Europeas is selected) -->
+    @if (selectedCategory() === 'europe') {
+      <div class="sub-leagues-bar" role="tablist" aria-label="Ligas europeas específicas">
+        @for (sub of europeanLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="sub-pill" 
+            [class.active]="selectedSubLeague() === sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
     }
-  </nav>
+  </div>
 
   <!-- Search / Counter Bar -->
   <div class="search-bar">
@@ -118,7 +136,7 @@
           <div class="card-meta">
             <div class="meta-left">
               <span class="meta-date">
-                {{ game.start | date:'EEE d MMM · HH:mm' : undefined : 'es' }} CDMX
+                {{ formatMatchDate(game.start) }}
               </span>
               <span class="meta-venue">{{ game.league_name }}</span>
             </div>
@@ -153,10 +171,9 @@
             <div class="team-col home">
               <div class="team-crest">
                 @if (game.home_logo) {
-                  <img [src]="game.home_logo" [alt]="game.home" loading="lazy" />
-                } @else {
-                  <span class="crest-placeholder">{{ shortCode(game.home) }}</span>
+                  <img [src]="game.home_logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" />
                 }
+                <span class="crest-placeholder">{{ shortCode(game.home) }}</span>
               </div>
               <span class="team-code">{{ shortCode(game.home) }}</span>
               <strong class="team-name">{{ game.home }}</strong>
@@ -184,10 +201,9 @@
             <div class="team-col away">
               <div class="team-crest">
                 @if (game.away_logo) {
-                  <img [src]="game.away_logo" [alt]="game.away" loading="lazy" />
-                } @else {
-                  <span class="crest-placeholder">{{ shortCode(game.away) }}</span>
+                  <img [src]="game.away_logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" />
                 }
+                <span class="crest-placeholder">{{ shortCode(game.away) }}</span>
               </div>
               <span class="team-code">{{ shortCode(game.away) }}</span>
               <strong class="team-name">{{ game.away }}</strong>
