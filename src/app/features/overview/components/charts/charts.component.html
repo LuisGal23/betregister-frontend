@@ -3,24 +3,22 @@
   <div class="flex flex-col gap-3 p-3.5 sm:px-5 bg-surface-high border-b border-border">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <!-- Period Pill Switcher -->
-      <div class="inline-flex items-center gap-1 bg-surface p-1 rounded-full border border-border" role="group" aria-label="Periodo de resultados">
+      <div class="inline-flex items-center gap-1.5 bg-surface p-1.5 rounded-full border border-border shadow-inner" role="group" aria-label="Periodo de resultados">
         @for (tab of analytics.tabs; track tab.value) {
           <button
             type="button"
-            class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95"
-            [class.!bg-accent]="analytics.period() === tab.value"
-            [class.!text-white]="analytics.period() === tab.value"
-            [class.shadow-md]="analytics.period() === tab.value"
+            class="pill-filter-btn"
+            [class.active]="analytics.period() === tab.value"
             [attr.aria-pressed]="analytics.period() === tab.value"
             (click)="analytics.period.set(tab.value)"
           >
-            {{ tab.label }}
+            <span>{{ tab.label }}</span>
           </button>
         }
         @if (analytics.period() !== 'all') {
           <input
             type="date"
-            class="bg-surface-high border border-border text-text text-xs py-1 px-2 rounded-full mr-1 outline-none"
+            class="bg-surface-high border border-border text-text text-xs py-1.5 px-3 rounded-full mr-1 outline-none transition-colors focus:border-accent"
             aria-label="Fecha del periodo"
             [ngModel]="analytics.anchor()"
             (ngModelChange)="analytics.setAnchor($event)"
@@ -29,27 +27,23 @@
       </div>
 
       <!-- Money vs Units Segmented Pill -->
-      <div class="inline-flex items-center bg-surface border border-border rounded-full p-1" role="group" aria-label="Unidad de la gráfica">
+      <div class="inline-flex items-center gap-1.5 bg-surface border border-border rounded-full p-1.5 shadow-inner" role="group" aria-label="Unidad de la gráfica">
         <button 
           type="button" 
-          class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95"
-          [class.!bg-accent]="!unitView()"
-          [class.!text-white]="!unitView()"
-          [class.shadow-md]="!unitView()"
+          class="pill-filter-btn"
+          [class.active]="!unitView()"
           (click)="unitView.set(false)"
         >
-          Dinero
+          <span>Dinero</span>
         </button>
         <button
-          type="button"
-          class="bg-transparent border-0 text-muted text-xs font-semibold py-1.5 px-3.5 rounded-full cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface-high/60 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed"
-          [class.!bg-accent]="unitView()"
-          [class.!text-white]="unitView()"
-          [class.shadow-md]="unitView()"
+          type="button" 
+          class="pill-filter-btn"
+          [class.active]="unitView()"
           [disabled]="!units.value(vm.currency())"
           (click)="unitView.set(true)"
         >
-          Unidades
+          <span>Unidades</span>
         </button>
       </div>
     </div>
@@ -60,7 +54,7 @@
         <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">DEPORTE:</span>
         <button 
           type="button" 
-          class="bg-surface border border-border text-muted text-xs font-medium py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+          class="bg-surface border border-border text-muted text-xs font-medium py-1.5 px-3.5 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
           [class.bg-emerald-500/15]="!analytics.sportFilter()"
           [class.border-accent]="!analytics.sportFilter()"
           [class.text-accent]="!analytics.sportFilter()"
@@ -72,7 +66,7 @@
         @for (sport of analytics.sportTags; track sport) {
           <button 
             type="button" 
-            class="bg-surface border border-border text-muted text-xs font-medium py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
+            class="bg-surface border border-border text-muted text-xs font-medium py-1.5 px-3.5 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-accent hover:bg-surface-high/60 hover:scale-[1.02] active:scale-95 transition-all duration-200"
             [class.bg-emerald-500/15]="analytics.sportFilter() === sport"
             [class.border-accent]="analytics.sportFilter() === sport"
             [class.text-accent]="analytics.sportFilter() === sport"
@@ -83,14 +77,14 @@
           </button>
         }
 
-        <!-- Dynamic Leagues if Sport selected or active -->
+        <!-- Dynamic Leagues according to Sport selected -->
         @if (analytics.sportFilter() === 'Fútbol') {
           <span class="text-border font-light mx-1">|</span>
           <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">LIGA:</span>
-          @for (league of ['Liga MX', 'Premier League', 'La Liga', 'MLS', 'Champions League']; track league) {
+          @for (league of ['Liga MX', 'Premier League', 'La Liga', 'Champions League', 'Serie A', 'Bundesliga', 'Ligue 1', 'Europa League', 'MLS', 'Selecciones']; track league) {
             <button 
               type="button" 
-              class="bg-surface border border-border text-muted text-xs py-0.5 px-2.5 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
+              class="bg-surface border border-border text-muted text-xs py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
               [class.bg-blue-500/15]="analytics.leagueFilter() === league"
               [class.border-blue-500]="analytics.leagueFilter() === league"
               [class.text-blue-400]="analytics.leagueFilter() === league"
@@ -99,6 +93,47 @@
               {{ league }}
             </button>
           }
+        } @else if (analytics.sportFilter() === 'Béisbol') {
+          <span class="text-border font-light mx-1">|</span>
+          <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">LIGA:</span>
+          @for (league of ['MLB', 'KBO']; track league) {
+            <button 
+              type="button" 
+              class="bg-surface border border-border text-muted text-xs py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
+              [class.bg-blue-500/15]="analytics.leagueFilter() === league"
+              [class.border-blue-500]="analytics.leagueFilter() === league"
+              [class.text-blue-400]="analytics.leagueFilter() === league"
+              (click)="analytics.leagueFilter.set(analytics.leagueFilter() === league ? '' : league)"
+            >
+              {{ league }}
+            </button>
+          }
+        } @else if (analytics.sportFilter() === 'Americano') {
+          <span class="text-border font-light mx-1">|</span>
+          <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">LIGA:</span>
+          <button 
+            type="button" 
+            class="bg-surface border border-border text-muted text-xs py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
+            [class.bg-blue-500/15]="analytics.leagueFilter() === 'NFL'"
+            [class.border-blue-500]="analytics.leagueFilter() === 'NFL'"
+            [class.text-blue-400]="analytics.leagueFilter() === 'NFL'"
+            (click)="analytics.leagueFilter.set(analytics.leagueFilter() === 'NFL' ? '' : 'NFL')"
+          >
+            NFL
+          </button>
+        } @else if (analytics.sportFilter() === 'Básquetbol') {
+          <span class="text-border font-light mx-1">|</span>
+          <span class="text-[10px] font-bold tracking-wider text-muted mr-0.5 whitespace-nowrap">LIGA:</span>
+          <button 
+            type="button" 
+            class="bg-surface border border-border text-muted text-xs py-1 px-3 rounded-full cursor-pointer whitespace-nowrap hover:border-accent hover:text-text transition-all"
+            [class.bg-blue-500/15]="analytics.leagueFilter() === 'NBA'"
+            [class.border-blue-500]="analytics.leagueFilter() === 'NBA'"
+            [class.text-blue-400]="analytics.leagueFilter() === 'NBA'"
+            (click)="analytics.leagueFilter.set(analytics.leagueFilter() === 'NBA' ? '' : 'NBA')"
+          >
+            NBA
+          </button>
         }
 
         <!-- Quick Clear if filter active -->
