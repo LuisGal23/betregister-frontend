@@ -35,39 +35,42 @@
       <div class="inline-flex items-center bg-surface border border-border rounded-full p-1 gap-1" role="group" aria-label="Fecha de partidos">
         <button 
           type="button" 
-          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer"
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
           [class.bg-accent]="selectedDate() === yesterdayStr()" 
           [class.text-white]="selectedDate() === yesterdayStr()"
           [class.shadow-md]="selectedDate() === yesterdayStr()"
           [class.scale-105]="selectedDate() === yesterdayStr()"
           [class.text-muted]="selectedDate() !== yesterdayStr()"
-          [class.hover:text-text]="selectedDate() !== yesterdayStr()"
+          [class.hover:text-accent]="selectedDate() !== yesterdayStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== yesterdayStr()"
           (click)="selectNamedDay('yesterday')"
         >
           Ayer
         </button>
         <button 
           type="button" 
-          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer"
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
           [class.bg-accent]="selectedDate() === todayStr()" 
           [class.text-white]="selectedDate() === todayStr()"
           [class.shadow-md]="selectedDate() === todayStr()"
           [class.scale-105]="selectedDate() === todayStr()"
           [class.text-muted]="selectedDate() !== todayStr()"
-          [class.hover:text-text]="selectedDate() !== todayStr()"
+          [class.hover:text-accent]="selectedDate() !== todayStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== todayStr()"
           (click)="selectNamedDay('today')"
         >
           Hoy
         </button>
         <button 
           type="button" 
-          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer"
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
           [class.bg-accent]="selectedDate() === tomorrowStr()" 
           [class.text-white]="selectedDate() === tomorrowStr()"
           [class.shadow-md]="selectedDate() === tomorrowStr()"
           [class.scale-105]="selectedDate() === tomorrowStr()"
           [class.text-muted]="selectedDate() !== tomorrowStr()"
-          [class.hover:text-text]="selectedDate() !== tomorrowStr()"
+          [class.hover:text-accent]="selectedDate() !== tomorrowStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== tomorrowStr()"
           (click)="selectNamedDay('tomorrow')"
         >
           Mañana
@@ -84,7 +87,7 @@
       <!-- Live Toggle -->
       <button 
         type="button" 
-        class="inline-flex items-center gap-2 py-2 px-3.5 rounded-full bg-surface border border-border text-xs font-medium cursor-pointer transition-all hover:text-text"
+        class="inline-flex items-center gap-2 py-2 px-3.5 rounded-full bg-surface border border-border text-xs font-medium cursor-pointer transition-all duration-200 hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/5 active:scale-95"
         [class.bg-red-500/10]="onlyLive()"
         [class.border-red-500/40]="onlyLive()"
         [class.text-red-500]="onlyLive()"
@@ -99,27 +102,27 @@
       </button>
 
       <!-- Refresh -->
-      <button type="button" class="w-9 h-9 rounded-full bg-surface border border-border text-muted flex items-center justify-center cursor-pointer transition-colors hover:text-text hover:border-accent disabled:opacity-50" [disabled]="loading()" (click)="loadMatches()" aria-label="Actualizar partidos">
+      <button type="button" class="w-9 h-9 rounded-full bg-surface border border-border text-muted flex items-center justify-center cursor-pointer transition-all duration-200 hover:text-accent hover:border-accent hover:scale-105 active:scale-95 disabled:opacity-50" [disabled]="loading()" (click)="loadMatches()" aria-label="Actualizar partidos">
         <app-icon name="arrow" />
       </button>
     </div>
   </header>
 
   <!-- League Categories Tabs (Full width & animated as requested) -->
-  <div class="flex flex-col gap-2.5 p-3 rounded-2xl bg-surface border border-border shadow-sm">
+  <div class="flex flex-col gap-2.5 p-3 sm:p-4 rounded-2xl bg-surface border border-border shadow-sm">
     <nav class="flex w-full gap-2 p-1 bg-surface-high rounded-full border border-border flex-wrap sm:flex-nowrap" aria-label="Categorías deportivas">
       @for (cat of categories; track cat.id) {
         <button 
           type="button" 
-          class="flex-1 py-2.5 px-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-center whitespace-nowrap cursor-pointer hover:-translate-y-0.5 active:scale-95"
-          [class.bg-accent]="selectedCategory() === cat.id"
-          [class.text-white]="selectedCategory() === cat.id"
-          [class.shadow-md]="selectedCategory() === cat.id"
-          [class.shadow-accent/25]="selectedCategory() === cat.id"
+          class="flex-1 py-2.5 px-3 rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-center whitespace-nowrap cursor-pointer border border-transparent hover:-translate-y-0.5 active:scale-95"
+          [class.!bg-accent]="selectedCategory() === cat.id"
+          [class.!text-white]="selectedCategory() === cat.id"
+          [class.shadow-[0_4px_18px_rgba(41,184,245,0.38)]]="selectedCategory() === cat.id"
           [class.scale-[1.02]]="selectedCategory() === cat.id"
-          [class.border-accent]="selectedCategory() === cat.id"
+          [class.!border-accent]="selectedCategory() === cat.id"
           [class.text-muted]="selectedCategory() !== cat.id"
-          [class.hover:text-text]="selectedCategory() !== cat.id"
+          [class.hover:text-accent]="selectedCategory() !== cat.id"
+          [class.hover:bg-surface/70]="selectedCategory() !== cat.id"
           (click)="setCategory(cat.id)"
         >
           <span>{{ cat.label }}</span>
@@ -133,7 +136,7 @@
         @for (sub of europeanLeagues; track sub.id) {
           <button 
             type="button" 
-            class="flex-1 min-w-fit py-1.5 px-3.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5"
+            class="flex-1 min-w-fit py-1.5 px-3.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 hover:text-accent hover:border-accent/40 hover:bg-surface"
             [class.bg-accent/15]="selectedSubLeague() === sub.id"
             [class.text-accent]="selectedSubLeague() === sub.id"
             [class.border]="selectedSubLeague() === sub.id"

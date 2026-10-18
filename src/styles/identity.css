@@ -51,10 +51,11 @@ body {
 
 :root[data-theme='dark'] .primary:hover,
 :root[data-theme='dark'] .button-link.primary:hover {
-  background: #e2e8f0;
-  color: #060812;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 6px 24px rgba(255, 255, 255, 0.22);
+  box-shadow: 0 6px 24px rgba(41, 184, 245, 0.35);
 }
 
 :root[data-theme='light'] .primary,

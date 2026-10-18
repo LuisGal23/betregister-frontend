@@ -3,9 +3,9 @@
   <p class="text-sm text-muted leading-relaxed mt-2">Reinicia tu registro y crea un bank desde cero. Conservas tu cuenta y preferencias.</p>
   <button type="button" class="secondary negative mt-4" (click)="open()">Borrar mi bank y mi historial</button>
 </details>
-<dialog #dialog (cancel)="close($event)" aria-labelledby="reset-title" aria-describedby="reset-description" class="fixed inset-0 m-auto w-[min(520px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto p-7 border border-border rounded-2xl bg-surface text-text backdrop:bg-[#060c1bcc] backdrop:blur-sm">
+<dialog #dialog (cancel)="close($event)" aria-labelledby="reset-title" aria-describedby="reset-description" class="fixed inset-0 m-auto w-[min(520px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto p-5 sm:p-7 md:p-8 border border-border rounded-2xl bg-surface text-text backdrop:bg-black/75 backdrop:backdrop-blur-sm shadow-2xl">
   <form (ngSubmit)="reset()" ngNativeValidate class="space-y-4">
-    <h2 id="reset-title" class="text-xl font-bold">¿Empezar desde cero?</h2>
+    <h2 id="reset-title" class="text-xl sm:text-2xl font-bold">¿Empezar desde cero?</h2>
     <p id="reset-description" class="text-sm text-muted leading-relaxed">Se eliminarán permanentemente todas tus casas, apuestas (incluso pendientes y ocultas), depósitos, retiros y retos. Tus gráficas y recomendaciones volverán a cero. No se puede deshacer.</p>
     <p class="text-sm text-muted leading-relaxed">Esto solo borra registros de BetRegister; no retira dinero de ninguna casa de apuestas.</p>
     <p class="text-sm text-muted leading-relaxed">Si necesitas una copia, exporta tus datos desde Mis apuestas antes de continuar.</p>
@@ -13,8 +13,8 @@
     <label class="grid gap-2 my-4 text-sm font-medium">Tu contraseña<input name="password" type="password" [(ngModel)]="password" autocomplete="current-password" required minlength="10" [disabled]="busy()" /></label>
     @if (error()) { <p role="alert" class="text-sm text-red-400 font-medium">{{ error() }}</p> }
     <div class="flex justify-end gap-3 flex-wrap pt-2">
-      <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="close()">Cancelar</button>
-      <button class="bg-[#b42336] hover:bg-[#921c2b] text-white font-medium border-0 rounded-xl px-4 py-3 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" [disabled]="busy() || confirmation !== 'EMPEZAR DE NUEVO' || password.length < 10">{{ busy() ? 'Borrando…' : 'Borrar todos mis registros' }}</button>
+      <button type="button" class="secondary !px-5 !py-2.5 rounded-xl" autofocus [disabled]="busy()" (click)="close()">Cancelar</button>
+      <button class="danger-button !px-5 !py-2.5 rounded-xl font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" [disabled]="busy() || confirmation !== 'EMPEZAR DE NUEVO' || password.length < 10">{{ busy() ? 'Borrando…' : 'Borrar todos mis registros' }}</button>
     </div>
   </form>
 </dialog>

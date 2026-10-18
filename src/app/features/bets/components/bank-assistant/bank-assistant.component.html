@@ -10,14 +10,14 @@
       aria-labelledby="assistant-title"
       (keydown.escape)="close()"
     >
-      <header class="flex items-center justify-between px-[22px] pt-5 pb-[15px]">
+      <header class="flex items-center justify-between px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-[var(--border)]">
         <div>
           <span class="text-[9px] font-bold tracking-wider text-[var(--muted)] uppercase">ANTES DE REGISTRAR</span>
-          <h2 id="assistant-title" class="mt-1.5 mb-0 text-lg font-semibold tracking-[-0.4px] text-[var(--text)]">Cuida tu bank</h2>
+          <h2 id="assistant-title" class="mt-1 mb-0 text-base sm:text-lg font-semibold tracking-[-0.4px] text-[var(--text)]">Cuida tu bank</h2>
         </div>
         <button
           #closer
-          class="bg-[var(--surface-high)] text-[var(--muted)] hover:text-[var(--text)] w-[30px] h-[30px] rounded-full grid place-items-center transition-colors"
+          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center transition-all duration-200 cursor-pointer active:scale-95"
           type="button"
           aria-label="Cerrar asistente de bank"
           (click)="close()"
@@ -25,13 +25,13 @@
           <app-icon name="close" class="w-[15px] h-[15px]" />
         </button>
       </header>
-      <div class="flex gap-1 bg-[var(--bg)] p-1 mx-5 mb-3 rounded-[9px]" role="group" aria-label="Sistema de gestión">
+      <div class="flex gap-1.5 bg-[var(--bg)] p-1 mx-4 sm:mx-6 my-3 rounded-xl border border-[var(--border)]" role="group" aria-label="Sistema de gestión">
         <button
           type="button"
-          class="flex-1 text-[11px] py-2.5 px-1.5 text-[var(--muted)] bg-transparent rounded-md transition-all font-medium"
+          class="flex-1 text-[11px] py-2 px-2 text-[var(--muted)] bg-transparent rounded-lg transition-all duration-200 font-medium cursor-pointer hover:text-text hover:bg-surface/50 active:scale-[0.98]"
           [class.!bg-[var(--surface)]]="mode() === 'fixed'"
           [class.!text-[var(--accent)]]="mode() === 'fixed'"
-          [class.shadow-[0_2px_5px_rgba(19,39,67,0.03)]]="mode() === 'fixed'"
+          [class.shadow-sm]="mode() === 'fixed'"
           [class.font-semibold]="mode() === 'fixed'"
           [attr.aria-pressed]="mode() === 'fixed'"
           (click)="mode.set('fixed')"
@@ -39,10 +39,10 @@
           Porcentaje fijo</button
         ><button
           type="button"
-          class="flex-1 text-[11px] py-2.5 px-1.5 text-[var(--muted)] bg-transparent rounded-md transition-all font-medium"
+          class="flex-1 text-[11px] py-2 px-2 text-[var(--muted)] bg-transparent rounded-lg transition-all duration-200 font-medium cursor-pointer hover:text-text hover:bg-surface/50 active:scale-[0.98]"
           [class.!bg-[var(--surface)]]="mode() === 'kelly'"
           [class.!text-[var(--accent)]]="mode() === 'kelly'"
-          [class.shadow-[0_2px_5px_rgba(19,39,67,0.03)]]="mode() === 'kelly'"
+          [class.shadow-sm]="mode() === 'kelly'"
           [class.font-semibold]="mode() === 'kelly'"
           [attr.aria-pressed]="mode() === 'kelly'"
           (click)="mode.set('kelly')"
@@ -50,7 +50,7 @@
           Kelly fraccional
         </button>
       </div>
-      <div class="px-[22px] pt-1.5 pb-[22px] max-h-[min(63vh,600px)] overflow-y-auto overscroll-contain max-[600px]:max-h-[calc(100dvh-255px)] flex flex-col gap-3.5">
+      <div class="px-4 sm:px-6 pt-1 pb-5 sm:pb-6 max-h-[min(63vh,600px)] overflow-y-auto overscroll-contain max-[600px]:max-h-[calc(100dvh-255px)] flex flex-col gap-3.5">
         <label class="text-[11px] flex flex-col gap-1.5 text-[var(--muted)]"
           >Casa para el cálculo<select
             name="assistantHouse"
