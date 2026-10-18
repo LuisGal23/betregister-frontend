@@ -1,72 +1,86 @@
-<section class="guidance" aria-label="Gestión por porcentaje fijo">
+<section class="p-0 border-0 bg-transparent h-auto block min-w-0" aria-label="Gestión por porcentaje fijo">
   @if (house(); as h) {
-    <div class="house-line">
-      <strong>{{ h.name }}</strong
-      ><span>{{ h.currency }}</span>
-    </div>
-    <dl class="numbers">
-      <div>
-        <dt>Bank disponible</dt>
-        <dd>{{ vm.native(h.balance, h.currency) }}</dd>
+    <dl class="grid gap-3 my-3.5">
+      <div class="flex justify-between gap-4 text-xs">
+        <dt class="text-[var(--muted)]">Bank disponible</dt>
+        <dd class="m-0 text-right font-semibold whitespace-nowrap text-[var(--text)]">{{ vm.native(h.balance, h.currency) }}</dd>
       </div>
-      <div>
-        <dt>En apuestas abiertas</dt>
-        <dd>{{ vm.native(h.pending, h.currency) }}</dd>
+      <div class="flex justify-between gap-4 text-xs">
+        <dt class="text-[var(--muted)]">En apuestas abiertas</dt>
+        <dd class="m-0 text-right font-semibold whitespace-nowrap text-[var(--text)]">{{ vm.native(h.pending, h.currency) }}</dd>
       </div>
     </dl>
-    <div class="reference" [class.over-reference]="overReference()">
-      <span>Referencia por apuesta · 2%</span>
-      <strong>{{ vm.native(maximum(), h.currency) }}</strong>
-      <small
+    <div 
+      class="p-4 rounded-xl bg-[var(--surface-high)]"
+      [class.border]="overReference()"
+      [class.border-[#ec657a]]="overReference()"
+    >
+      <span class="block text-xs text-[var(--muted)]">Referencia por apuesta · 2%</span>
+      <strong 
+        class="block text-lg my-2 font-bold"
+        [class.text-[var(--accent)]]="!overReference()"
+        [class.text-[#ec657a]]="overReference()"
+      >{{ vm.native(maximum(), h.currency) }}</strong>
+      <small class="block text-[11px] leading-relaxed text-[var(--muted)]"
         >Se recalcula con el saldo disponible actual de esta casa. Referencia del 1%:
         {{ vm.native(Math.floor(h.balance * 0.01), h.currency) }}.</small
       >
       @if (overReference()) {
-        <p class="over-warning">
+        <p class="text-xs leading-relaxed text-[#ec657a] mb-0 mt-2 font-medium">
           El importe supera la referencia del 2%. Estás aumentando tu exposición.
         </p>
       }
     </div>
     @if (amount() > 0) {
-      <div class="risk" [attr.data-level]="risk().level" [class.over-reference]="overReference()">
-        <div>
-          <strong>{{ percent(risk().percent) }}</strong
-          ><span>{{ risk().level }}</span>
+      <div 
+        class="mt-4.5 pl-3.5 border-l-[3px]"
+        [class.border-[#3aab80]]="risk().level === 'Bajo'"
+        [class.border-[#bd932c]]="risk().level === 'Moderado'"
+        [class.border-[#dc6175]]="risk().level === 'Alto' || risk().level === 'Extremo' || risk().level === 'Sin saldo'"
+        [class.!border-[#ec657a]]="overReference()"
+      >
+        <div class="flex items-center gap-3">
+          <strong 
+            class="text-[28px] font-bold"
+            [class.text-[var(--text)]]="!overReference()"
+            [class.text-[#ec657a]]="overReference()"
+          >{{ percent(risk().percent) }}</strong>
+          <span class="text-xs font-semibold text-[var(--muted)]">{{ risk().level }}</span>
         </div>
-        <p>de tu saldo disponible en {{ h.name }}</p>
-        <p>{{ risk().message }}</p>
+        <p class="text-[13px] leading-relaxed my-1 text-[var(--muted)]">de tu saldo disponible en {{ h.name }}</p>
+        <p class="text-[13px] leading-relaxed my-1 text-[var(--muted)]">{{ risk().message }}</p>
       </div>
       @if (amount() * 100 > h.balance) {
-        <p class="warning">
+        <p class="border-l-[3px] border-[#dc6175] py-2.5 px-3 bg-[color-mix(in_srgb,#dc6175_9%,transparent)] text-xs leading-relaxed text-[#dc6175] my-2 rounded-r">
           El importe supera el saldo disponible. Reduce el importe o confirma un depósito.
         </p>
       }
     } @else {
-      <p class="hint">Escribe un importe para ver tu nivel de exposición en tiempo real.</p>
+      <p class="text-[13px] leading-relaxed text-[var(--muted)] my-2">Escribe un importe para ver tu nivel de exposición en tiempo real.</p>
     }
-    <details class="exposure-details">
-      <summary>Exposición y bank general</summary>
-      <p class="general">
-        Sobre tu bank general: <strong>{{ percent(general()) }}</strong
-        ><small>Disponible + apuestas abiertas de todas tus casas, en la moneda de vista.</small>
+    <details class="mt-4.5 pt-4 border-t border-[var(--border)] text-xs">
+      <summary class="cursor-pointer font-semibold text-[var(--text)] select-none">Exposición y bank general</summary>
+      <p class="my-3 text-[13px] leading-relaxed text-[var(--muted)]">
+        Sobre tu bank general: <strong class="text-[var(--text)]">{{ percent(general()) }}</strong>
+        <small class="block text-[11px] leading-relaxed text-[var(--muted)] mt-1">Disponible + apuestas abiertas de todas tus casas, en la moneda de vista.</small>
       </p>
       @if (exposure(); as e) {
-        <dl class="numbers exposure">
-          <div>
-            <dt>Abiertas de hoy + este importe</dt>
-            <dd>{{ percent(e.today) }}</dd>
+        <dl class="grid gap-2 pt-3 border-t border-[var(--border)] mb-2">
+          <div class="flex justify-between gap-4 text-xs">
+            <dt class="text-[var(--muted)]">Abiertas de hoy + este importe</dt>
+            <dd class="m-0 text-right font-semibold whitespace-nowrap text-[var(--text)]">{{ percent(e.today) }}</dd>
           </div>
-          <div>
-            <dt>Total abierto + este importe</dt>
-            <dd>{{ percent(e.total) }}</dd>
+          <div class="flex justify-between gap-4 text-xs">
+            <dt class="text-[var(--muted)]">Total abierto + este importe</dt>
+            <dd class="m-0 text-right font-semibold whitespace-nowrap text-[var(--text)]">{{ percent(e.total) }}</dd>
           </div>
         </dl>
-        <small
+        <small class="block text-[11px] leading-relaxed text-[var(--muted)]"
           >Porcentajes sobre el bank de esta casa: disponible + pendiente. Referencia de exposición
           abierta: 10%.</small
         >
         @if (e.total > 10) {
-          <p class="warning">
+          <p class="border-l-[3px] border-[#dc6175] py-2.5 px-3 bg-[color-mix(in_srgb,#dc6175_9%,transparent)] text-xs leading-relaxed text-[#dc6175] my-2 rounded-r">
             La exposición abierta supera el 10%. Revisa tus apuestas pendientes antes de añadir más
             importe.
           </p>
@@ -74,35 +88,35 @@
       }
     </details>
     @if ((h.month_loss_percent ?? 0) >= 10) {
-      <p class="warning">
+      <p class="border-l-[3px] border-[#dc6175] py-2.5 px-3 bg-[color-mix(in_srgb,#dc6175_9%,transparent)] text-xs leading-relaxed text-[#dc6175] my-2 rounded-r">
         Stop-loss mensual: pérdidas realizadas del {{ percent(h.month_loss_percent ?? null) }} sobre
         el capital de referencia (inicio de mes + depósitos). Considera detenerte y revisar tu
         límite.
       </p>
     }
   } @else {
-    <p class="hint">
+    <p class="text-[13px] leading-relaxed text-[var(--muted)]">
       Selecciona una casa de apuestas para ver su saldo, el rango del 1–2% y tu exposición.
     </p>
   }
-  <details>
-    <summary>Cómo leer los niveles</summary>
-    <ul>
-      <li><strong>Hasta 2% · Bajo.</strong> Dentro del límite de referencia.</li>
+  <details class="mt-4 pt-3 border-t border-[var(--border)] text-xs text-[var(--muted)]">
+    <summary class="cursor-pointer font-semibold text-[var(--text)] select-none">Cómo leer los niveles</summary>
+    <ul class="pl-4 mt-2 leading-relaxed space-y-1.5 list-disc">
+      <li><strong class="text-[var(--text)]">Hasta 2% · Bajo.</strong> Dentro del límite de referencia.</li>
       <li>
-        <strong>Más de 2% a 5% · Moderado.</strong> Una parte considerable en una sola apuesta.
+        <strong class="text-[var(--text)]">Más de 2% a 5% · Moderado.</strong> Una parte considerable en una sola apuesta.
       </li>
       <li>
-        <strong>Más de 5% a 10% · Alto.</strong> Pocas pérdidas pueden reducir mucho el saldo.
+        <strong class="text-[var(--text)]">Más de 5% a 10% · Alto.</strong> Pocas pérdidas pueden reducir mucho el saldo.
       </li>
-      <li><strong>Más de 10% · Extremo.</strong> Se desaconseja esa concentración.</li>
+      <li><strong class="text-[var(--text)]">Más de 10% · Extremo.</strong> Se desaconseja esa concentración.</li>
     </ul>
-    <p>
+    <p class="mt-2 text-[12px] leading-relaxed">
       Si recalculas el importe después de cada pérdida, diez pérdidas seguidas al 2% dejan cerca del
       82% del saldo inicial; al 10%, cerca del 35%.
     </p>
   </details>
-  <p class="footnote">
+  <p class="text-[11px] leading-relaxed text-[var(--muted)] mt-4 mb-0">
     Son referencias de exposición, no una obligación de apostar ni una garantía de resultados.
   </p>
 </section>

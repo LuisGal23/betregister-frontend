@@ -8,7 +8,7 @@ import { ChallengesService } from '../../../challenges/services/challenges.servi
   selector: 'app-reset-bank',
   imports: [FormsModule],
   templateUrl: './reset-bank.component.html',
-  styleUrl: './reset-bank.component.css',
+  host: { class: 'block mt-6' },
 })
 export class ResetBankComponent {
   readonly vm = inject(LedgerState);

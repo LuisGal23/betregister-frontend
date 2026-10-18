@@ -22,7 +22,6 @@ import { TicketModalService } from '../../features/bets/services/ticket-modal.se
     CreateTicketModalComponent,
   ],
   templateUrl: './shell.component.html',
-  styleUrls: ['./shell.component.css', './mobile-navigation.css'],
 })
 export class ShellComponent implements OnInit {
   vm = inject(LedgerState);

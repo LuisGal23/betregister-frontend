@@ -3,86 +3,88 @@
   aria-labelledby="detail-title"
   (cancel)="$event.preventDefault(); dismiss.emit()"
   (click)="backdrop($event)"
+  class="fixed inset-0 m-auto p-0 w-[min(700px,calc(100vw-28px))] max-h-[85vh] border border-border rounded-3xl bg-surface text-text shadow-2xl backdrop:bg-black/75 backdrop:backdrop-blur-sm overflow-y-auto"
 >
-  <div class="card-content">
-    <header>
+  <div class="p-5 sm:p-7 md:p-8">
+    <header class="flex items-center justify-between gap-4 mb-6">
       <div>
         <span class="eyebrow">TU REGISTRO</span>
-        <h2 id="detail-title">
+        <h2 id="detail-title" class="text-xl sm:text-2xl font-bold tracking-tight text-text mt-1.5">
           {{ kind() === 'bank' ? 'Detalle de tu bank' : 'Últimas apuestas' }}
         </h2>
       </div>
-      <button class="secondary" aria-label="Cerrar detalles" (click)="dismiss.emit()">✕</button>
+      <button class="secondary !w-8 !h-8 !p-0 rounded-full grid place-items-center cursor-pointer hover:rotate-90 hover:border-accent hover:text-accent transition-all duration-200 active:scale-95 text-sm" aria-label="Cerrar detalles" (click)="dismiss.emit()">✕</button>
     </header>
     @if (kind() === 'bank') {
-      <div class="bank-total">
-        <span>Bank actual · {{ vm.currency() }}</span
-        ><strong>{{ vm.format(total()) }}</strong>
-        <p>Disponible más el importe de las apuestas pendientes.</p>
+      <div class="bg-[#174f3a] text-white rounded-2xl p-5 sm:p-6 mb-5 sm:mb-6">
+        <span class="text-xs opacity-90">Bank actual · {{ vm.currency() }}</span>
+        <strong class="block text-3xl font-extrabold my-2.5 tracking-tight">{{ vm.format(total()) }}</strong>
+        <p class="text-xs text-[#a4caba] m-0">Disponible más el importe de las apuestas pendientes.</p>
       </div>
-      <div class="totals">
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 py-4 border-b border-border text-xs text-muted">
         <div>
-          Disponible<strong>{{ vm.format(vm.total('balance')) }}</strong>
+          Disponible<strong class="block text-text text-base font-semibold mt-1.5">{{ vm.format(vm.total('balance')) }}</strong>
         </div>
         <div>
-          En juego<strong>{{ vm.format(vm.total('pending')) }}</strong>
+          En juego<strong class="block text-text text-base font-semibold mt-1.5">{{ vm.format(vm.total('pending')) }}</strong>
         </div>
         <div>
-          Ganancia histórica activa<strong [class.negative]="(vm.total('profit') ?? 0) < 0">{{
+          Ganancia histórica activa<strong class="block text-text text-base font-semibold mt-1.5" [class.negative]="(vm.total('profit') ?? 0) < 0">{{
             vm.format(vm.total('profit'))
           }}</strong>
         </div>
       </div>
-      <h3>Desglose por casa</h3>
+      <h3 class="text-sm font-semibold mt-6 mb-3">Desglose por casa</h3>
       @for (house of vm.data().houses; track house.id) {
-        <article class="house">
-          <div>
-            <strong>{{ house.name }}</strong
-            ><small>{{ house.currency }}</small>
+        <article class="flex justify-between gap-4 py-4 border-t border-border text-xs">
+          <div class="flex-1">
+            <strong class="text-text font-semibold">{{ house.name }}</strong>
+            <small class="block text-muted text-[11px] mt-1">{{ house.currency }}</small>
           </div>
           <div>
-            <small>Disponible</small><strong>{{ vm.native(house.balance, house.currency) }}</strong>
+            <small class="block text-muted text-[11px]">Disponible</small><strong class="text-text font-medium">{{ vm.native(house.balance, house.currency) }}</strong>
           </div>
           <div>
-            <small>Pendiente</small><strong>{{ vm.native(house.pending, house.currency) }}</strong>
+            <small class="block text-muted text-[11px]">Pendiente</small><strong class="text-text font-medium">{{ vm.native(house.pending, house.currency) }}</strong>
           </div>
         </article>
       } @empty {
-        <p>Aún no tienes casas activas.</p>
+        <p class="text-xs text-muted py-4">Aún no tienes casas activas.</p>
       }
-      <p class="help">
+      <p class="text-xs text-muted leading-relaxed mt-4">
         Casas activas · {{ vm.pendingBets().length }} apuestas pendientes ·
         {{ vm.pendingMovements().length }} movimientos por confirmar. Las equivalencias usan tu tipo
         de cambio actual.
       </p>
-      <a class="primary button-link" routerLink="/bank" (click)="dismiss.emit()"
+      <a class="primary button-link mt-5" routerLink="/bank" (click)="dismiss.emit()"
         >Administrar mi bank ↗</a
       >
     } @else {
-      <div class="list-heading">
-        <p>
+      <div class="flex items-center justify-between gap-4 flex-wrap mb-4">
+        <p class="text-xs text-muted max-w-[400px]">
           Por fecha de registro, de todas las fechas. Incluye apuestas pendientes y casas
           eliminadas.
         </p>
-        <label
-          >Mostrar<select [ngModel]="limit()" (ngModelChange)="limit.set(+$event)">
+        <label class="text-xs font-medium"
+          >Mostrar<select [ngModel]="limit()" (ngModelChange)="limit.set(+$event)" class="ml-2">
             <option [ngValue]="5">Últimas 5</option>
             <option [ngValue]="10">Últimas 10</option>
           </select></label
         >
       </div>
       @for (bet of recent(); track bet.id) {
-        <article class="bet">
-          <div>
-            <strong>{{ bet.event }}</strong
-            ><small>{{ bet.house }} · {{ bet.bet_type === 'parlay' ? 'Parlay' : 'Simple' }}</small
-            ><small>Registrada: {{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
+        <article class="flex justify-between gap-4 py-4 border-t border-border text-xs">
+          <div class="min-w-0 flex-1">
+            <strong class="text-text font-semibold break-words">{{ bet.event }}</strong>
+            <small class="block text-muted text-[11px] mt-1">{{ bet.house }} · {{ bet.bet_type === 'parlay' ? 'Parlay' : 'Simple' }}</small>
+            <small class="block text-muted/70 text-[10px] mt-0.5">Registrada: {{ timestamp(bet.created) | date: 'dd/MM/yyyy HH:mm' }}</small>
           </div>
-          <div class="result">
-            <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span
-            ><strong>{{ vm.native(bet.stake, bet.currency) }}</strong>
+          <div class="text-right shrink-0">
+            <span [class]="'status ' + bet.status">{{ vm.labels[bet.status] }}</span>
+            <strong class="block text-text font-semibold mt-2">{{ vm.native(bet.stake, bet.currency) }}</strong>
             @if (bet.status !== 'pending') {
               <small
+                class="block text-[11px] mt-1"
                 [class.positive]="bet.payout > bet.stake"
                 [class.negative]="bet.payout < bet.stake"
                 >Neto: {{ vm.native(bet.payout - bet.stake, bet.currency) }}</small
@@ -91,10 +93,10 @@
           </div>
         </article>
       } @empty {
-        <p>Aún no has registrado apuestas.</p>
+        <p class="text-xs text-muted py-4">Aún no has registrado apuestas.</p>
       }
       <a
-        class="primary button-link"
+        class="primary button-link mt-5"
         routerLink="/tickets"
         [queryParams]="{ view: 'history' }"
         (click)="dismiss.emit()"

@@ -1,12 +1,38 @@
-<section class="smart-settings">
-@if(loading()){<p role="status">Cargando protección y privacidad…</p>}@else{
-<details class="panel"><summary>Anti-Tilt · pausas de registro</summary>
-<p>Protección voluntaria: al activarla, tres pérdidas consecutivas registradas en menos de dos horas o intentar superar el 20% diario activan una pausa. No bloquea a la casa de apuestas.</p>
+<section class="grid gap-4 my-5">
+@if (loading()) {
+  <p role="status" class="text-sm text-muted">Cargando protección y privacidad…</p>
+} @else {
+  <details class="panel p-5">
+    <summary class="font-semibold cursor-pointer text-text">Anti-Tilt · pausas de registro</summary>
+    <p class="text-sm text-muted leading-relaxed mt-2">Protección voluntaria: al activarla, tres pérdidas consecutivas registradas en menos de dos horas o intentar superar el 20% diario activan una pausa. No bloquea a la casa de apuestas.</p>
 
-<form (ngSubmit)="save('protection')"><label class="check"><input type="checkbox" name="enabled" [(ngModel)]="enabled" [disabled]="locked()" /> Activar protección automática</label><label>Duración<select name="hours" [(ngModel)]="hours" [disabled]="locked()"><option [ngValue]="6">6 horas</option><option [ngValue]="12">12 horas</option></select></label><button class="secondary" [disabled]="busy() || locked() || !protection()">Guardar protección</button></form>
-@if(locked()){<p role="status">Pausa hasta {{protection()!.until*1000|date:'short'}}. No puede acortarse ni desactivarse durante ese periodo.</p>}
-<small>El límite diario acumula todos los importes registrados, sin descontar ganadas, anuladas o cashouts. Base por moneda fijada al primer intento del día; se usa tu zona horaria. La importación CSV queda deshabilitada mientras esta protección esté activa.</small></details>
+    <form (ngSubmit)="save('protection')" class="grid gap-3 my-4">
+      <label class="flex items-center gap-2.5 text-sm cursor-pointer">
+        <input type="checkbox" name="enabled" [(ngModel)]="enabled" [disabled]="locked()" class="w-auto" />
+        Activar protección automática
+      </label>
+      <label class="grid gap-1.5 text-sm font-medium">
+        Duración
+        <select name="hours" [(ngModel)]="hours" [disabled]="locked()">
+          <option [ngValue]="6">6 horas</option>
+          <option [ngValue]="12">12 horas</option>
+        </select>
+      </label>
+      <div>
+        <button class="secondary" [disabled]="busy() || locked() || !protection()">Guardar protección</button>
+      </div>
+    </form>
+    @if (locked()) {
+      <p role="status" class="text-sm text-yellow-400 font-medium">Pausa hasta {{ protection()!.until * 1000 | date: 'short' }}. No puede acortarse ni desactivarse durante ese periodo.</p>
+    }
+    <small class="text-xs text-muted/80 leading-relaxed block mt-3">El límite diario acumula todos los importes registrados, sin descontar ganadas, anuladas o cashouts. Base por moneda fijada al primer intento del día; se usa tu zona horaria. La importación CSV queda deshabilitada mientras esta protección esté activa.</small>
+  </details>
 }
-@if(error()){<p role="alert">{{error()}}</p><button class="secondary" (click)="load()">Reintentar carga</button>}
-@if(message()){<p role="status">{{message()}}</p>}
+@if (error()) {
+  <p role="alert" class="text-sm text-red-400">{{ error() }}</p>
+  <button class="secondary" (click)="load()">Reintentar carga</button>
+}
+@if (message()) {
+  <p role="status" class="text-sm text-emerald-400">{{ message() }}</p>
+}
 </section>

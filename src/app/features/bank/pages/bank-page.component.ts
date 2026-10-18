@@ -28,7 +28,7 @@ import type { Currency } from '../../../shared/models/currency.model';
     ConfirmDialogComponent,
   ],
   templateUrl: './bank-page.component.html',
-  styleUrl: './bank-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class BankPageComponent {
   settingsOnly = !!inject(ActivatedRoute).snapshot.data['settings'];

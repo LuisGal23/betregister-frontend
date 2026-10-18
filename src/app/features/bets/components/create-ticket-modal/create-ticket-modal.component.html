@@ -1,48 +1,66 @@
 @if (modal.isOpen()) {
-  <div class="modal-backdrop" (click)="close()" (keydown.escape)="close()" tabindex="0" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-    <div class="modal-card" (click)="$event.stopPropagation()">
+  <div 
+    class="fixed inset-0 z-[9999] bg-[rgba(6,8,18,0.78)] backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-[fadeIn_0.2s_ease-out]" 
+    (click)="close()" 
+    (keydown.escape)="close()" 
+    tabindex="0" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="modal-title"
+  >
+    <div 
+      class="w-full max-w-[740px] max-h-[92vh] flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-[24px] shadow-[0_24px_64px_rgba(0,0,0,0.45),0_0_32px_rgba(41,184,245,0.12)] overflow-hidden animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)]" 
+      (click)="$event.stopPropagation()"
+    >
       <!-- Modal Header -->
-      <div class="modal-header">
-        <div class="modal-title-area">
-          <div class="modal-badge">
-            <span class="pulse-dot"></span>
+      <div class="flex justify-between items-start px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-[var(--border)]">
+        <div>
+          <div class="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-[var(--accent)] bg-[rgba(41,184,245,0.08)] border border-[rgba(41,184,245,0.2)] px-2.5 py-0.5 rounded-full mb-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_6px_var(--accent)]"></span>
             <span>CONTROL DE BANKROLL</span>
           </div>
-          <h2 id="modal-title">Registrar ticket</h2>
+          <h2 id="modal-title" class="text-[20px] sm:text-[22px] font-bold tracking-tight text-[var(--text)] m-0">Registrar ticket</h2>
         </div>
-        <button type="button" class="close-modal-btn" (click)="close()" aria-label="Cerrar modal">
+        <button 
+          type="button" 
+          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center cursor-pointer transition-all duration-200 text-sm active:scale-95 shadow-sm" 
+          (click)="close()" 
+          aria-label="Cerrar modal"
+        >
           ✕
         </button>
       </div>
 
       <!-- Segmented Bet Type Switcher -->
-      <div class="type-segmented-bar" role="tablist">
+      <div class="grid grid-cols-3 gap-1.5 px-4 sm:px-7 py-2.5 sm:py-3 bg-[var(--surface-high)] border-b border-[var(--border)]" role="tablist">
         @for (t of types; track t.id) {
           <button 
             type="button" 
             role="tab"
-            class="type-btn" 
-            [class.active]="betType === t.id"
+            class="py-2 px-2 sm:px-3 rounded-xl border border-transparent bg-transparent flex flex-col items-center gap-0.5 cursor-pointer transition-all duration-200 hover:bg-surface/50 hover:text-text hover:scale-[1.02] active:scale-[0.98]" 
+            [class.!bg-[var(--surface)]]="betType === t.id"
+            [class.!border-[rgba(41,184,245,0.35)]]="betType === t.id"
+            [class.shadow-sm]="betType === t.id"
             (click)="setType(t.id)"
           >
-            <strong>{{ t.label }}</strong>
-            <small>{{ t.detail }}</small>
+            <strong class="text-[12px] sm:text-[13px] font-semibold transition-colors duration-200" [class.text-[var(--accent)]]="betType === t.id" [class.text-[var(--muted)]]="betType !== t.id">{{ t.label }}</strong>
+            <small class="text-[9px] sm:text-[10px] text-[var(--muted)]">{{ t.detail }}</small>
           </button>
         }
       </div>
 
-      <div class="modal-scroll-body">
+      <div class="overflow-y-auto px-5 sm:px-7 py-5 sm:py-6 flex flex-col gap-4 sm:gap-5 max-h-[calc(92vh-190px)]">
         <!-- Selected Match Banner (if preselected from Partidos del día) -->
         @if (selectedGames.length) {
-          <div class="selected-match-card">
-            <div class="match-info">
-              <span class="match-badge">PARTIDO SELECCIONADO</span>
-              <strong class="match-teams">
+          <div class="flex justify-between items-center py-3.5 px-4.5 rounded-2xl bg-[rgba(41,184,245,0.06)] border border-[rgba(41,184,245,0.28)]">
+            <div class="flex flex-col gap-0.5">
+              <span class="text-[9px] font-bold tracking-wider text-[var(--accent)]">PARTIDO SELECCIONADO</span>
+              <strong class="text-sm font-semibold text-[var(--text)]">
                 {{ selectedGames[0].away }} vs {{ selectedGames[0].home }}
               </strong>
-              <small class="match-league">{{ selectedGames[0].league_name }} · {{ selectedGames[0].sport }}</small>
+              <small class="text-[11px] text-[var(--muted)]">{{ selectedGames[0].league_name }} · {{ selectedGames[0].sport }}</small>
             </div>
-            <button type="button" class="remove-match-btn" (click)="chooseGames([])" title="Quitar partido">
+            <button type="button" class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--negative)] hover:border-[var(--negative)] text-[11px] py-1 px-3 rounded-full cursor-pointer transition-colors" (click)="chooseGames([])" title="Quitar partido">
               Quitar
             </button>
           </div>
@@ -55,13 +73,13 @@
         }
 
         <!-- Selections Section -->
-        <div class="selections-block">
-          <div class="block-header">
-            <h3>Selecciones</h3>
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center">
+            <h3 class="text-sm font-semibold m-0 text-[var(--text)]">Selecciones</h3>
             @if (betType !== 'simple') {
               <button 
                 type="button" 
-                class="add-selection-btn"
+                class="bg-transparent border-none text-[var(--accent)] text-xs font-semibold cursor-pointer hover:underline"
                 [disabled]="selections.length >= 20"
                 (click)="addSelection()"
               >
@@ -71,11 +89,11 @@
           </div>
 
           @for (selection of selections; track $index; let i = $index) {
-            <div class="selection-card">
-              <div class="selection-head">
-                <span class="selection-index">{{ betType === 'simple' ? 'Selección única' : 'Selección #' + (i + 1) }}</span>
+            <div class="p-4 rounded-2xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-3">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-semibold text-[var(--muted)]">{{ betType === 'simple' ? 'Selección única' : 'Selección #' + (i + 1) }}</span>
                 @if (selections.length > 1 && betType !== 'simple') {
-                  <button type="button" class="remove-btn" (click)="removeSelection(i)">Quitar</button>
+                  <button type="button" class="bg-transparent border-none text-[var(--negative)] text-[11px] cursor-pointer hover:underline" (click)="removeSelection(i)">Quitar</button>
                 }
               </div>
 
@@ -88,7 +106,7 @@
               />
 
               @if (betType === 'parlay' && !totalOddsMode) {
-                <label class="odds-leg-field">
+                <label class="flex flex-col gap-1 text-[11px] text-[var(--muted)]">
                   <span>Cuota decimal de esta selección</span>
                   <input 
                     [name]="'modalLegOdds' + i" 
@@ -99,7 +117,7 @@
                     max="10000" 
                     step="0.0001" 
                     required 
-                    class="clean-input"
+                    class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border"
                   />
                 </label>
               }
@@ -111,11 +129,11 @@
         <app-screenshot-import (draft)="applyScreenshot($event)" />
 
         <!-- House and Financial Inputs Grid -->
-        <div class="financial-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <!-- House Selector -->
-          <label class="field-item">
-            <span class="field-label">Casa de apuestas</span>
-            <select name="modalHouse" [(ngModel)]="selectedHouse" required class="clean-select">
+          <label class="flex flex-col gap-1.5">
+            <span class="text-[11px] font-semibold text-[var(--muted)]">Casa de apuestas</span>
+            <select name="modalHouse" [(ngModel)]="selectedHouse" required class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border">
               <option value="" disabled>Selecciona una casa…</option>
               @for (h of vm.data().houses; track h.id) {
                 <option [value]="h.id">
@@ -126,29 +144,29 @@
           </label>
 
           <!-- Odds Format & Value -->
-          <div class="field-item">
-            <div class="label-with-switch">
-              <span class="field-label">Cuota {{ betType === 'parlay' && !totalOddsMode ? 'combinada' : '' }}</span>
-              <div class="odds-format-pill">
-                <button type="button" [class.active]="oddsFormat === 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
-                <button type="button" [class.active]="oddsFormat === 'american'" (click)="oddsFormat = 'american'">Am</button>
+          <div class="flex flex-col gap-1.5">
+            <div class="flex justify-between items-center">
+              <span class="text-[11px] font-semibold text-[var(--muted)]">Cuota {{ betType === 'parlay' && !totalOddsMode ? 'combinada' : '' }}</span>
+              <div class="inline-flex p-0.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)] gap-0.5">
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'decimal'" [class.text-[var(--text)]]="oddsFormat === 'decimal'" [class.font-semibold]="oddsFormat === 'decimal'" [class.shadow-sm]="oddsFormat === 'decimal'" [class.text-[var(--muted)]]="oddsFormat !== 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'american'" [class.text-[var(--text)]]="oddsFormat === 'american'" [class.font-semibold]="oddsFormat === 'american'" [class.shadow-sm]="oddsFormat === 'american'" [class.text-[var(--muted)]]="oddsFormat !== 'american'" (click)="oddsFormat = 'american'">Am</button>
               </div>
             </div>
             <input 
               name="modalOdds" 
               type="number" 
-              [(ngModel)]="odds"
+              [(ngModel)]="odds" 
               [disabled]="betType === 'parlay' && !totalOddsMode"
               placeholder="Ej. 1.85 o -110" 
               required 
               step="any"
-              class="clean-input"
+              class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border"
             />
           </div>
 
           <!-- Stake (Importe) -->
-          <div class="field-item">
-            <span class="field-label">Importe de la apuesta</span>
+          <div class="flex flex-col gap-1.5">
+            <span class="text-[11px] font-semibold text-[var(--muted)]">Importe de la apuesta</span>
             <input 
               name="modalStake" 
               type="number" 
@@ -157,15 +175,15 @@
               min="0.01" 
               step="any" 
               required 
-              class="clean-input"
+              class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border"
             />
           </div>
 
           <!-- Payout Preview -->
-          <div class="payout-card">
-            <span class="payout-label">Cobro potencial</span>
-            <strong class="payout-value">{{ vm.format(payout(), houseSelected()?.currency) }}</strong>
-            <small class="payout-sub">Ganancia neta: {{ vm.format(Math.max(0, payout() - (stake ?? 0)), houseSelected()?.currency) }}</small>
+          <div class="p-3.5 px-4.5 rounded-xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.22)] flex flex-col justify-center gap-0.5">
+            <span class="text-[10px] font-bold tracking-wider uppercase text-[#10b981]">Cobro potencial</span>
+            <strong class="text-lg font-bold text-[var(--text)] font-mono tabular-nums">{{ vm.format(payout(), houseSelected()?.currency) }}</strong>
+            <small class="text-[11px] text-[var(--muted)]">Ganancia neta: {{ vm.format(Math.max(0, payout() - (stake ?? 0)), houseSelected()?.currency) }}</small>
           </div>
         </div>
 
@@ -182,21 +200,21 @@
 
         <!-- Error Alert -->
         @if (vm.error()) {
-          <div class="modal-error-alert" role="alert">
+          <div class="flex justify-between items-center py-2.5 px-3.5 rounded-xl bg-[rgba(244,63,94,0.1)] border border-[rgba(244,63,94,0.3)] text-[var(--negative)] text-xs" role="alert">
             <span>{{ vm.error() }}</span>
-            <button type="button" class="dismiss-btn" (click)="vm.error.set('')">✕</button>
+            <button type="button" class="bg-transparent border-none text-inherit cursor-pointer font-bold" (click)="vm.error.set('')">✕</button>
           </div>
         }
       </div>
 
       <!-- Modal Footer -->
-      <div class="modal-footer">
-        <button type="button" class="cancel-modal-btn" (click)="close()">
+      <div class="flex justify-end items-center gap-3 px-5 sm:px-7 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
+        <button type="button" class="py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] text-[13px] font-medium cursor-pointer transition-all duration-200 active:scale-95" (click)="close()">
           Cancelar
         </button>
         <button 
           type="button" 
-          class="primary save-ticket-btn" 
+          class="action-pill-btn primary min-h-[44px] px-6" 
           [disabled]="vm.busy()"
           (click)="saveTicket()"
         >

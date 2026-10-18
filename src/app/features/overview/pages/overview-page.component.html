@@ -6,12 +6,12 @@
     </div>
   }
 }
-<div class="page-heading">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-5 mb-6">
   <div>
-    <h1>Resumen</h1>
-    <p>Saldos, resultados y actividad reciente.</p>
+    <h1 class="text-3xl font-bold tracking-tight text-text">Resumen</h1>
+    <p class="text-xs text-muted mt-1">Saldos, resultados y actividad reciente.</p>
   </div>
-  <div class="quick-actions">
+  <div class="flex items-center gap-2.5 flex-wrap">
     <a class="action-pill-btn" routerLink="/matches">
       <app-icon name="calendar" /><span>Partidos del día</span>
     </a>
@@ -23,57 +23,58 @@
     </button>
   </div>
 </div>
-<section class="headline-kpis" aria-label="Resultados generales de casas activas">
-  <article class="panel">
-    <span>Bank registrado</span><strong>{{ vm.format(kpis().bank) }}</strong
-    ><small>Disponible + pendiente</small>
+<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6" aria-label="Resultados generales de casas activas">
+  <article class="panel p-4.5 m-0">
+    <span class="block text-xs text-muted">Bank registrado</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ vm.format(kpis().bank) }}</strong
+    ><small class="block text-[10px] text-muted">Disponible + pendiente</small>
   </article>
-  <article class="panel">
-    <span>Yield</span><strong>{{ percent(kpis().yield) }}</strong
-    ><small>Neto / importe liquidado</small>
+  <article class="panel p-4.5 m-0">
+    <span class="block text-xs text-muted">Yield</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(kpis().yield) }}</strong
+    ><small class="block text-[10px] text-muted">Neto / importe liquidado</small>
   </article>
-  <article class="panel">
-    <span>ROI</span><strong>{{ percent(kpis().roi) }}</strong
-    ><small>Neto / depósitos históricos</small>
+  <article class="panel p-4.5 m-0">
+    <span class="block text-xs text-muted">ROI</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(kpis().roi) }}</strong
+    ><small class="block text-[10px] text-muted">Neto / depósitos históricos</small>
   </article>
-  <article class="panel">
-    <span>Acierto</span><strong>{{ percent(vm.winRate()) }}</strong
-    ><small>{{ vm.won() }} ganadas · {{ vm.lost() }} perdidas</small>
+  <article class="panel p-4.5 m-0">
+    <span class="block text-xs text-muted">Acierto</span><strong class="block my-2 text-xl sm:text-2xl font-bold tracking-tight text-text font-mono break-all">{{ percent(vm.winRate()) }}</strong
+    ><small class="block text-[10px] text-muted">{{ vm.won() }} ganadas · {{ vm.lost() }} perdidas</small>
   </article>
-  <article class="panel">
-    <span>Neto de este mes</span
+  <article class="panel p-4.5 m-0 col-span-2 sm:col-span-1">
+    <span class="block text-xs text-muted">Neto de este mes</span
     ><strong
+      class="block my-2 text-xl sm:text-2xl font-bold tracking-tight font-mono break-all"
       [class.negative]="(kpis().month ?? 0) < 0"
       [class.positive]="(kpis().month ?? 0) > 0"
       >{{ vm.format(kpis().month) }}</strong
-    ><small>Sin depósitos ni retiros</small>
+    ><small class="block text-[10px] text-muted">Sin depósitos ni retiros</small>
   </article>
 </section>
-<div class="overview-main full-width">
+<div class="w-full mb-6">
   <app-charts />
 </div>
 
-<div class="two-column equal-columns overview-bottom">
+<div class="grid grid-cols-1 gap-5 my-6">
   <section class="panel">
-    <div class="section-heading">
+    <div class="section-heading mb-4">
       <div>
         <h2>Por confirmar</h2>
         <p>Depósitos y retiros pendientes</p>
       </div>
-      <a routerLink="/confirmations">Revisar ↗</a>
+      <a routerLink="/confirmations" class="text-xs text-accent underline">Revisar ↗</a>
     </div>
     @for (m of vm.pendingMovements().slice(0, 4); track m.id) {
-      <div class="recent-row">
-        <span class="movement-icon" [class.withdrawal]="m.kind === 'withdrawal'"
+      <div class="flex items-center gap-3 py-3.5 border-b border-border last:border-b-0">
+        <span class="w-7 h-7 grid place-items-center border border-border bg-[#252a2d] text-[#c0c8ca] rounded text-xs shrink-0" [class.withdrawal]="m.kind === 'withdrawal'"
           ><app-icon name="transactions"
         /></span>
-        <div class="recent-description">
-          <strong>{{ vm.labels[m.kind] }}</strong
-          ><small>{{ m.house }}</small>
+        <div class="min-w-0 flex-1">
+          <strong class="block overflow-hidden truncate text-xs font-semibold text-text max-w-[270px]">{{ vm.labels[m.kind] }}</strong
+          ><small class="text-[10px] text-muted block mt-0.5">{{ m.house }}</small>
         </div>
-        <div class="recent-result">
-          <strong>{{ vm.native(Math.abs(m.amount), m.currency) }}</strong
-          ><span class="status pending">Pendiente</span>
+        <div class="flex flex-col items-end gap-1">
+          <strong class="text-xs font-medium whitespace-nowrap text-text">{{ vm.native(Math.abs(m.amount), m.currency) }}</strong
+          ><span class="status pending text-[9px] px-2 py-0.5">Pendiente</span>
         </div>
       </div>
     } @empty {

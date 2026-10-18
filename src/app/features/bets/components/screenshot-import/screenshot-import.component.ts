@@ -3,7 +3,7 @@ import {FormsModule} from '@angular/forms';
 import {ApiService} from '../../../../core/services/api.service';
 import type {SelectionDetail} from '../../models/selection-detail';
 export interface ScreenshotDraft { house:string|null; currency:'MXN'|'USD'|null; bet_type:'simple'|'parlay'|'same_game'|null; stake:number|null; odds:number|null; bonus:number|null; selections:{event:string|null;sport:string|null;market:string|null;odds:number|null;detail:SelectionDetail|null}[];warnings:string[] }
-@Component({selector:'app-screenshot-import',imports:[FormsModule],templateUrl:'./screenshot-import.component.html',styleUrl:'./screenshot-import.component.css'})
+@Component({selector:'app-screenshot-import',imports:[FormsModule],templateUrl:'./screenshot-import.component.html'})
 export class ScreenshotImportComponent {
  api=inject(ApiService); draft=output<ScreenshotDraft>(); busy=signal(false); error=signal(''); result=signal<ScreenshotDraft|null>(null); configured=signal<boolean|null>(null); image=''; fileName=''; consent=false;
  constructor(){this.api.request<{configured:boolean}>('/import/screenshot/status').then(r=>this.configured.set(r.configured)).catch(()=>this.error.set('No pudimos consultar la disponibilidad.'))}

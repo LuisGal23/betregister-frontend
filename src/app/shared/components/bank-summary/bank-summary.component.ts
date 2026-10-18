@@ -6,9 +6,9 @@ import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-bank-summary',
+  host: { class: 'block' },
   imports: [DecimalPipe, DatePipe, RouterLink, IconComponent],
   templateUrl: './bank-summary.component.html',
-  styleUrl: './bank-summary.component.css',
 })
 export class BankSummaryComponent {
   vm = inject(LedgerState);

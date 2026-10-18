@@ -13,7 +13,7 @@ import { OverviewService } from '../../services/overview.service';
   selector: 'app-charts',
   imports: [DecimalPipe, FormsModule, RouterLink, ProfitChartComponent, DetailCardComponent],
   templateUrl: './charts.component.html',
-  styleUrl: './charts.component.css',
+  host: { class: 'block' },
 })
 export class ChartsComponent {
   units = inject(UnitsService);

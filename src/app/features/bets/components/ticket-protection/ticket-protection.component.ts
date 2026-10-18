@@ -4,7 +4,7 @@ import {RouterLink} from '@angular/router';
 import {ApiService} from '../../../../core/services/api.service';
 import {LedgerState} from '../../../../core/services/ledger-state.service';
 export interface Protection {enabled:boolean;hours:6|12;until:number;reason:string}
-@Component({selector:'app-ticket-protection',imports:[DatePipe,RouterLink],templateUrl:'./ticket-protection.component.html',styleUrl:'./ticket-protection.component.css'})
+@Component({selector:'app-ticket-protection',imports:[DatePipe,RouterLink],templateUrl:'./ticket-protection.component.html'})
 export class TicketProtectionComponent {
  api=inject(ApiService);vm=inject(LedgerState);league=input('');betType=input('simple');protection=signal<Protection|null>(null);error=signal('');busy=signal(false);
  constructor(){void this.load()}

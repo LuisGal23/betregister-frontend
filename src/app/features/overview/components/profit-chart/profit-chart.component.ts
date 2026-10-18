@@ -7,7 +7,7 @@ import type { EventPoint } from '../../../../shared/utils/event-series.utils';
   selector: 'app-profit-chart',
   imports: [],
   templateUrl: './profit-chart.component.html',
-  styleUrl: './profit-chart.component.css',
+  host: { class: 'block mt-4' },
 })
 export class ProfitChartComponent {
   private static counter = 0;

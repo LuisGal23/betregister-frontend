@@ -24,7 +24,7 @@ import { TicketModalService } from '../../bets/services/ticket-modal.service';
     SportEfficiencyComponent,
   ],
   templateUrl: './overview-page.component.html',
-  styleUrl: './overview-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class OverviewPageComponent {
   router = inject(Router);
