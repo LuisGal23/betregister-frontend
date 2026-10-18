@@ -5,6 +5,8 @@ import { LedgerState } from '../../../core/services/ledger-state.service';
 import { AuthService } from '../services/auth.service';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 
+import { TranslationService } from '../../../core/services/translation.service';
+
 @Component({
   selector: 'app-auth',
   imports: [FormsModule, IconComponent, RouterLink],
@@ -14,6 +16,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 export class AuthPageComponent implements OnDestroy {
   vm = inject(LedgerState);
   auth = inject(AuthService);
+  i18n = inject(TranslationService);
   registering = signal(inject(ActivatedRoute).snapshot.routeConfig?.path === 'register');
   reveal = signal(false);
   code = '';

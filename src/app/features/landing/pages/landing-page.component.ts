@@ -1,7 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { LedgerState } from '../../../core/services/ledger-state.service';
+import { TranslationService } from '../../../core/services/translation.service';
 
 export interface SportAuditExample {
   sport: string;
@@ -21,8 +22,10 @@ export interface SportAuditExample {
   templateUrl: './landing-page.component.html',
   host: { class: 'block w-full' },
 })
-export class LandingPageComponent {
+export class LandingPageComponent implements AfterViewInit {
   vm = inject(LedgerState);
+  i18n = inject(TranslationService);
+  private el = inject(ElementRef);
   activeSport = signal<'NFL' | 'MLB' | 'Fútbol'>('NFL');
 
   examples: Record<'NFL' | 'MLB' | 'Fútbol', SportAuditExample> = {
@@ -63,5 +66,24 @@ export class LandingPageComponent {
 
   currentExample() {
     return this.examples[this.activeSport()];
+  }
+
+  ngAfterViewInit() {
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15, rootMargin: '0px 0px -40px 0px' },
+      );
+
+      const revealElements = this.el.nativeElement.querySelectorAll('.reveal-on-scroll');
+      revealElements.forEach((el: Element) => observer.observe(el));
+    }
   }
 }

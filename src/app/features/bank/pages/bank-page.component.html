@@ -1,185 +1,446 @@
 <div class="page-heading">
   <div>
-    <h1>{{ settingsOnly ? 'Ajustes y casas' : 'Mi bank' }}</h1>
-    <p>Saldo por casa de apuestas y moneda.</p>
+    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-text">{{ settingsOnly ? 'Ajustes y casas' : 'Mi bank' }}</h1>
+    <p class="text-xs sm:text-sm text-muted mt-1">Saldo por casa de apuestas, moneda y gestión de capital.</p>
   </div>
-  <a class="action-pill-btn primary" routerLink="/tickets"><app-icon name="plus" /><span>Registrar ticket</span></a>
+  <a class="action-pill-btn primary" routerLink="/tickets">
+    <app-icon name="plus" /><span>Registrar ticket</span>
+  </a>
 </div>
-@if(settingsOnly){<app-smart-settings /><section class="panel legal-settings"><h2>Privacidad y cuenta</h2><p>Consulta cómo usamos tus datos o elimina tu cuenta y su historial.</p><div class="actions"><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/support">Contactar soporte</a><a routerLink="/delete-account">Eliminar mi cuenta</a></div></section>}
-@if (!settingsOnly) {
-  <details class="panel collapsible">
-    <summary>Unidades de apuesta · {{ vm.format(units.value(vm.currency())) }} por U</summary>
-    <p>Una unidad es una referencia de importe; no modifica tu saldo ni limita el riesgo.</p>
-    <form ngNativeValidate (ngSubmit)="saveUnits()">
-      <div class="form-grid">
-        <label
-          >Definir 1 U como<select name="unitMode" [(ngModel)]="unitMode">
-            <option value="fixed">Importe fijo</option>
-            <option value="percent">Porcentaje del bank</option>
-          </select></label
-        >
-        <label
-          >{{ unitMode === 'fixed' ? 'Importe' : 'Porcentaje'
-          }}<input
-            name="unitValue"
-            type="number"
-            required
-            min="0.0001"
-            [max]="unitMode === 'percent' ? 100 : 1000000"
-            step="0.0001"
-            [(ngModel)]="unitValue"
-        /></label>
-        @if (unitMode === 'fixed') {
-          <label
-            >Moneda<select name="unitCurrency" [(ngModel)]="unitCurrency">
-              <option>MXN</option>
-              <option>USD</option>
-            </select></label
-          >
-        }
-      </div>
-      @if (unitMode === 'percent') {
-        <label class="flex items-center gap-2.5 text-xs text-muted cursor-pointer my-2"
-          ><input type="checkbox" name="unitDynamic" [(ngModel)]="unitDynamic" class="w-auto m-0" />Recalcular cuando
-          cambie el bank</label
-        >
-        <p class="field-help">
-          Usa el bank disponible + pendiente de las casas en la misma moneda del ticket. Sin
-          rebalanceo, se conserva el bank del momento de guardar. MXN y USD tienen bases separadas.
-        </p>
-      }
-      <button class="secondary" [disabled]="vm.busy()">Guardar unidad</button>
-    </form>
-  </details>
 
-  <details class="collapsible panel">
-    <summary>Ver evolución y métricas del bank</summary>
-    <app-charts [showDistribution]="false" />
-  </details>
-}
-<div>
-  <section class="panel">
-    <div class="section-heading">
-      <div>
-        <h2>Mis casas de apuestas</h2>
-        <p>Saldos originales y equivalencias en {{ vm.currency() }}</p>
-      </div>
-      <span class="currency-tag">{{ vm.data().houses.length }} casas</span>
-    </div>
-    <div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3.5">
-      @for (h of vm.data().houses; track h.id) {
-        <article class="border border-border rounded-xl p-5 bg-surface">
-          <div class="flex items-center gap-2.5 mb-5">
-            <span class="w-7 h-7 grid place-items-center bg-surface-high border border-border rounded text-xs text-text font-bold">{{ h.name.slice(0, 1).toUpperCase() }}</span>
-            <h3 class="flex-1 m-0 text-xs font-semibold">{{ h.name }}</h3>
-            <span class="currency-tag">{{ h.currency }}</span>
-          </div>
-          <span class="block text-2xl font-bold tracking-tight break-all text-text">{{ vm.native(h.balance, h.currency) }}</span
-          ><small class="block mt-1.5 text-muted text-[10px] leading-relaxed"
-            >Saldo disponible
-            @if (h.currency !== vm.currency()) {
-              · ≈ {{ vm.money(h.balance, h.currency) }}
-            }
-          </small>
-          <div class="flex justify-between gap-3.5 border-t border-border pt-3.5 mt-4 text-[10px] text-muted">
-            <span
-              >Pendiente<strong class="block text-text text-[11px] font-medium mt-1">{{ vm.native(h.pending, h.currency) }}</strong></span
-            ><span
-              >Ganancia neta<strong
-                class="block text-[11px] font-medium mt-1"
-                [class.negative]="h.profit < 0"
-                [class.positive]="h.profit >= 0"
-                >{{ vm.native(h.profit, h.currency) }}</strong
-              ></span
-            >
-          </div>
-          <div class="flex justify-between gap-3.5 border-t border-border pt-3.5 mt-4 text-[10px] text-muted">
-            <span
-              >Depósitos<strong class="block text-text text-[11px] font-medium mt-1">{{
-                vm.native(movementTotal(h.id, 'deposit'), h.currency)
-              }}</strong></span
-            ><span
-              >Retiros<strong class="block text-text text-[11px] font-medium mt-1">{{
-                vm.native(movementTotal(h.id, 'withdrawal'), h.currency)
-              }}</strong></span
-            >
-          </div>
-          <div class="actions house-actions">
-            <a
-              class="secondary button-link"
-              routerLink="/confirmations"
-              [queryParams]="{ house: h.id, kind: 'deposit' }"
-              >Anotar depósito</a
-            >
-            <a
-              class="secondary button-link"
-              routerLink="/confirmations"
-              [queryParams]="{ house: h.id, kind: 'withdrawal' }"
-              >Anotar retiro</a
-            >
-            <a
-              class="secondary button-link"
-              routerLink="/confirmations"
-              [queryParams]="{ house: h.id }"
-              >Otro movimiento</a
-            >
-            <button
-              class="text-button"
-              [disabled]="!canRemove(h) || vm.busy()"
-              (click)="removal.set(h)"
-            >
-              Eliminar
-            </button>
-          </div>
-          @if (!canRemove(h)) {
-            <small>Para eliminar: saldo cero y sin pendientes.</small>
-          }
-        </article>
-      } @empty {
-        <div class="empty-block">
-          <app-icon name="bank" />
-          <h3>Sin casas registradas</h3>
-          <p>Añade tu primera casa de apuestas en el formulario.</p>
-        </div>
-      }
+@if (settingsOnly) {
+  <app-smart-settings />
+  <section class="panel legal-settings">
+    <h2>Privacidad y cuenta</h2>
+    <p>Consulta cómo usamos tus datos o elimina tu cuenta y su historial.</p>
+    <div class="actions">
+      <a routerLink="/terms">Términos</a>
+      <a routerLink="/privacy">Privacidad</a>
+      <a routerLink="/support">Contactar soporte</a>
+      <a routerLink="/delete-account">Eliminar mi cuenta</a>
     </div>
   </section>
-  @if (settingsOnly) {
-    <details class="panel collapsible" open>
-      <summary>+ Añadir casa de apuestas</summary>
-      <p class="panel-subtitle">Elige la moneda con la que operas en esa casa.</p>
-      <form ngNativeValidate (ngSubmit)="addHouse()">
-        <label
-          >Nombre de la casa<input
-            name="houseName"
-            [(ngModel)]="houseName"
-            required
-            maxlength="80"
-            placeholder="Ej. Bet365" /></label
-        ><label
-          >Moneda del saldo<select name="houseCurrency" [(ngModel)]="houseCurrency">
-            <option value="MXN">MXN · Pesos mexicanos</option>
-            <option value="USD">USD · Dólares estadounidenses</option>
-          </select></label
-        >
-        <p class="field-help">
-          La moneda de la casa se conserva en sus apuestas y movimientos. El selector superior
-          cambia las equivalencias del resumen.
-        </p>
-        <button class="primary" [disabled]="vm.busy()"><app-icon name="plus" />Añadir casa</button>
-      </form>
-      <div class="flex gap-3 border-t border-border pt-4 mt-5 text-muted text-xs">
-        <app-icon name="confirmations" />
-        <p>
-          Después de añadir una casa, registra y confirma su saldo inicial como depósito en
-          <a routerLink="/confirmations" class="text-accent underline">Depósitos y retiros</a>.
-        </p>
-      </div>
-    </details>
-  } @else {
-    <a class="secondary button-link" routerLink="/settings">Administrar casas y ajustes →</a>
+}
+
+@if (!settingsOnly) {
+  <!-- Pill Segmented Navigation (Pildoras) -->
+  <div class="inline-flex items-center gap-1.5 p-1 rounded-full bg-surface-high border border-border shadow-inner max-w-full overflow-x-auto my-1" role="tablist" aria-label="Secciones de mi bank">
+    <button
+      type="button"
+      role="tab"
+      class="pill-filter-btn"
+      [class.active]="activeTab() === 'houses'"
+      [attr.aria-selected]="activeTab() === 'houses'"
+      (click)="activeTab.set('houses')"
+    >
+      <app-icon name="bank" class="w-4 h-4" />
+      <span>Mis casas de apuestas</span>
+      <span class="ml-1 text-[11px] opacity-80 font-mono">({{ vm.data().houses.length }})</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="pill-filter-btn"
+      [class.active]="activeTab() === 'units'"
+      [attr.aria-selected]="activeTab() === 'units'"
+      (click)="activeTab.set('units')"
+    >
+      <app-icon name="trend" class="w-4 h-4" />
+      <span>Unidades de apuesta</span>
+    </button>
+    <button
+      type="button"
+      role="tab"
+      class="pill-filter-btn"
+      [class.active]="activeTab() === 'movements'"
+      [attr.aria-selected]="activeTab() === 'movements'"
+      (click)="activeTab.set('movements')"
+    >
+      <app-icon name="clock" class="w-4 h-4" />
+      <span>Historial de movimientos</span>
+    </button>
+  </div>
+
+  <!-- ==================================================== -->
+  <!-- TAB 1: MIS CASAS DE APUESTAS                         -->
+  <!-- ==================================================== -->
+  @if (activeTab() === 'houses') {
+    <div class="flex flex-col gap-5 animate-fade-in-up">
+      <!-- Donut Pie Chart: Distribución por Casa -->
+      <section class="panel p-5 sm:p-6 bg-surface border border-border rounded-2xl shadow-sm">
+        <div class="flex items-center gap-6 flex-wrap md:flex-nowrap">
+          <!-- Donut Graphic -->
+          <div class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full p-4 sm:p-5 shadow-lg shrink-0 flex items-center justify-center mx-auto md:mx-0"
+               [style.background]="houseDonutGradient()">
+            <div class="w-full h-full rounded-full bg-surface border border-border flex flex-col items-center justify-center text-center p-2 shadow-inner">
+              <span class="text-[9px] text-muted uppercase font-bold tracking-wider">Bank Total</span>
+              <strong class="text-sm sm:text-base font-bold text-text font-mono truncate max-w-[100px] sm:max-w-[120px]">{{ vm.format(vm.total('balance')) }}</strong>
+              <small class="text-[9px] text-accent font-semibold">{{ vm.data().houses.length }} {{ vm.data().houses.length === 1 ? 'casa' : 'casas' }}</small>
+            </div>
+          </div>
+
+          <!-- Distribution Details & Action -->
+          <div class="flex-1 min-w-[240px] flex flex-col justify-center gap-3">
+            <div class="flex justify-between items-center flex-wrap gap-2">
+              <div>
+                <h2 class="text-base sm:text-lg font-bold text-text m-0">Distribución de capital</h2>
+                <p class="text-xs text-muted m-0">Proporción de saldo disponible en cada casa de apuestas</p>
+              </div>
+              <button
+                type="button"
+                class="action-pill-btn primary text-xs py-2 px-4 cursor-pointer"
+                (click)="showAddHouse.update(v => !v)"
+              >
+                <app-icon name="plus" />
+                <span>{{ showAddHouse() ? 'Cerrar formulario' : 'Añadir casa de apuestas' }}</span>
+              </button>
+            </div>
+
+            <!-- Legend of Houses -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 mt-1">
+              @for (slice of houseSlices(); track slice.id) {
+                <div class="flex items-center justify-between p-2.5 px-3 rounded-xl bg-surface-high border border-border text-xs">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" [style.backgroundColor]="slice.color"></span>
+                    <span class="font-semibold text-text truncate">{{ slice.name }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="text-muted font-mono text-[11px]">{{ vm.native(slice.balance, slice.currency) }}</span>
+                    <strong class="font-bold text-accent">{{ slice.percentage }}%</strong>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-xs text-muted col-span-full">Añade saldo en tus casas para visualizar la distribución.</p>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Expandable Add House Form -->
+      @if (showAddHouse()) {
+        <section class="panel p-6 bg-surface-high border border-accent/40 rounded-2xl shadow-xl animate-fade-in-up">
+          <div class="flex justify-between items-center mb-4 pb-3 border-b border-border">
+            <div>
+              <h3 class="text-base font-bold text-text m-0">Añadir nueva casa de apuestas</h3>
+              <p class="text-xs text-muted m-0">Elige la plataforma y la divisa con la que operas en ella</p>
+            </div>
+            <button type="button" class="text-button text-xs text-muted hover:text-text cursor-pointer" (click)="showAddHouse.set(false)">✕ Cerrar</button>
+          </div>
+          <form ngNativeValidate (ngSubmit)="addHouse()" class="flex flex-col gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <label class="flex flex-col gap-1.5">
+                <span class="text-xs font-semibold text-muted">Nombre de la casa</span>
+                <input
+                  name="houseName"
+                  [(ngModel)]="houseName"
+                  required
+                  maxlength="80"
+                  placeholder="Ej. Novibet, Caliente, Bet365, DraftKings"
+                  class="w-full h-11 px-3.5 rounded-xl bg-surface border border-border text-text text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
+                />
+              </label>
+              <label class="flex flex-col gap-1.5">
+                <span class="text-xs font-semibold text-muted">Moneda del saldo</span>
+                <select
+                  name="houseCurrency"
+                  [(ngModel)]="houseCurrency"
+                  class="w-full h-11 px-3.5 rounded-xl bg-surface border border-border text-text text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all cursor-pointer"
+                >
+                  <option value="MXN">MXN · Pesos mexicanos</option>
+                  <option value="USD">USD · Dólares estadounidenses</option>
+                </select>
+              </label>
+            </div>
+            <p class="text-xs text-muted leading-relaxed">
+              La moneda se conserva de manera inmutable en sus apuestas y movimientos. Las equivalencias generales se calculan automáticamente con el tipo de cambio oficial.
+            </p>
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" class="secondary" (click)="showAddHouse.set(false)">Cancelar</button>
+              <button type="submit" class="action-pill-btn primary" [disabled]="vm.busy() || !houseName.trim()">
+                <app-icon name="plus" />
+                <span>{{ vm.busy() ? 'Guardando…' : 'Crear y añadir casa' }}</span>
+              </button>
+            </div>
+          </form>
+        </section>
+      }
+
+      <!-- Grid of House Cards -->
+      <section class="panel p-5 sm:p-6 bg-surface border border-border rounded-2xl shadow-sm">
+        <div class="section-heading mb-4">
+          <div>
+            <h2 class="text-base sm:text-lg font-bold text-text">Tus casas activas</h2>
+            <p class="text-xs text-muted">Saldos originales y equivalencias en {{ vm.currency() }}</p>
+          </div>
+          <span class="currency-tag">{{ vm.data().houses.length }} casas</span>
+        </div>
+
+        <div class="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4">
+          @for (h of vm.data().houses; track h.id) {
+            <article class="border border-border rounded-xl p-5 bg-surface-high/60 hover:border-accent/40 transition-all shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2.5 mb-4">
+                  <span class="w-8 h-8 grid place-items-center bg-surface border border-border rounded-lg text-xs text-accent font-bold shadow-inner">{{ h.name.slice(0, 1).toUpperCase() }}</span>
+                  <h3 class="flex-1 m-0 text-sm font-bold text-text truncate">{{ h.name }}</h3>
+                  <span class="currency-tag">{{ h.currency }}</span>
+                </div>
+
+                <span class="block text-2xl font-bold tracking-tight text-text font-mono">{{ vm.native(h.balance, h.currency) }}</span>
+                <small class="block mt-1 text-muted text-[11px] leading-relaxed">
+                  Saldo disponible
+                  @if (h.currency !== vm.currency()) {
+                    · ≈ {{ vm.money(h.balance, h.currency) }}
+                  }
+                </small>
+
+                <div class="flex justify-between gap-3.5 border-t border-border pt-3 mt-4 text-[11px] text-muted">
+                  <span>Pendiente<strong class="block text-text text-xs font-semibold mt-0.5 font-mono">{{ vm.native(h.pending, h.currency) }}</strong></span>
+                  <span>Ganancia neta<strong
+                    class="block text-xs font-semibold mt-0.5 font-mono"
+                    [class.negative]="h.profit < 0"
+                    [class.positive]="h.profit >= 0"
+                  >{{ vm.native(h.profit, h.currency) }}</strong></span>
+                </div>
+
+                <div class="flex justify-between gap-3.5 border-t border-border pt-3 mt-3 text-[11px] text-muted">
+                  <span>Depósitos<strong class="block text-text text-xs font-medium mt-0.5 font-mono">{{
+                    vm.native(movementTotal(h.id, 'deposit'), h.currency)
+                  }}</strong></span>
+                  <span>Retiros<strong class="block text-text text-xs font-medium mt-0.5 font-mono">{{
+                    vm.native(movementTotal(h.id, 'withdrawal'), h.currency)
+                  }}</strong></span>
+                </div>
+              </div>
+
+              <div class="actions house-actions mt-5 pt-3 border-t border-border">
+                <a
+                  class="secondary button-link text-xs"
+                  routerLink="/confirmations"
+                  [queryParams]="{ house: h.id, kind: 'deposit' }"
+                >Anotar depósito</a>
+                <a
+                  class="secondary button-link text-xs"
+                  routerLink="/confirmations"
+                  [queryParams]="{ house: h.id, kind: 'withdrawal' }"
+                >Anotar retiro</a>
+                <a
+                  class="secondary button-link text-xs"
+                  routerLink="/confirmations"
+                  [queryParams]="{ house: h.id }"
+                >Otro movimiento</a>
+                <button
+                  type="button"
+                  class="text-button text-xs text-negative hover:underline cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  [disabled]="!canRemove(h) || vm.busy()"
+                  (click)="removal.set(h)"
+                  [title]="canRemove(h) ? 'Eliminar casa del bank' : 'Para eliminar: saldo cero y sin apuestas pendientes'"
+                >
+                  Eliminar
+                </button>
+              </div>
+              @if (!canRemove(h)) {
+                <small class="block text-[10px] text-muted mt-2 opacity-75">Para eliminar: saldo 0 y sin pendientes.</small>
+              }
+            </article>
+          } @empty {
+            <div class="empty-block p-8 text-center col-span-full">
+              <app-icon name="bank" class="w-8 h-8 mx-auto text-muted mb-2" />
+              <h3 class="text-base font-bold text-text">Sin casas registradas</h3>
+              <p class="text-xs text-muted mb-4">Añade tu primera casa de apuestas para comenzar tu control de bank.</p>
+              <button type="button" class="action-pill-btn primary text-xs" (click)="showAddHouse.set(true)">
+                <app-icon name="plus" /><span>Añadir casa ahora</span>
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    </div>
   }
-</div>
+
+  <!-- ==================================================== -->
+  <!-- TAB 2: UNIDADES DE APUESTA                           -->
+  <!-- ==================================================== -->
+  @if (activeTab() === 'units') {
+    <div class="flex flex-col gap-5 animate-fade-in-up">
+      <!-- Unit Banner Hero -->
+      <section class="panel p-6 bg-surface border border-border rounded-2xl shadow-sm flex justify-between items-center gap-6 flex-wrap">
+        <div>
+          <span class="text-[11px] font-bold tracking-wider text-accent uppercase">CALIBRACIÓN DE APUESTA</span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-text mt-1 font-mono">
+            1 U = {{ vm.format(units.value(vm.currency())) }}
+          </h2>
+          <p class="text-xs sm:text-sm text-muted mt-1 max-w-[560px] leading-relaxed">
+            Una unidad representa tu medida de riesgo estándar. Te permite analizar si eres ganador (+Units) con total independencia del importe monetario que apuestes.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 p-3 px-4 rounded-xl bg-surface-high border border-border">
+          <span class="text-xs text-muted">Modo activo:</span>
+          <strong class="text-xs font-bold text-accent">{{ unitMode === 'fixed' ? 'Importe fijo' : 'Porcentaje del bank (' + unitValue + '%)' }}</strong>
+        </div>
+      </section>
+
+      <!-- Unit Configuration Form -->
+      <section class="panel p-6 bg-surface border border-border rounded-2xl shadow-sm">
+        <div class="mb-5 pb-3 border-b border-border">
+          <h3 class="text-lg font-bold text-text m-0">Definir tus unidades de apuesta</h3>
+          <p class="text-xs text-muted m-0">Elige si prefieres un valor monetario estático o un porcentaje dinámico de tu capital.</p>
+        </div>
+
+        <form ngNativeValidate (ngSubmit)="saveUnits()" class="flex flex-col gap-4 max-w-[620px]">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <label class="flex flex-col gap-1.5">
+              <span class="text-xs font-semibold text-muted">Definir 1 U como</span>
+              <select name="unitMode" [(ngModel)]="unitMode" class="w-full h-11 px-3.5 rounded-xl bg-surface-high border border-border text-text text-sm outline-none focus:border-accent cursor-pointer">
+                <option value="fixed">Importe fijo (Monetario)</option>
+                <option value="percent">Porcentaje del bank (%)</option>
+              </select>
+            </label>
+
+            <label class="flex flex-col gap-1.5">
+              <span class="text-xs font-semibold text-muted">{{ unitMode === 'fixed' ? 'Importe por unidad' : 'Porcentaje del bank (%)' }}</span>
+              <input
+                name="unitValue"
+                type="number"
+                required
+                min="0.0001"
+                [max]="unitMode === 'percent' ? 100 : 1000000"
+                step="0.0001"
+                [(ngModel)]="unitValue"
+                class="w-full h-11 px-3.5 rounded-xl bg-surface-high border border-border text-text text-sm outline-none focus:border-accent font-mono"
+              />
+            </label>
+
+            @if (unitMode === 'fixed') {
+              <label class="flex flex-col gap-1.5">
+                <span class="text-xs font-semibold text-muted">Moneda de referencia</span>
+                <select name="unitCurrency" [(ngModel)]="unitCurrency" class="w-full h-11 px-3.5 rounded-xl bg-surface-high border border-border text-text text-sm outline-none focus:border-accent cursor-pointer">
+                  <option value="MXN">MXN · Pesos mexicanos</option>
+                  <option value="USD">USD · Dólares estadounidenses</option>
+                </select>
+              </label>
+            }
+          </div>
+
+          @if (unitMode === 'percent') {
+            <label class="flex items-center gap-2.5 text-xs text-text cursor-pointer my-1 select-none">
+              <input type="checkbox" name="unitDynamic" [(ngModel)]="unitDynamic" class="rounded accent-accent w-4 h-4 cursor-pointer" />
+              <span>Recalcular automáticamente cuando cambie el bank disponible</span>
+            </label>
+            <p class="text-[11px] text-muted leading-relaxed">
+              Calcula 1 U usando el bank disponible + apuestas pendientes en la misma divisa. Si se desmarca, se mantendrá fijo el valor del momento en que se guardó.
+            </p>
+          }
+
+          <div class="pt-2">
+            <button class="action-pill-btn primary" [disabled]="vm.busy()">
+              <span>{{ vm.busy() ? 'Guardando…' : 'Guardar unidad de apuesta' }}</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Risk Management Guide (Staking Plan) -->
+      <section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <article class="p-5 rounded-2xl bg-surface border border-border">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-accent">0.5 U - 1.0 U</span>
+            <span class="text-[10px] text-muted bg-surface-high px-2 py-0.5 rounded-full border border-border">Estándar</span>
+          </div>
+          <h4 class="text-sm font-bold text-text mb-1">Apuesta Regular</h4>
+          <p class="text-xs text-muted leading-relaxed">Jugadas de confianza habitual con cuotas cercanas a par (1.80 - 2.10). Es la base del volumen a largo plazo.</p>
+        </article>
+
+        <article class="p-5 rounded-2xl bg-surface border border-accent/30 bg-gradient-to-br from-accent/5 to-surface">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-accent">1.5 U - 2.0 U</span>
+            <span class="text-[10px] text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Fuerte</span>
+          </div>
+          <h4 class="text-sm font-bold text-text mb-1">Máxima Convicción (+EV)</h4>
+          <p class="text-xs text-muted leading-relaxed">Partidos donde detectas una ventaja clara sobre la línea de apertura o alineaciones confirmadas clave.</p>
+        </article>
+
+        <article class="p-5 rounded-2xl bg-surface border border-border">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-muted">0.25 U - 0.5 U</span>
+            <span class="text-[10px] text-muted bg-surface-high px-2 py-0.5 rounded-full border border-border">Props</span>
+          </div>
+          <h4 class="text-sm font-bold text-text mb-1">Parlays y Tiro Largo</h4>
+          <p class="text-xs text-muted leading-relaxed">Combinadas o props de alta cuota. El importe reducido protege tu bankroll ante la alta varianza del mercado.</p>
+        </article>
+      </section>
+    </div>
+  }
+
+  <!-- ==================================================== -->
+  <!-- TAB 3: HISTORIAL DE MOVIMIENTOS                      -->
+  <!-- ==================================================== -->
+  @if (activeTab() === 'movements') {
+    <div class="flex flex-col gap-5 animate-fade-in-up">
+      <!-- Movement Pie Donut & Capital Flow Card -->
+      <section class="panel p-5 sm:p-6 bg-surface border border-border rounded-2xl shadow-sm">
+        <div class="flex items-center gap-6 flex-wrap md:flex-nowrap">
+          <!-- Donut Graphic of Deposits vs Withdrawals -->
+          <div class="relative w-36 h-36 sm:w-44 sm:h-44 rounded-full p-4 sm:p-5 shadow-lg shrink-0 flex items-center justify-center mx-auto md:mx-0"
+               [style.background]="movementSlices().gradient">
+            <div class="w-full h-full rounded-full bg-surface border border-border flex flex-col items-center justify-center text-center p-2 shadow-inner">
+              <span class="text-[9px] text-muted uppercase font-bold tracking-wider">Flujo Neto</span>
+              <strong class="text-sm sm:text-base font-bold font-mono truncate max-w-[100px] sm:max-w-[120px]"
+                      [class.text-emerald-500]="movementSlices().netFlow >= 0"
+                      [class.text-negative]="movementSlices().netFlow < 0">
+                {{ vm.format(movementSlices().netFlow) }}
+              </strong>
+              <small class="text-[9px] text-muted">Depósitos − Retiros</small>
+            </div>
+          </div>
+
+          <!-- Movement Metrics Overview -->
+          <div class="flex-1 min-w-[240px] flex flex-col justify-center gap-3">
+            <div>
+              <h2 class="text-base sm:text-lg font-bold text-text m-0">Balance de depósitos y retiros</h2>
+              <p class="text-xs text-muted m-0">Flujo de capital total confirmado en tus casas de apuestas</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-1">
+              <div class="p-3 rounded-xl bg-surface-high border border-border flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-xs text-muted">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  <span>Depósitos</span>
+                  <span class="ml-auto font-bold text-text">{{ movementSlices().depositsPct }}%</span>
+                </div>
+                <strong class="text-base font-bold text-text font-mono mt-1">{{ vm.format(movementSlices().deposits) }}</strong>
+                <small class="text-[10px] text-muted">Total ingresado</small>
+              </div>
+
+              <div class="p-3 rounded-xl bg-surface-high border border-border flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-xs text-muted">
+                  <span class="w-2.5 h-2.5 rounded-full bg-accent"></span>
+                  <span>Retiros</span>
+                  <span class="ml-auto font-bold text-text">{{ movementSlices().withdrawalsPct }}%</span>
+                </div>
+                <strong class="text-base font-bold text-text font-mono mt-1">{{ vm.format(movementSlices().withdrawals) }}</strong>
+                <small class="text-[10px] text-muted">Total retirado</small>
+              </div>
+
+              <div class="p-3 rounded-xl bg-surface-high border border-border flex flex-col gap-0.5">
+                <div class="flex items-center gap-2 text-xs text-muted">
+                  <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  <span>Pendientes</span>
+                </div>
+                <strong class="text-base font-bold text-amber-500 font-mono mt-1">{{ vm.pendingMovements().length }}</strong>
+                <small class="text-[10px] text-muted">Por confirmar</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Full Transactions Page Component -->
+      <app-transactions-page />
+    </div>
+  }
+}
+
 @if (settingsOnly) {
   <details class="panel collapsible my-6">
     <summary>Tipo de cambio · USD / MXN</summary>
@@ -238,22 +499,7 @@
     </p>
   </details>
   <app-reset-bank />
-}
 
-@if (removal(); as h) {
-  <app-confirm-dialog
-    title="Eliminar casa del bank"
-    [message]="h.name"
-    amount="Saldo: 0"
-    note="Dejará de contar en el resumen y las ganancias de casas activas. Sus apuestas y movimientos permanecerán en el historial."
-    [busy]="vm.busy()"
-    [error]="vm.error()"
-    (confirm)="removeHouse()"
-    (dismiss)="removal.set(null)"
-  />
-}
-
-@if (settingsOnly) {
   <details class="panel collapsible">
     <summary>Zona horaria del registro</summary>
     <p>Define a qué día y mes pertenece cada resultado.</p>
@@ -272,9 +518,15 @@
   </details>
 }
 
-@if (!settingsOnly) {
-  <details class="panel collapsible">
-    <summary>Historial de movimientos</summary>
-    <app-transactions-page />
-  </details>
+@if (removal(); as h) {
+  <app-confirm-dialog
+    title="Eliminar casa del bank"
+    [message]="h.name"
+    amount="Saldo: 0"
+    note="Dejará de contar en el resumen y las ganancias de casas activas. Sus apuestas y movimientos permanecerán en el historial."
+    [busy]="vm.busy()"
+    [error]="vm.error()"
+    (confirm)="removeHouse()"
+    (dismiss)="removal.set(null)"
+  />
 }

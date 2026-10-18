@@ -92,7 +92,7 @@
             [attr.aria-selected]="!registering()"
             (click)="setMode(false)"
           >
-            Iniciar sesión
+            {{ i18n.t().authSubmitLogin }}
           </button>
           <button 
             type="button" 
@@ -108,22 +108,22 @@
             [attr.aria-selected]="registering()"
             (click)="setMode(true)"
           >
-            Crear cuenta
+            {{ i18n.t().authSubmitCreate }}
           </button>
         </div>
       }
 
       <div>
         <h2 class="text-2xl font-bold tracking-tight text-text mb-1">
-          {{ auth.verification() ? 'Verifica tu correo' : registering() ? 'Crea tu cuenta' : 'Bienvenido de nuevo' }}
+          {{ auth.verification() ? 'Verifica tu correo' : registering() ? i18n.t().authCreateTitle : i18n.t().authLoginTitle }}
         </h2>
         <p class="text-xs text-muted leading-relaxed">
           {{
             auth.verification()
               ? 'Enviamos un código de 8 dígitos a ' + email + '.'
               : registering()
-                ? 'Introduce tu correo y crea una contraseña para empezar.'
-                : 'Ingresa tus credenciales para acceder a tus registros.'
+                ? i18n.t().authCreateSubtitle
+                : i18n.t().authLoginSubtitle
           }}
         </p>
       </div>
@@ -227,14 +227,43 @@
             </label>
 
             <!-- Legal checks -->
-            <div class="flex flex-col gap-2 mt-1 text-xs text-muted">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="adult" [(ngModel)]="adult" required class="rounded accent-accent" />
-                <span>Confirmo que tengo 18 años o más.</span>
+            <div class="flex flex-col gap-2.5 mt-2">
+              <label 
+                class="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface-high/50 hover:bg-surface-high hover:border-accent/40 cursor-pointer transition-all select-none group"
+                [class.!border-accent]="adult"
+                [class.!bg-accent/5]="adult"
+              >
+                <div class="relative flex items-center justify-center mt-0.5 shrink-0">
+                  <input type="checkbox" name="adult" [(ngModel)]="adult" required class="peer sr-only" />
+                  <div class="w-5 h-5 rounded-md border-2 border-border group-hover:border-accent peer-checked:bg-accent peer-checked:border-accent flex items-center justify-center transition-all bg-surface">
+                    <svg class="w-3.5 h-3.5 text-[#060812] stroke-[3] opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-xs text-muted group-hover:text-text transition-colors leading-snug">
+                  <strong class="font-semibold text-text block mb-0.5">18+ · Mayor de edad</strong>
+                  <span>{{ i18n.t().authAdultConfirm }}</span>
+                </div>
               </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="accepted" [(ngModel)]="accepted" required class="rounded accent-accent" />
-                <span>Acepto los <a routerLink="/terms" target="_blank" class="text-accent underline">Términos de uso</a> y la <a routerLink="/privacy" target="_blank" class="text-accent underline">Privacidad</a>.</span>
+
+              <label 
+                class="flex items-start gap-3 p-3 rounded-xl border border-border bg-surface-high/50 hover:bg-surface-high hover:border-accent/40 cursor-pointer transition-all select-none group"
+                [class.!border-accent]="accepted"
+                [class.!bg-accent/5]="accepted"
+              >
+                <div class="relative flex items-center justify-center mt-0.5 shrink-0">
+                  <input type="checkbox" name="accepted" [(ngModel)]="accepted" required class="peer sr-only" />
+                  <div class="w-5 h-5 rounded-md border-2 border-border group-hover:border-accent peer-checked:bg-accent peer-checked:border-accent flex items-center justify-center transition-all bg-surface">
+                    <svg class="w-3.5 h-3.5 text-[#060812] stroke-[3] opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="text-xs text-muted group-hover:text-text transition-colors leading-snug">
+                  <strong class="font-semibold text-text block mb-0.5">{{ i18n.t().authTerms }} & {{ i18n.t().authPrivacy }}</strong>
+                  <span>Acepto los <a routerLink="/terms" target="_blank" (click)="$event.stopPropagation()" class="text-accent hover:underline font-semibold">Términos de uso</a> y la <a routerLink="/privacy" target="_blank" (click)="$event.stopPropagation()" class="text-accent hover:underline font-semibold">Privacidad</a>.</span>
+                </div>
               </label>
             </div>
           }
@@ -245,7 +274,7 @@
         <!-- Submit Button with fill animation -->
         <button type="submit" class="action-pill-btn primary w-full min-h-[48px] rounded-full flex items-center justify-center gap-2.5 text-sm font-semibold mt-1 cursor-pointer" [disabled]="vm.busy()">
           <span>
-            {{ vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? 'Crear mi cuenta' : 'Iniciar sesión' }}
+            {{ vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? i18n.t().authSubmitCreate : i18n.t().authSubmitLogin }}
           </span>
           <app-icon name="arrow" />
         </button>
@@ -253,9 +282,9 @@
 
       @if (!auth.verification()) {
         <div class="flex items-center justify-center gap-2 flex-wrap text-xs text-muted pt-3.5 border-t border-border">
-          <span>{{ registering() ? '¿Ya tienes una cuenta registrada?' : '¿Aún no tienes cuenta?' }}</span>
+          <span>{{ registering() ? i18n.t().authHasAccount : i18n.t().authNoAccount }}</span>
           <button type="button" class="text-accent font-semibold hover:underline bg-transparent border-none cursor-pointer p-0" [disabled]="vm.busy()" (click)="toggle()">
-            {{ registering() ? 'Inicia sesión aquí' : 'Crear cuenta nueva' }}
+            {{ registering() ? i18n.t().authGoLogin : i18n.t().authGoRegister }}
           </button>
         </div>
       }
