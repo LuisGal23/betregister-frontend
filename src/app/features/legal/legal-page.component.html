@@ -136,8 +136,8 @@
         <button class="danger-button mt-2" (click)="open()">Eliminar mi cuenta</button>
       </section>
 
-      <dialog #deletionDialog (cancel)="close($event)" aria-labelledby="deletion-title" class="fixed inset-0 m-auto bg-surface text-text border border-border rounded-3xl p-7 w-[min(530px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto backdrop:bg-black/75 backdrop:blur-sm">
-        <h2 id="deletion-title" class="text-xl font-bold mb-2">¿Eliminar tu cuenta definitivamente?</h2>
+      <dialog #deletionDialog (cancel)="close($event)" aria-labelledby="deletion-title" class="fixed inset-0 m-auto bg-surface text-text border border-border rounded-3xl p-5 sm:p-7 md:p-8 w-[min(530px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto backdrop:bg-black/75 backdrop:backdrop-blur-sm shadow-2xl">
+        <h2 id="deletion-title" class="text-xl sm:text-2xl font-bold mb-2">¿Eliminar tu cuenta definitivamente?</h2>
         <p class="text-sm text-muted mb-4">Esta acción borra tu cuenta y todo su historial. No puede deshacerse.</p>
         <form ngNativeValidate (ngSubmit)="remove()" class="space-y-4">
           <label class="block text-sm font-medium">Contraseña actual
@@ -150,8 +150,8 @@
             <p role="alert" class="text-sm text-red-400">{{ error() }}</p>
           }
           <div class="flex gap-3 justify-end flex-wrap pt-2">
-            <button type="button" class="secondary" (click)="close()" [disabled]="busy()">Cancelar</button>
-            <button class="danger-button" [disabled]="busy() || confirmation !== 'ELIMINAR MI CUENTA'">
+            <button type="button" class="secondary !px-5 !py-2.5 rounded-xl hover:border-accent hover:text-accent transition-all duration-200 active:scale-95" (click)="close()" [disabled]="busy()">Cancelar</button>
+            <button class="danger-button !px-5 !py-2.5 rounded-xl font-semibold cursor-pointer active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" [disabled]="busy() || confirmation !== 'ELIMINAR MI CUENTA'">
               {{ busy() ? 'Eliminando…' : 'Eliminar permanentemente' }}
             </button>
           </div>

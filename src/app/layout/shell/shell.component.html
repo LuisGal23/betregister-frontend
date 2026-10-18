@@ -19,12 +19,14 @@
           <app-icon [name]="theme.dark() ? 'sun' : 'moon'" class="w-4 h-4" />
         </button>
         @if (vm.authenticated()) {
-          <a class="primary button-link px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2.5 max-[760px]:text-[11px]" routerLink="/overview"
-            >Mi resumen <app-icon name="arrow"
-          /></a>
+          <a class="action-pill-btn primary px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2 max-[760px]:text-[11px]" routerLink="/overview">
+            <span>Mi resumen</span> <app-icon name="arrow" />
+          </a>
         } @else {
-          <a class="no-underline text-[13px] font-medium text-[#cbd5e1] hover:text-white transition-colors max-[760px]:text-[11px]" routerLink="/login">Iniciar sesión</a
-          ><a class="primary button-link px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2.5 max-[760px]:text-[11px]" routerLink="/register">Crear cuenta</a>
+          <a class="no-underline text-[13px] font-medium text-[#cbd5e1] hover:text-white transition-colors max-[760px]:text-[11px]" routerLink="/login">Iniciar sesión</a>
+          <a class="action-pill-btn primary px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2 max-[760px]:text-[11px]" routerLink="/register">
+            <span>Crear cuenta</span>
+          </a>
         }
       </nav>
     </header>
@@ -166,7 +168,12 @@
     [attr.inert]="sidebarOpen() ? '' : null"
     id="main-content"
     tabindex="-1"
-    class="max-w-[1550px] outline-none"
+    class="outline-none"
+    [class.main-content]="!publicPage()"
+    [class.public-content]="publicPage()"
+    [class.w-full]="publicPage()"
+    [class.min-h-[calc(100vh-150px)]]="publicPage()"
+    [class.max-w-[1600px]]="!publicPage()"
     [class.ml-[216px]]="!publicPage()"
     [class.max-[1050px]:ml-[192px]]="!publicPage()"
     [class.max-[760px]:ml-0]="!publicPage()"
@@ -175,7 +182,6 @@
     [class.max-[760px]:p-4.5]="!publicPage()"
     [class.max-[760px]:pb-20]="!publicPage()"
     [class.min-h-[calc(100vh-130px)]]="!publicPage()"
-    [class.min-h-[calc(100vh-150px)]]="publicPage()"
     [attr.aria-busy]="vm.busy()"
   >
     @if (vm.busy()) {

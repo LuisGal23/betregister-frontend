@@ -1,6 +1,6 @@
 @if (modal.isOpen()) {
   <div 
-    class="fixed inset-0 z-[9999] bg-[rgba(6,8,18,0.78)] backdrop-blur-md flex items-center justify-center p-4 animate-[fadeIn_0.2s_ease-out]" 
+    class="fixed inset-0 z-[9999] bg-[rgba(6,8,18,0.78)] backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-[fadeIn_0.2s_ease-out]" 
     (click)="close()" 
     (keydown.escape)="close()" 
     tabindex="0" 
@@ -13,17 +13,17 @@
       (click)="$event.stopPropagation()"
     >
       <!-- Modal Header -->
-      <div class="flex justify-between items-start px-7 pt-6 pb-4 border-b border-[var(--border)]">
+      <div class="flex justify-between items-start px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-[var(--border)]">
         <div>
           <div class="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-[var(--accent)] bg-[rgba(41,184,245,0.08)] border border-[rgba(41,184,245,0.2)] px-2.5 py-0.5 rounded-full mb-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_6px_var(--accent)]"></span>
             <span>CONTROL DE BANKROLL</span>
           </div>
-          <h2 id="modal-title" class="text-[22px] font-bold tracking-tight text-[var(--text)] m-0">Registrar ticket</h2>
+          <h2 id="modal-title" class="text-[20px] sm:text-[22px] font-bold tracking-tight text-[var(--text)] m-0">Registrar ticket</h2>
         </div>
         <button 
           type="button" 
-          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center cursor-pointer transition-all text-sm" 
+          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center cursor-pointer transition-all duration-200 text-sm active:scale-95 shadow-sm" 
           (click)="close()" 
           aria-label="Cerrar modal"
         >
@@ -32,24 +32,24 @@
       </div>
 
       <!-- Segmented Bet Type Switcher -->
-      <div class="grid grid-cols-3 gap-1.5 px-7 py-3 bg-[var(--surface-high)] border-b border-[var(--border)]" role="tablist">
+      <div class="grid grid-cols-3 gap-1.5 px-4 sm:px-7 py-2.5 sm:py-3 bg-[var(--surface-high)] border-b border-[var(--border)]" role="tablist">
         @for (t of types; track t.id) {
           <button 
             type="button" 
             role="tab"
-            class="py-2 px-3 rounded-xl border border-transparent bg-transparent flex flex-col items-center gap-0.5 cursor-pointer transition-all" 
+            class="py-2 px-2 sm:px-3 rounded-xl border border-transparent bg-transparent flex flex-col items-center gap-0.5 cursor-pointer transition-all duration-200 hover:bg-surface/50 hover:text-text hover:scale-[1.02] active:scale-[0.98]" 
             [class.!bg-[var(--surface)]]="betType === t.id"
             [class.!border-[rgba(41,184,245,0.35)]]="betType === t.id"
             [class.shadow-sm]="betType === t.id"
             (click)="setType(t.id)"
           >
-            <strong class="text-[13px] font-semibold" [class.text-[var(--accent)]]="betType === t.id" [class.text-[var(--muted)]]="betType !== t.id">{{ t.label }}</strong>
-            <small class="text-[10px] text-[var(--muted)]">{{ t.detail }}</small>
+            <strong class="text-[12px] sm:text-[13px] font-semibold transition-colors duration-200" [class.text-[var(--accent)]]="betType === t.id" [class.text-[var(--muted)]]="betType !== t.id">{{ t.label }}</strong>
+            <small class="text-[9px] sm:text-[10px] text-[var(--muted)]">{{ t.detail }}</small>
           </button>
         }
       </div>
 
-      <div class="overflow-y-auto px-7 py-6 flex flex-col gap-5 max-h-[calc(92vh-190px)]">
+      <div class="overflow-y-auto px-5 sm:px-7 py-5 sm:py-6 flex flex-col gap-4 sm:gap-5 max-h-[calc(92vh-190px)]">
         <!-- Selected Match Banner (if preselected from Partidos del día) -->
         @if (selectedGames.length) {
           <div class="flex justify-between items-center py-3.5 px-4.5 rounded-2xl bg-[rgba(41,184,245,0.06)] border border-[rgba(41,184,245,0.28)]">
@@ -147,15 +147,15 @@
           <div class="flex flex-col gap-1.5">
             <div class="flex justify-between items-center">
               <span class="text-[11px] font-semibold text-[var(--muted)]">Cuota {{ betType === 'parlay' && !totalOddsMode ? 'combinada' : '' }}</span>
-              <div class="inline-flex p-0.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)]">
-                <button type="button" class="py-0.5 px-2 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all" [class.bg-[var(--surface)]]="oddsFormat === 'decimal'" [class.text-[var(--text)]]="oddsFormat === 'decimal'" [class.font-semibold]="oddsFormat === 'decimal'" [class.text-[var(--muted)]]="oddsFormat !== 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
-                <button type="button" class="py-0.5 px-2 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all" [class.bg-[var(--surface)]]="oddsFormat === 'american'" [class.text-[var(--text)]]="oddsFormat === 'american'" [class.font-semibold]="oddsFormat === 'american'" [class.text-[var(--muted)]]="oddsFormat !== 'american'" (click)="oddsFormat = 'american'">Am</button>
+              <div class="inline-flex p-0.5 rounded-full bg-[var(--surface-high)] border border-[var(--border)] gap-0.5">
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'decimal'" [class.text-[var(--text)]]="oddsFormat === 'decimal'" [class.font-semibold]="oddsFormat === 'decimal'" [class.shadow-sm]="oddsFormat === 'decimal'" [class.text-[var(--muted)]]="oddsFormat !== 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'american'" [class.text-[var(--text)]]="oddsFormat === 'american'" [class.font-semibold]="oddsFormat === 'american'" [class.shadow-sm]="oddsFormat === 'american'" [class.text-[var(--muted)]]="oddsFormat !== 'american'" (click)="oddsFormat = 'american'">Am</button>
               </div>
             </div>
             <input 
               name="modalOdds" 
               type="number" 
-              [(ngModel)]="odds"
+              [(ngModel)]="odds" 
               [disabled]="betType === 'parlay' && !totalOddsMode"
               placeholder="Ej. 1.85 o -110" 
               required 
@@ -180,7 +180,7 @@
           </div>
 
           <!-- Payout Preview -->
-          <div class="p-3 px-4 rounded-xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.22)] flex flex-col justify-center gap-0.5">
+          <div class="p-3.5 px-4.5 rounded-xl bg-[rgba(16,185,129,0.08)] border border-[rgba(16,185,129,0.22)] flex flex-col justify-center gap-0.5">
             <span class="text-[10px] font-bold tracking-wider uppercase text-[#10b981]">Cobro potencial</span>
             <strong class="text-lg font-bold text-[var(--text)] font-mono tabular-nums">{{ vm.format(payout(), houseSelected()?.currency) }}</strong>
             <small class="text-[11px] text-[var(--muted)]">Ganancia neta: {{ vm.format(Math.max(0, payout() - (stake ?? 0)), houseSelected()?.currency) }}</small>
@@ -208,13 +208,13 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="flex justify-end items-center gap-3 px-7 py-4.5 border-t border-[var(--border)] bg-[var(--surface)]">
-        <button type="button" class="py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] text-[13px] font-medium cursor-pointer transition-colors" (click)="close()">
+      <div class="flex justify-end items-center gap-3 px-5 sm:px-7 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
+        <button type="button" class="py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] text-[13px] font-medium cursor-pointer transition-all duration-200 active:scale-95" (click)="close()">
           Cancelar
         </button>
         <button 
           type="button" 
-          class="primary min-h-[44px] px-6 rounded-full inline-flex items-center gap-2 text-[13px] font-semibold cursor-pointer" 
+          class="action-pill-btn primary min-h-[44px] px-6" 
           [disabled]="vm.busy()"
           (click)="saveTicket()"
         >

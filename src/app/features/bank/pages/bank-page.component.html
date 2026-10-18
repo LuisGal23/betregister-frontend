@@ -3,7 +3,7 @@
     <h1>{{ settingsOnly ? 'Ajustes y casas' : 'Mi bank' }}</h1>
     <p>Saldo por casa de apuestas y moneda.</p>
   </div>
-  <a class="primary button-link" routerLink="/tickets"><app-icon name="plus" />Registrar ticket</a>
+  <a class="action-pill-btn primary" routerLink="/tickets"><app-icon name="plus" /><span>Registrar ticket</span></a>
 </div>
 @if(settingsOnly){<app-smart-settings /><section class="panel legal-settings"><h2>Privacidad y cuenta</h2><p>Consulta cómo usamos tus datos o elimina tu cuenta y su historial.</p><div class="actions"><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/support">Contactar soporte</a><a routerLink="/delete-account">Eliminar mi cuenta</a></div></section>}
 @if (!settingsOnly) {

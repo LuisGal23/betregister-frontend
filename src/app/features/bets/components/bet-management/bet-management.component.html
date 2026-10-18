@@ -1,11 +1,11 @@
 <dialog 
   #dialog 
-  class="w-[min(620px,calc(100vw-28px))] max-h-[85vh] p-[26px] border border-[var(--border)] rounded-[20px] bg-[var(--surface)] text-[var(--text)] backdrop:bg-[#080b1877] backdrop:backdrop-blur-[4px] shadow-2xl outline-none"
+  class="w-[min(620px,calc(100vw-28px))] max-h-[85vh] p-5 sm:p-7 md:p-8 overflow-y-auto border border-[var(--border)] rounded-[20px] bg-[var(--surface)] text-[var(--text)] backdrop:bg-black/75 backdrop:backdrop-blur-sm shadow-2xl outline-none"
   aria-labelledby="manage-title" 
   (cancel)="$event.preventDefault(); dismiss.emit()"
 >
   <header class="flex items-center gap-4 justify-between mb-4">
-    <h2 id="manage-title" class="text-[22px] font-bold text-[var(--text)] m-0">
+    <h2 id="manage-title" class="text-xl sm:text-[22px] font-bold text-[var(--text)] m-0 tracking-tight">
       {{
         mode() === 'tags'
           ? 'Editar mercados'
@@ -16,7 +16,7 @@
               : 'Corregir apuesta liquidada'
       }}
     </h2>
-    <button class="secondary text-xs px-3 py-1.5 rounded-full" aria-label="Cerrar tarjeta de apuesta" (click)="dismiss.emit()">
+    <button class="secondary !w-8 !h-8 !p-0 rounded-full grid place-items-center cursor-pointer hover:rotate-90 hover:border-accent hover:text-accent transition-all duration-200 active:scale-95 text-sm" aria-label="Cerrar tarjeta de apuesta" (click)="dismiss.emit()">
       ✕
     </button>
   </header>
@@ -198,8 +198,8 @@
       <div class="alert text-xs p-3 rounded-lg bg-[rgba(244,63,94,0.1)] border border-[rgba(244,63,94,0.3)] text-[var(--negative)]" role="alert">{{ vm.error() }}</div>
     }
     <div class="flex justify-end gap-3 mt-4">
-      <button class="secondary text-xs px-4 py-2.5 rounded-full" type="button" (click)="dismiss.emit()">Volver</button
-      ><button class="primary text-xs px-5 py-2.5 rounded-full font-semibold" [disabled]="vm.busy()">
+      <button class="secondary text-xs px-5 py-2.5 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95" type="button" (click)="dismiss.emit()">Volver</button
+      ><button class="primary text-xs px-6 py-2.5 rounded-full font-semibold transition-all duration-200 active:scale-95" [disabled]="vm.busy()">
         {{
           vm.busy()
             ? 'Guardando…'

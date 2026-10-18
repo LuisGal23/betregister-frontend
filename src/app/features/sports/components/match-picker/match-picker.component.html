@@ -10,10 +10,12 @@
     @for (name of ['Fútbol', 'Béisbol', 'Americano']; track name) {
       <button
         type="button"
-        class="flex-1 min-h-[40px] p-2 text-xs font-semibold rounded-lg text-muted cursor-pointer transition-all hover:text-text"
+        class="flex-1 min-h-[40px] p-2 text-xs font-semibold rounded-lg text-muted cursor-pointer transition-all duration-200 hover:text-accent hover:bg-surface/60 hover:scale-[1.02] active:scale-[0.98]"
         [class.bg-surface]="sport() === name"
         [class.text-accent]="sport() === name"
         [class.shadow-sm]="sport() === name"
+        [class.border]="sport() === name"
+        [class.border-accent/30]="sport() === name"
         [class.font-bold]="sport() === name"
         [attr.aria-pressed]="sport() === name"
         (click)="changeSport(name)"

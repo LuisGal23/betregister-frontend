@@ -12,13 +12,13 @@
     <p class="text-xs text-muted mt-1">Saldos, resultados y actividad reciente.</p>
   </div>
   <div class="flex items-center gap-2.5 flex-wrap">
-    <a class="relative overflow-hidden rounded-full bg-surface border border-border text-text text-xs font-semibold py-2 px-4 inline-flex items-center gap-2 transition-all hover:bg-accent hover:text-white hover:border-accent shadow-sm" routerLink="/matches">
+    <a class="action-pill-btn" routerLink="/matches">
       <app-icon name="calendar" /><span>Partidos del día</span>
     </a>
-    <a class="relative overflow-hidden rounded-full bg-surface border border-border text-text text-xs font-semibold py-2 px-4 inline-flex items-center gap-2 transition-all hover:bg-accent hover:text-white hover:border-accent shadow-sm" routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }">
+    <a class="action-pill-btn" routerLink="/confirmations" [queryParams]="{ kind: 'deposit' }">
       <app-icon name="plus" /><span>Registrar movimiento</span>
     </a>
-    <button type="button" class="relative overflow-hidden rounded-full bg-white text-[#060812] border border-white text-xs font-semibold py-2 px-4 inline-flex items-center gap-2 transition-all hover:bg-accent hover:text-white hover:border-accent shadow-sm cursor-pointer" (click)="ticketModal.open()">
+    <button type="button" class="action-pill-btn primary" (click)="ticketModal.open()">
       <app-icon name="plus" /><span>Registrar ticket</span>
     </button>
   </div>

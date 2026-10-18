@@ -1,5 +1,5 @@
-<div class="max-w-[1100px] mx-auto my-10 px-5">
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-[520px] lg:max-w-none mx-auto">
+<div class="max-w-[1220px] mx-auto my-8 sm:my-12 px-5 sm:px-7">
+  <div class="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 items-center max-w-[520px] lg:max-w-none mx-auto">
     <!-- Left Column: Value Preview (FabLabs Analytics Aesthetic) -->
     <section class="hidden lg:flex flex-col gap-5" aria-hidden="true">
       <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/10 border border-accent/25 text-accent text-[11px] font-bold tracking-wider w-fit">
@@ -74,19 +74,21 @@
     </section>
 
     <!-- Right Column: Auth Form -->
-    <section class="p-6 sm:p-9 rounded-3xl bg-surface border border-border shadow-2xl flex flex-col gap-5">
+    <section class="p-8 sm:p-10 rounded-3xl bg-surface border border-border shadow-2xl flex flex-col gap-6">
       @if (!auth.verification()) {
         <!-- Segmented Tab Switcher -->
         <div class="grid grid-cols-2 p-1 rounded-full bg-surface-high border border-border" role="tablist">
           <button 
             type="button" 
             role="tab"
-            class="py-2 px-4 rounded-full text-xs font-medium transition-all text-center"
+            class="py-2.5 px-4 rounded-full text-xs font-semibold transition-all text-center cursor-pointer"
             [class.bg-surface]="!registering()"
             [class.text-text]="!registering()"
-            [class.font-semibold]="!registering()"
+            [class.border]="!registering()"
+            [class.border-border]="!registering()"
             [class.shadow-sm]="!registering()"
             [class.text-muted]="registering()"
+            [class.hover:text-text]="registering()"
             [attr.aria-selected]="!registering()"
             (click)="setMode(false)"
           >
@@ -95,12 +97,14 @@
           <button 
             type="button" 
             role="tab"
-            class="py-2 px-4 rounded-full text-xs font-medium transition-all text-center"
+            class="py-2.5 px-4 rounded-full text-xs font-semibold transition-all text-center cursor-pointer"
             [class.bg-surface]="registering()"
             [class.text-text]="registering()"
-            [class.font-semibold]="registering()"
+            [class.border]="registering()"
+            [class.border-border]="registering()"
             [class.shadow-sm]="registering()"
             [class.text-muted]="!registering()"
+            [class.hover:text-text]="!registering()"
             [attr.aria-selected]="registering()"
             (click)="setMode(true)"
           >
@@ -110,7 +114,7 @@
       }
 
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-text mb-1.5">
+        <h2 class="text-2xl font-bold tracking-tight text-text mb-1">
           {{ auth.verification() ? 'Verifica tu correo' : registering() ? 'Crea tu cuenta' : 'Bienvenido de nuevo' }}
         </h2>
         <p class="text-xs text-muted leading-relaxed">
@@ -152,7 +156,7 @@
               minlength="8" 
               maxlength="8" 
               placeholder="00000000"
-              class="w-full h-12 px-4 rounded-xl bg-surface-high border border-border text-text outline-none text-xl tracking-[6px] text-center font-bold focus:border-accent focus:ring-2 focus:ring-accent/20"
+              class="w-full h-12 px-4 rounded-xl bg-bg border border-border text-text outline-none text-xl tracking-[6px] text-center font-bold focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
             />
           </label>
           <p class="text-xs text-muted -mt-1.5">El código vence en 10 minutos y solo puede usarse una vez.</p>
@@ -175,7 +179,7 @@
               maxlength="254"
               autocomplete="email"
               placeholder="tu@correo.com"
-              class="w-full h-12 px-4 rounded-xl bg-surface-high border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20"
+              class="w-full h-12 px-4 rounded-xl bg-bg border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
             />
           </label>
 
@@ -192,11 +196,11 @@
                 required
                 [attr.autocomplete]="registering() ? 'new-password' : 'current-password'"
                 placeholder="Mínimo 10 caracteres"
-                class="w-full h-12 pl-4 pr-12 rounded-xl bg-surface-high border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20"
+                class="w-full h-12 pl-4 pr-12 rounded-xl bg-bg border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
               />
               <button
                 type="button"
-                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted hover:text-text transition-colors"
+                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-muted hover:text-text transition-colors bg-transparent border-none cursor-pointer flex items-center justify-center"
                 [attr.aria-label]="reveal() ? 'Ocultar contraseña' : 'Mostrar contraseña'"
                 (click)="toggleReveal()"
               >
@@ -218,18 +222,18 @@
                 required
                 autocomplete="new-password"
                 placeholder="Repite tu contraseña"
-                class="w-full h-12 px-4 rounded-xl bg-surface-high border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20"
+                class="w-full h-12 px-4 rounded-xl bg-bg border border-border text-text outline-none text-sm focus:border-accent focus:ring-2 focus:ring-accent/20 transition-all"
               />
             </label>
 
             <!-- Legal checks -->
             <div class="flex flex-col gap-2 mt-1 text-xs text-muted">
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="adult" [(ngModel)]="adult" required />
+                <input type="checkbox" name="adult" [(ngModel)]="adult" required class="rounded accent-accent" />
                 <span>Confirmo que tengo 18 años o más.</span>
               </label>
               <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" name="accepted" [(ngModel)]="accepted" required />
+                <input type="checkbox" name="accepted" [(ngModel)]="accepted" required class="rounded accent-accent" />
                 <span>Acepto los <a routerLink="/terms" target="_blank" class="text-accent underline">Términos de uso</a> y la <a routerLink="/privacy" target="_blank" class="text-accent underline">Privacidad</a>.</span>
               </label>
             </div>
@@ -238,8 +242,8 @@
 
         <p class="text-[11px] text-muted">18+ · Solo mayores de edad. Las apuestas implican riesgo financiero.</p>
 
-        <!-- Submit Button -->
-        <button type="submit" class="primary w-full min-h-[48px] rounded-full flex items-center justify-center gap-2.5 text-sm font-semibold mt-1" [disabled]="vm.busy()">
+        <!-- Submit Button with fill animation -->
+        <button type="submit" class="action-pill-btn primary w-full min-h-[48px] rounded-full flex items-center justify-center gap-2.5 text-sm font-semibold mt-1 cursor-pointer" [disabled]="vm.busy()">
           <span>
             {{ vm.busy() ? 'Procesando…' : auth.verification() ? 'Verificar y entrar' : registering() ? 'Crear mi cuenta' : 'Iniciar sesión' }}
           </span>

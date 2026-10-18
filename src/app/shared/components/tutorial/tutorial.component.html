@@ -1,12 +1,12 @@
 <section
-  class="fixed bottom-6 left-6 md:left-60 w-[min(400px,calc(100vw-32px))] z-50 bg-surface text-text border border-accent rounded-2xl p-5 shadow-2xl animate-[enter_0.25s_ease-out]"
+  class="fixed bottom-6 left-6 md:left-60 w-[min(400px,calc(100vw-32px))] z-50 bg-surface text-text border border-accent rounded-2xl p-4 sm:p-5.5 shadow-2xl animate-[enter_0.25s_ease-out]"
   role="region"
   aria-label="Tutorial de cómo usar BetRegister"
   (keydown.escape)="dismiss.emit()"
 >
   <div class="flex justify-between items-center text-accent text-[10px] tracking-wider font-bold">
-    <span>TUTORIAL · {{ index() + 1 }} / {{ steps.length }}</span
-    ><button aria-label="Cerrar tutorial" class="bg-transparent text-text-muted hover:text-text px-2 py-1 text-xs" (click)="dismiss.emit()">✕</button>
+    <span>TUTORIAL · {{ index() + 1 }} / {{ steps.length }}</span>
+    <button aria-label="Cerrar tutorial" class="bg-transparent text-text-muted hover:text-accent hover:rotate-90 px-2 py-1 text-xs cursor-pointer transition-all duration-200 active:scale-95" (click)="dismiss.emit()">✕</button>
   </div>
   <h2 #heading tabindex="-1" class="text-lg font-bold my-3 text-text leading-snug outline-none">{{ steps[index()].title }}</h2>
   <p class="text-xs text-text-muted leading-relaxed">{{ steps[index()].text }}</p>
@@ -14,11 +14,11 @@
     <span class="block h-full bg-accent transition-[width] duration-300" [style.width.%]="((index() + 1) / steps.length) * 100"></span>
   </div>
   <footer class="flex justify-between items-center gap-3">
-    <button class="secondary !text-xs !py-1.5 !px-3" [disabled]="index() === 0" (click)="go(index() - 1)">Anterior</button>
+    <button class="secondary !text-xs !py-1.5 !px-3.5 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95" [disabled]="index() === 0" (click)="go(index() - 1)">Anterior</button>
     @if (index() === steps.length - 1) {
-      <button class="primary !text-xs !py-1.5 !px-3" (click)="dismiss.emit()">Terminar</button>
+      <button class="primary !text-xs !py-1.5 !px-4 rounded-full font-semibold transition-all duration-200 active:scale-95" (click)="dismiss.emit()">Terminar</button>
     } @else {
-      <button class="primary !text-xs !py-1.5 !px-3" (click)="go(index() + 1)">Siguiente →</button>
+      <button class="primary !text-xs !py-1.5 !px-4 rounded-full font-semibold transition-all duration-200 active:scale-95" (click)="go(index() + 1)">Siguiente →</button>
     }
   </footer>
 </section>

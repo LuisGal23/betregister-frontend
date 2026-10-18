@@ -1,4 +1,4 @@
-<div class="max-w-[1180px] mx-auto px-6 pb-16">
+<div class="max-w-[1220px] mx-auto px-5 sm:px-7 pb-16">
   <!-- Top announcement bar inspired by FabLabs -->
   <div class="flex justify-center mt-4 mb-6">
     <a [routerLink]="vm.authenticated() ? '/overview' : '/register'" class="inline-flex items-center gap-2.5 py-1.5 pl-2 pr-4.5 rounded-full bg-accent/10 border border-accent/25 text-slate-200 text-xs font-medium no-underline hover:bg-accent/15 hover:border-accent/40 hover:-translate-y-0.5 transition-all">
@@ -29,44 +29,53 @@
 
       <!-- Action buttons -->
       <div class="flex items-center justify-center gap-4 flex-wrap mb-12">
-        <a class="inline-flex items-center justify-center gap-2 bg-white text-[#060812] text-sm font-semibold px-6 py-3 rounded-full no-underline shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
-          {{ vm.authenticated() ? 'Ver mi resumen' : 'Empezar mi registro' }}
+        <a class="action-pill-btn primary text-sm font-semibold px-7 py-3.5" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+          <span>{{ vm.authenticated() ? 'Ver mi resumen' : 'Empezar mi registro' }}</span>
         </a>
 
-        <div class="inline-flex items-center gap-1.5 bg-white/5 p-1 rounded-full border border-white/10" role="group" aria-label="Deportes">
+        <div class="inline-flex items-center gap-1 bg-white/5 p-1 rounded-full border border-white/10" role="group" aria-label="Deportes">
           <button
             type="button"
-            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            class="text-xs font-semibold py-2 px-4 rounded-full transition-all duration-200 cursor-pointer active:scale-95"
             [class.bg-white/15]="activeSport() === 'NFL'"
             [class.text-white]="activeSport() === 'NFL'"
+            [class.shadow-sm]="activeSport() === 'NFL'"
             [class.text-slate-400]="activeSport() !== 'NFL'"
+            [class.hover:text-accent]="activeSport() !== 'NFL'"
+            [class.hover:bg-white/10]="activeSport() !== 'NFL'"
             (click)="activeSport.set('NFL')"
           >
             NFL
           </button>
           <button
             type="button"
-            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            class="text-xs font-semibold py-2 px-4 rounded-full transition-all duration-200 cursor-pointer active:scale-95"
             [class.bg-white/15]="activeSport() === 'MLB'"
             [class.text-white]="activeSport() === 'MLB'"
+            [class.shadow-sm]="activeSport() === 'MLB'"
             [class.text-slate-400]="activeSport() !== 'MLB'"
+            [class.hover:text-accent]="activeSport() !== 'MLB'"
+            [class.hover:bg-white/10]="activeSport() !== 'MLB'"
             (click)="activeSport.set('MLB')"
           >
             MLB
           </button>
           <button
             type="button"
-            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            class="text-xs font-semibold py-2 px-4 rounded-full transition-all duration-200 cursor-pointer active:scale-95"
             [class.bg-white/15]="activeSport() === 'Fútbol'"
             [class.text-white]="activeSport() === 'Fútbol'"
+            [class.shadow-sm]="activeSport() === 'Fútbol'"
             [class.text-slate-400]="activeSport() !== 'Fútbol'"
+            [class.hover:text-accent]="activeSport() !== 'Fútbol'"
+            [class.hover:bg-white/10]="activeSport() !== 'Fútbol'"
             (click)="activeSport.set('Fútbol')"
           >
             Fútbol
           </button>
         </div>
 
-        <a class="inline-flex items-center gap-1.5 text-slate-300 text-xs font-medium no-underline py-2 px-3 hover:text-accent transition-colors" href="#como-funciona">
+        <a class="inline-flex items-center gap-1.5 text-slate-300 text-xs font-medium no-underline py-2.5 px-3 hover:text-accent transition-colors" href="#como-funciona">
           Cómo funciona el modelo <span class="text-accent">→</span>
         </a>
       </div>
@@ -256,8 +265,8 @@
         <em class="font-serif italic font-normal text-slate-200">por entender tu historial.</em>
       </h2>
       <p class="text-sm text-slate-400 mb-7">Comienza a registrar hoy mismo. Cero costos ocultos.</p>
-      <a class="inline-flex items-center justify-center gap-2 bg-white text-[#060812] text-sm font-semibold px-8 py-3.5 rounded-full no-underline shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
-        {{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }}
+      <a class="action-pill-btn primary text-sm font-semibold px-8 py-3.5" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+        <span>{{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }}</span>
         <span class="text-accent">→</span>
       </a>
     </div>

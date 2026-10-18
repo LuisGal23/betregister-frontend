@@ -3,37 +3,39 @@
     <h1 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0">{{ workspaceMode() === 'history' ? 'Mis apuestas' : 'Registrar ticket' }}</h1>
     <p class="text-xs text-[var(--muted)] mt-1 mb-0">Anota tus tickets y resultados. Las apuestas se realizan fuera de BetRegister.</p>
   </div>
-  <div class="flex gap-1 border border-[var(--border)] rounded-xl p-1 bg-[var(--surface)] max-[600px]:w-full" role="group" aria-label="Vista de apuestas">
+  <div class="flex gap-1 border border-[var(--border)] rounded-full p-1 bg-[var(--surface)] max-[600px]:w-full" role="group" aria-label="Vista de apuestas">
     <button
       type="button"
-      class="bg-transparent text-[var(--muted)] rounded-lg text-[13px] min-h-[42px] px-5 py-2.5 transition-all max-[600px]:flex-1"
+      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 cursor-pointer"
       [class.!bg-[var(--accent)]]="workspaceMode() === 'register'"
       [class.!text-[var(--on-accent)]]="workspaceMode() === 'register'"
       [class.font-semibold]="workspaceMode() === 'register'"
+      [class.shadow-md]="workspaceMode() === 'register'"
       [attr.aria-pressed]="workspaceMode() === 'register'"
       routerLink="/tickets"
     >
       Registrar ticket</button
     ><button
       type="button"
-      class="bg-transparent text-[var(--muted)] rounded-lg text-[13px] min-h-[42px] px-5 py-2.5 transition-all max-[600px]:flex-1 flex items-center justify-center gap-2"
+      class="bg-transparent text-[var(--muted)] rounded-full text-[13px] min-h-[40px] px-5 py-2 transition-all duration-200 hover:text-[var(--accent)] hover:bg-[var(--surface-high)] active:scale-95 max-[600px]:flex-1 flex items-center justify-center gap-2 cursor-pointer"
       [class.!bg-[var(--accent)]]="workspaceMode() === 'history'"
       [class.!text-[var(--on-accent)]]="workspaceMode() === 'history'"
       [class.font-semibold]="workspaceMode() === 'history'"
+      [class.shadow-md]="workspaceMode() === 'history'"
       [attr.aria-pressed]="workspaceMode() === 'history'"
       routerLink="/history"
     >
-      Mis tickets <span class="text-[11px] text-[var(--text)] bg-[var(--surface-high)] px-1.5 py-0.5 rounded">{{ vm.data().bets.length }}</span>
+      Mis tickets <span class="text-[11px] text-[var(--text)] bg-[var(--surface-high)] px-2 py-0.5 rounded-full">{{ vm.data().bets.length }}</span>
     </button>
   </div>
 </div>
 <div class="flex items-center gap-2 flex-wrap mb-6 p-2 bg-[var(--surface)] border border-[var(--border)] rounded-[14px] max-[600px]:gap-0.5" aria-label="Tu actividad de apuestas">
-  <button class="bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-colors max-[600px]:py-2 max-[600px]:px-2 max-[600px]:text-[11px]" (click)="showResult('pending')">
+  <button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('pending')">
     <span class="w-[7px] h-[7px] rounded-full bg-[var(--accent)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().pending }}</strong> En juego
     <span class="ml-3 text-[var(--accent)] max-[600px]:hidden">→</span></button
-  ><button class="bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-colors max-[600px]:py-2 max-[600px]:px-2 max-[600px]:text-[11px]" (click)="showResult('won')">
+  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('won')">
     <span class="w-[7px] h-[7px] rounded-full bg-[var(--positive)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().won }}</strong> Ganadas</button
-  ><button class="bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-colors max-[600px]:py-2 max-[600px]:px-2 max-[600px]:text-[11px]" (click)="showResult('lost')">
+  ><button class="bg-transparent text-[var(--muted)] hover:text-text hover:bg-[var(--surface-high)] hover:scale-[1.02] py-2.5 px-4 text-[13px] rounded-[9px] flex items-center gap-2 transition-all duration-200 active:scale-95 cursor-pointer" (click)="showResult('lost')">
     <span class="w-[7px] h-[7px] rounded-full bg-[var(--negative)]"></span><strong class="text-lg font-bold text-[var(--text)] tabular-nums max-[600px]:text-base">{{ activity().lost }}</strong> Perdidas</button
   ><small class="ml-auto px-3 text-[11px] text-[var(--muted)] max-[1050px]:hidden">Tu historial visible · todas las fechas</small>
 </div>
@@ -89,14 +91,16 @@
             </h2>
           </div>
 
-          <div class="grid grid-cols-3 gap-1 mb-5.5 p-1 border border-[var(--border)] rounded-[10px] bg-[var(--bg)]" role="group" aria-label="Tipo de apuesta">
+          <div class="grid grid-cols-3 gap-1 mb-5.5 p-1 border border-[var(--border)] rounded-xl bg-[var(--bg)]" role="group" aria-label="Tipo de apuesta">
             @for (type of types; track type.id) {
               <button
                 type="button"
-                class="border-0 py-2 px-1 justify-center text-center bg-transparent text-[var(--muted)] rounded-[7px] transition-all flex flex-col items-center cursor-pointer"
+                class="border-0 py-2 px-1 justify-center text-center bg-transparent text-[var(--muted)] rounded-lg transition-all duration-200 hover:text-text hover:bg-surface/50 hover:scale-[1.02] active:scale-[0.98] flex flex-col items-center cursor-pointer"
                 [class.!bg-[var(--surface)]]="betType === type.id"
                 [class.shadow-sm]="betType === type.id"
                 [class.!text-[var(--accent)]]="betType === type.id"
+                [class.!border]="betType === type.id"
+                [class.!border-accent/30]="betType === type.id"
                 [attr.aria-pressed]="betType === type.id"
                 (click)="setType(type.id)"
               >
@@ -423,11 +427,12 @@
         <div class="flex gap-1.5 flex-wrap" role="group" aria-label="Tipo de apuesta en el historial">
           @for (option of historyTypes; track option.value) {
             <button
-              class="text-xs py-2 px-3.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] rounded-full hover:text-[var(--text)] transition-colors cursor-pointer"
+              class="text-xs py-2 px-3.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] rounded-full hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
               [class.!bg-[var(--accent-soft)]]="typeFilter() === option.value"
               [class.!border-[var(--accent)]]="typeFilter() === option.value"
               [class.!text-[var(--accent)]]="typeFilter() === option.value"
               [class.font-semibold]="typeFilter() === option.value"
+              [class.shadow-sm]="typeFilter() === option.value"
               [attr.aria-pressed]="typeFilter() === option.value"
               (click)="typeFilter.set(option.value)"
             >
@@ -551,13 +556,13 @@
                         </button>
                         @if (!b.legs?.length) {
                           <button
-                            class="primary text-[11px] py-1 px-2.5 rounded-full font-semibold"
+                            class="primary text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
                             [disabled]="vm.busy()"
                             (click)="reviewBet(b, 'won')"
                           >
                             Ganada</button
                           ><button
-                            class="danger-button text-[11px] py-1 px-2.5 rounded-full font-semibold"
+                            class="danger-button text-[11px] py-1 px-3 rounded-full font-semibold transition-all duration-200 active:scale-95"
                             [disabled]="vm.busy()"
                             (click)="reviewBet(b, 'lost')"
                           >
@@ -565,13 +570,13 @@
                           </button>
                         }
                         <button
-                          class="secondary text-[11px] py-1 px-2.5 rounded-full"
+                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
                           [disabled]="vm.busy()"
                           (click)="reviewBet(b, 'void')"
                         >
                           Anulada</button
                         ><button
-                          class="secondary text-[11px] py-1 px-2.5 rounded-full"
+                          class="secondary text-[11px] py-1 px-3 rounded-full hover:border-accent hover:text-accent transition-all duration-200 active:scale-95"
                           [disabled]="vm.busy()"
                           (click)="cashoutId = b.id; cashoutAmount = null"
                         >
