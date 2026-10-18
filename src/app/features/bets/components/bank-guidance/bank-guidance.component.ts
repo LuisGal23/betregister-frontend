@@ -6,7 +6,6 @@ import { zoneDay } from '../../../../shared/utils/zone.utils';
 @Component({
   selector: 'app-bank-guidance',
   templateUrl: './bank-guidance.component.html',
-  styleUrl: './bank-guidance.component.css',
 })
 export class BankGuidanceComponent {
   readonly Math = Math;

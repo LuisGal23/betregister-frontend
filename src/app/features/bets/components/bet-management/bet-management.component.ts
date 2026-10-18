@@ -20,7 +20,6 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel } from '../../models/bet-tag
   selector: 'app-bet-management',
   imports: [FormsModule, SelectionEditorComponent],
   templateUrl: './bet-management.component.html',
-  styleUrl: './bet-management.component.css',
 })
 export class BetManagementComponent implements OnInit, AfterViewInit, OnDestroy {
   bet = input.required<Bet>();

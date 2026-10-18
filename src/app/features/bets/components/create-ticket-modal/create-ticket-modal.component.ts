@@ -37,7 +37,6 @@ import { americanPayout, decimalOdds, type OddsFormat } from '../../../../shared
     MatchPickerComponent,
   ],
   templateUrl: './create-ticket-modal.component.html',
-  styleUrl: './create-ticket-modal.component.css',
 })
 export class CreateTicketModalComponent {
   modal = inject(TicketModalService);

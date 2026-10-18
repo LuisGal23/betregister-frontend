@@ -8,7 +8,6 @@ import { insightCategories } from '../../models/market-insights';
   selector: 'app-advanced-analysis',
   imports: [FormsModule],
   templateUrl: './advanced-analysis.component.html',
-  styleUrl: './advanced-analysis.component.css',
 })
 export class AdvancedAnalysisComponent {
   mode = input('efficiency');

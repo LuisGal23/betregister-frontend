@@ -3,7 +3,7 @@ import {ActivatedRoute,RouterLink} from '@angular/router';
 import {FormsModule} from '@angular/forms';
 import {ApiService} from '../../core/services/api.service';
 import {LedgerState} from '../../core/services/ledger-state.service';
-@Component({selector:'app-legal-page',imports:[RouterLink,FormsModule],templateUrl:'./legal-page.component.html',styleUrl:'./legal-page.component.css'})
+@Component({selector:'app-legal-page',imports:[RouterLink,FormsModule],templateUrl:'./legal-page.component.html'})
 export class LegalPageComponent {
  route=inject(ActivatedRoute);kind=this.route.snapshot.data['kind'] as string;api=inject(ApiService);vm=inject(LedgerState);
  info=signal({operator:'Luis Angel Perez Gallardo',email:'perezgallardoluis19@gmail.com',version:'2026-10-05'});

@@ -9,7 +9,7 @@ import { ScoreCardComponent } from '../score-card/score-card.component';
   selector: 'app-match-picker',
   imports: [FormsModule, ScoreCardComponent],
   templateUrl: './match-picker.component.html',
-  styleUrl: './match-picker.component.css',
+  host: { class: 'block' },
 })
 export class MatchPickerComponent implements OnDestroy {
   complete = output();

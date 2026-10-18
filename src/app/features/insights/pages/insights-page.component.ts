@@ -11,7 +11,7 @@ import { timestamp } from '../../../shared/utils/date.utils';
   selector: 'app-insights-page',
   imports: [AdvancedAnalysisComponent, FormsModule, RouterLink, DatePipe],
   templateUrl: './insights-page.component.html',
-  styleUrl: './insights-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class InsightsPageComponent {
   tab = signal('efficiency');

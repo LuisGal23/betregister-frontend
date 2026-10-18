@@ -51,7 +51,6 @@ import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../m
     BetScoresComponent,
   ],
   templateUrl: './bets-page.component.html',
-  styleUrl: './bets-page.component.css',
 })
 export class BetsPageComponent {
   historyRoute = !!inject(ActivatedRoute).snapshot.data['history'];

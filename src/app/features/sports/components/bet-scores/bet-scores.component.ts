@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { SportsService } from '../../services/sports.service';
 import type { BetScores } from '../../models/sports.model';
 import { ScoreCardComponent } from '../score-card/score-card.component';
-@Component({ selector:'app-bet-scores',imports:[FormsModule,ScoreCardComponent],templateUrl:'./bet-scores.component.html',styleUrl:'./bet-scores.component.css' })
+@Component({ selector:'app-bet-scores',imports:[FormsModule,ScoreCardComponent],templateUrl:'./bet-scores.component.html' })
 export class BetScoresComponent implements AfterViewInit, OnDestroy {
   betId = input.required<number>();
   title = input.required<string>();

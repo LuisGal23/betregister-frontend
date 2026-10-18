@@ -19,7 +19,6 @@ import { fractionalKelly } from '../../../../shared/utils/kelly.utils';
   selector: 'app-bank-assistant',
   imports: [FormsModule, IconComponent, BankGuidanceComponent],
   templateUrl: './bank-assistant.component.html',
-  styleUrl: './bank-assistant.component.css',
 })
 export class BankAssistantComponent {
   vm = inject(LedgerState);

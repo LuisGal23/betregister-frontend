@@ -16,7 +16,7 @@ import { timestamp } from '../../../shared/utils/date.utils';
   selector: 'app-confirmations-page',
   imports: [RouterLink, FormsModule, DatePipe, IconComponent, ConfirmDialogComponent],
   templateUrl: './confirmations-page.component.html',
-  styleUrl: './confirmations-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class ConfirmationsPageComponent {
   vm = inject(LedgerState);
