@@ -50,87 +50,127 @@
       id="workspace-menu"
       #sidebar
       (keydown)="trapMenu($event)"
-      class="w-[216px] fixed inset-y-0 left-0 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-45 pt-7 pb-4.5 px-4 overflow-y-auto overscroll-contain max-[1050px]:w-[192px] max-[1050px]:px-3 max-[760px]:w-[230px] max-[760px]:-translate-x-full max-[760px]:transition-transform max-[760px]:duration-250 max-[760px]:ease-out max-[760px]:invisible max-[760px]:max-h-[100dvh] max-[760px]:pt-5 max-[760px]:pb-[calc(20px+env(safe-area-inset-bottom))]"
+      class="w-[216px] fixed inset-y-0 left-0 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 pt-7 pb-4.5 px-4 overflow-y-auto overscroll-contain max-[1050px]:w-[192px] max-[1050px]:px-3 max-[760px]:w-[280px] max-[760px]:-translate-x-full max-[760px]:transition-transform max-[760px]:duration-300 max-[760px]:ease-out max-[760px]:invisible max-[760px]:max-h-[100dvh] max-[760px]:pt-5 max-[760px]:pb-[calc(20px+env(safe-area-inset-bottom))] shadow-2xl"
       [class.!translate-x-0]="sidebarOpen()"
       [class.!visible]="sidebarOpen()"
       (keydown.escape)="closeMenu()"
     >
-      <div class="px-2 pb-7 flex items-center justify-between max-[760px]:pb-4.5">
+      <div class="px-2 pb-6 flex items-center justify-between max-[760px]:pb-4">
         <a class="block" routerLink="/overview"
-          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[120px]" /></a
+          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[124px]" /></a
         ><button class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 ml-auto cursor-pointer border-none" aria-label="Cerrar menú lateral" (click)="closeMenu()">
           <app-icon name="close" class="w-4 h-4" />
         </button>
       </div>
-      <span class="text-[10px] tracking-widest text-[var(--muted)] px-3 mb-3.5 uppercase font-semibold">{{ i18n.t().mySpace }}</span>
-      <nav aria-label="Navegación principal" class="flex flex-col gap-1.5">
+
+      <!-- User Profile Card in Drawer -->
+      <a 
+        routerLink="/profile"
+        (click)="closeMenu()"
+        class="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] mb-4 hover:border-[var(--accent)] transition-all no-underline group cursor-pointer"
+        title="Gestionar mi perfil de usuario"
+      >
+        <div class="relative w-8 h-8 rounded-full bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--accent)] overflow-hidden shrink-0 flex items-center justify-center transition-colors shadow-sm">
+          @if (userAvatar()) {
+            <img [src]="userAvatar()" [alt]="displayName()" class="w-full h-full object-cover" />
+          } @else {
+            <span class="text-[10px] font-black text-[var(--accent)] uppercase font-mono">{{ userInitial() }}</span>
+          }
+        </div>
+        <div class="min-w-0 flex-1">
+          <strong class="block text-xs font-bold text-[var(--text)] group-hover:text-[var(--accent)] truncate transition-colors">
+            {{ displayName() }}
+          </strong>
+          <small class="block text-[10px] text-[var(--muted)] font-mono truncate">@{{ username() }}</small>
+        </div>
+      </a>
+
+      <span class="text-[10px] tracking-widest text-[var(--muted)] px-2 mb-2.5 uppercase font-semibold">{{ i18n.t().mySpace }}</span>
+      <nav aria-label="Navegación principal" class="flex flex-col gap-1">
         @for (link of links(); track link.path) {
           @if (link.path === 'tickets') {
             <button
               type="button"
-              class="flex gap-3 items-center px-3 py-2.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-[13px] min-h-[46px] rounded-[11px] relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium"
+              class="flex gap-3 items-center px-3 py-2 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-xs min-h-[42px] rounded-xl relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium"
               (click)="ticketModal.open(); closeMenu()"
             >
-              <app-icon [name]="link.icon" class="w-[17px] h-[17px] shrink-0" /><span>{{ link.label }}</span>
+              <app-icon [name]="link.icon" class="w-4 h-4 shrink-0 text-[var(--accent)]" /><span>{{ link.label }}</span>
             </button>
           } @else {
             <a
               [routerLink]="'/' + link.path"
               routerLinkActive="active"
               ariaCurrentWhenActive="page"
-              class="flex gap-3 items-center px-3 py-2.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-[13px] min-h-[46px] rounded-[11px] relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium [&.active]:bg-[var(--surface-high)] [&.active]:text-[var(--accent)] [&.active]:font-semibold [&.active]:before:content-[''] [&.active]:before:absolute [&.active]:before:-left-4 max-[1050px]:[&.active]:before:-left-3 [&.active]:before:w-[3px] [&.active]:before:h-6 [&.active]:before:bg-[var(--accent)] [&.active]:before:rounded-r"
+              class="flex gap-3 items-center px-3 py-2 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-xs min-h-[42px] rounded-xl relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium [&.active]:bg-[var(--surface-high)] [&.active]:text-[var(--accent)] [&.active]:font-semibold [&.active]:before:content-[''] [&.active]:before:absolute [&.active]:before:-left-4 max-[1050px]:[&.active]:before:-left-3 [&.active]:before:w-[3px] [&.active]:before:h-5 [&.active]:before:bg-[var(--accent)] [&.active]:before:rounded-r"
               (click)="closeMenu()"
-              ><app-icon [name]="link.icon" class="w-[17px] h-[17px] shrink-0" /><span>{{ link.label }}</span></a
+              ><app-icon [name]="link.icon" class="w-4 h-4 shrink-0" /><span>{{ link.label }}</span></a
             >
           }
         }
       </nav>
-      <div class="mt-auto pt-6 max-[760px]:pt-3 flex flex-col gap-1">
-        <button #tutorialButton class="w-full flex items-center gap-3 justify-start px-3 py-2.5 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" (click)="tutorial.set(true); closeMenu()">
-          <app-icon name="chat" class="w-4 h-4" />{{ i18n.t().tutorial }}</button
-        >
-        <a 
-          routerLink="/profile"
-          routerLinkActive="!border-[var(--accent)] bg-[var(--surface-high)]"
-          class="flex items-center gap-2.5 border-t border-[var(--border)] mt-3.5 pt-3 px-2 pb-2 min-w-0 no-underline rounded-xl hover:bg-[var(--surface-high)] transition-all group cursor-pointer"
-          title="Gestionar mi perfil de usuario"
-        >
-          <div class="relative w-8 h-8 rounded-full bg-[var(--surface-high)] border border-[var(--border)] group-hover:border-[var(--accent)] overflow-hidden shrink-0 flex items-center justify-center transition-colors">
-            @if (userAvatar()) {
-              <img [src]="userAvatar()" [alt]="displayName()" class="w-full h-full object-cover" />
-            } @else {
-              <span class="text-[10px] font-black text-[var(--accent)] uppercase font-mono">{{ userInitial() }}</span>
-            }
+
+      <!-- Drawer Bottom: Preferences & Logout -->
+      <div class="mt-auto pt-4 flex flex-col gap-2">
+        <!-- Mobile-Only Quick Preferences (Currency & Language) -->
+        <div class="hidden max-[760px]:flex flex-col gap-2 p-2.5 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)]">
+          <div class="flex items-center justify-between gap-2 text-xs">
+            <span class="text-[10px] text-[var(--muted)] font-bold uppercase tracking-wider">Moneda</span>
+            <select
+              class="py-1 px-2 text-xs font-semibold bg-[var(--surface)] border border-[var(--border)] rounded-lg text-[var(--text)] outline-none"
+              [ngModel]="vm.currency()"
+              (ngModelChange)="bank.savePreferences($event)"
+              [disabled]="vm.busy()"
+            >
+              <option value="MXN">MXN ($)</option>
+              <option value="USD">USD ($)</option>
+            </select>
           </div>
-          <div class="min-w-0 flex-1">
-            <strong class="block text-xs font-bold text-[var(--text)] group-hover:text-[var(--accent)] truncate transition-colors">
-              {{ displayName() }}
-            </strong>
-            <small class="block text-[10px] text-[var(--muted)] font-mono truncate">@{{ username() }}</small>
+          <div class="flex items-center justify-between gap-2 text-xs border-t border-[var(--border)]/60 pt-1.5">
+            <span class="text-[10px] text-[var(--muted)] font-bold uppercase tracking-wider">Idioma</span>
+            <button
+              type="button"
+              class="py-1 px-2.5 text-xs font-bold rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] flex items-center gap-1 cursor-pointer"
+              (click)="i18n.toggleLang()"
+            >
+              <span>🌐</span>
+              <span>{{ i18n.lang().toUpperCase() }}</span>
+            </button>
           </div>
-        </a>
+        </div>
+
+        <button #tutorialButton class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" (click)="tutorial.set(true); closeMenu()">
+          <app-icon name="chat" class="w-4 h-4" />{{ i18n.t().tutorial }}
+        </button>
+
         <button class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" [disabled]="vm.busy()" (click)="auth.logout()">
-          <app-icon name="logout" class="w-4 h-4" />{{ i18n.t().logout }}</button
-        ><small class="block text-[9px] text-[var(--muted)] px-3 pt-2">{{ i18n.t().responsibleBadge }}</small>
+          <app-icon name="logout" class="w-4 h-4" />{{ i18n.t().logout }}
+        </button>
+        <small class="block text-[9px] text-[var(--muted)] px-3 pt-1">{{ i18n.t().responsibleBadge }}</small>
       </div>
     </aside>
-    <header class="ml-[216px] h-[72px] flex justify-between items-center px-9 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_86%,var(--bg))] max-[1050px]:ml-[192px] max-[1050px]:px-5.5 max-[760px]:ml-0 max-[760px]:h-[62px] max-[760px]:px-4.5">
-      <div class="flex items-center text-xs text-[var(--muted)]">
+
+    <!-- Top Header -->
+    <header class="ml-[216px] h-[72px] flex justify-between items-center px-9 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_86%,var(--bg))] max-[1050px]:ml-[192px] max-[1050px]:px-5.5 max-[760px]:ml-0 max-[760px]:h-[58px] max-[760px]:px-3.5">
+      <div class="flex items-center text-xs text-[var(--muted)] min-w-0">
         <button
           #menuButton
-          class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 mr-2 cursor-pointer border-none"
+          class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1.5 -ml-1 mr-2 cursor-pointer border-none rounded-lg hover:bg-[var(--surface-high)]"
           aria-label="Abrir menú"
           [attr.aria-expanded]="sidebarOpen()"
           (click)="openMenu()"
         >
-          <app-icon name="menu" class="w-5 h-5" /></button
-        ><span class="text-xs"
-          >{{ i18n.t().mySpace }} <b class="font-normal mx-2 opacity-40 max-[760px]:mx-1.5">/</b> <strong class="font-medium text-[var(--text)]">{{ currentTitle() }}</strong></span
-        >
+          <app-icon name="menu" class="w-5 h-5" />
+        </button>
+        <span class="text-xs truncate flex items-center">
+          <span class="max-[760px]:hidden">{{ i18n.t().mySpace }} <b class="font-normal mx-2 opacity-40">/</b> </span>
+          <strong class="font-bold text-[var(--text)] text-sm sm:text-xs truncate">{{ currentTitle() }}</strong>
+        </span>
       </div>
-      <div class="flex items-center gap-2 max-[760px]:gap-1.5">
-        <label class="flex items-center gap-1.5 m-0 text-[10px] text-[var(--muted)] font-medium max-[760px]:text-[0px]">
-          <span class="max-[760px]:hidden">{{ i18n.t().currency }}</span>
+
+      <div class="flex items-center gap-2 max-[760px]:gap-1.5 shrink-0">
+        <!-- Currency: Visible on desktop only (available in mobile drawer) -->
+        <label class="flex items-center gap-1.5 m-0 text-[10px] text-[var(--muted)] font-medium max-[760px]:hidden">
+          <span>{{ i18n.t().currency }}</span>
           <select
             [attr.aria-label]="i18n.t().currency"
             class="m-0 py-1 px-2 min-h-[32px] text-xs font-semibold bg-[var(--surface-high)] border border-[var(--border)] rounded-lg text-[var(--text)] outline-none cursor-pointer focus:border-[var(--accent)] transition-colors"
@@ -142,9 +182,11 @@
             <option value="USD">USD</option>
           </select>
         </label>
+
+        <!-- Language: Visible on desktop only (available in mobile drawer) -->
         <button
           type="button"
-          class="min-h-[32px] px-2.5 py-1 text-xs font-bold rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer flex items-center gap-1"
+          class="min-h-[32px] px-2.5 py-1 text-xs font-bold rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] transition-all cursor-pointer flex items-center gap-1 max-[760px]:hidden"
           [attr.aria-label]="i18n.lang() === 'es' ? 'Switch to English' : 'Cambiar a Español'"
           (click)="i18n.toggleLang()"
           title="Cambiar idioma / Switch language"
@@ -152,6 +194,8 @@
           <span class="text-[10px]">🌐</span>
           <span>{{ i18n.lang().toUpperCase() }}</span>
         </button>
+
+        <!-- Theme Toggle: Visible everywhere -->
         <button
           type="button"
           class="w-8 h-8 rounded-lg bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] grid place-items-center transition-all cursor-pointer"
@@ -161,6 +205,8 @@
         >
           <app-icon [name]="theme.dark() ? 'sun' : 'moon'" class="w-4 h-4" />
         </button>
+
+        <!-- Settings Cog -->
         <a
           routerLink="/settings"
           routerLinkActive="!border-[var(--accent)] !text-[var(--accent)] !bg-[var(--surface-high)]"
@@ -170,6 +216,8 @@
         >
           <app-icon name="settings" class="w-4 h-4" />
         </a>
+
+        <!-- Profile Avatar Chip -->
         <a
           routerLink="/profile"
           routerLinkActive="!border-[var(--accent)]"
@@ -189,46 +237,56 @@
       </div>
     </header>
   }
+
+  <!-- Mobile Bottom Navigation Bar (5 Columns: Resumen, Partidos, Registrar, Apuestas, Más) -->
   @if (!publicPage()) {
     <nav
-      class="hidden max-[760px]:grid max-[760px]:grid-cols-5 fixed bottom-0 left-0 right-0 z-35 bg-[var(--surface)] border-t border-[var(--border)] p-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(16,45,84,0.04)]"
+      class="hidden max-[760px]:grid max-[760px]:grid-cols-5 fixed bottom-0 left-0 right-0 z-40 bg-[var(--surface)]/95 backdrop-blur-xl border-t border-[var(--border)] px-1 py-1 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgba(0,0,0,0.18)]"
       aria-label="Navegación móvil"
       [attr.inert]="sidebarOpen() ? '' : null"
     >
       @for (link of mobileLinks(); track link.path) {
-        <a
-          [routerLink]="'/' + link.path"
-          routerLinkActive="active"
-          ariaCurrentWhenActive="page"
-          class="flex flex-col items-center justify-center gap-1.5 min-h-[52px] py-1 px-0.5 rounded-[10px] text-[var(--muted)] bg-transparent no-underline text-[10px] leading-tight font-medium [&.active]:text-[var(--accent)] [&.active]:bg-[var(--surface-high)]"
-          [class.[&>app-icon]:p-1]="link.path === 'tickets'"
-          [class.[&>app-icon]:box-content]="link.path === 'tickets'"
-          [class.[&>app-icon]:rounded-[9px]]="link.path === 'tickets'"
-          [class.[&>app-icon]:bg-[var(--accent)]]="link.path === 'tickets'"
-          [class.[&>app-icon]:text-white]="link.path === 'tickets'"
-        >
-          <app-icon [name]="link.icon" class="w-[21px] h-[21px]" /><span>{{
-            link.path === 'history'
-              ? 'Historial'
-              : link.path === 'tickets'
-                ? 'Registrar'
-                : link.label
-          }}</span>
-        </a>
+        @if (link.path === 'tickets') {
+          <button
+            type="button"
+            class="flex flex-col items-center justify-center -mt-3.5 group cursor-pointer bg-transparent border-none outline-none"
+            (click)="ticketModal.open()"
+            aria-label="Registrar nuevo ticket"
+          >
+            <div class="w-12 h-12 rounded-full bg-[var(--accent)] text-white flex items-center justify-center shadow-[0_4px_16px_rgba(41,184,245,0.45)] group-active:scale-95 transition-transform">
+              <app-icon name="plus" class="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span class="text-[10px] font-bold text-[var(--accent)] mt-0.5 leading-tight">Registrar</span>
+          </button>
+        } @else {
+          <a
+            [routerLink]="'/' + link.path"
+            routerLinkActive="active"
+            ariaCurrentWhenActive="page"
+            class="flex flex-col items-center justify-center gap-1 min-h-[48px] py-1 px-0.5 rounded-xl text-[var(--muted)] bg-transparent no-underline text-[10px] leading-tight font-medium transition-colors [&.active]:text-[var(--accent)] [&.active]:font-bold [&.active]:bg-[var(--surface-high)]"
+          >
+            <app-icon [name]="link.icon" class="w-5 h-5" />
+            <span>{{ link.label }}</span>
+          </a>
+        }
       }
+
+      <!-- 5th Slot: Más / Drawer Trigger -->
       <button
-        class="flex flex-col items-center justify-center gap-1.5 min-h-[52px] py-1 px-0.5 rounded-[10px] text-[var(--muted)] bg-transparent border-none text-[10px] leading-tight font-medium cursor-pointer"
+        type="button"
+        class="flex flex-col items-center justify-center gap-1 min-h-[48px] py-1 px-0.5 rounded-xl text-[var(--muted)] bg-transparent border-none text-[10px] leading-tight font-medium cursor-pointer transition-colors"
         (click)="openMenu()"
         aria-controls="workspace-menu"
         [attr.aria-expanded]="sidebarOpen()"
         [class.!text-[var(--accent)]]="
-          path() === '/insights' || path() === '/challenges' || path() === '/settings'
+          path() === '/insights' || path() === '/challenges' || path() === '/settings' || path() === '/community' || path() === '/bank' || path() === '/match-analysis'
         "
         [class.!bg-[var(--surface-high)]]="
-          path() === '/insights' || path() === '/challenges' || path() === '/settings'
+          path() === '/insights' || path() === '/challenges' || path() === '/settings' || path() === '/community' || path() === '/bank' || path() === '/match-analysis'
         "
       >
-        <app-icon name="menu" class="w-[21px] h-[21px]" /><span>Más</span>
+        <app-icon name="menu" class="w-5 h-5" />
+        <span>Más</span>
       </button>
     </nav>
   }
@@ -247,8 +305,8 @@
     [class.max-[760px]:ml-0]="!publicPage()"
     [class.p-8]="!publicPage()"
     [class.max-[1050px]:p-5.5]="!publicPage()"
-    [class.max-[760px]:p-4.5]="!publicPage()"
-    [class.max-[760px]:pb-20]="!publicPage()"
+    [class.max-[760px]:p-3.5]="!publicPage()"
+    [class.max-[760px]:pb-28]="!publicPage()"
     [class.min-h-[calc(100vh-130px)]]="!publicPage()"
     [attr.aria-busy]="vm.busy()"
   >

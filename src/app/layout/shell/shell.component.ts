@@ -57,7 +57,12 @@ export class ShellComponent implements OnInit {
     { path: 'insights', label: this.i18n.t().profitability, icon: 'trend' },
     { path: 'challenges', label: this.i18n.t().challenges, icon: 'flag' },
   ]);
-  mobileLinks = computed(() => this.links().slice(0, 5));
+  mobileLinks = computed(() => [
+    { path: 'overview', label: 'Resumen', icon: 'overview' },
+    { path: 'matches', label: 'Partidos', icon: 'calendar' },
+    { path: 'tickets', label: 'Registrar', icon: 'plus' },
+    { path: 'history', label: 'Apuestas', icon: 'bets' },
+  ]);
 
   userProfile = computed(() => this.vm.data().profile);
   username = computed(() => this.userProfile().username || this.userProfile().email.split('@')[0]);

@@ -1,13 +1,13 @@
-<div class="flex items-center justify-between gap-4 flex-wrap mb-6">
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-5">
   <div>
-    <h1 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0">Mis apuestas</h1>
-    <p class="text-xs text-[var(--muted)] mt-1 mb-0">Control de tickets, marcadores y resolución de resultados.</p>
+    <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text)] m-0">Mis apuestas</h1>
+    <p class="text-xs text-[var(--muted)] mt-0.5 mb-0">Control de tickets, marcadores y resolución de resultados.</p>
   </div>
-  <div class="flex items-center gap-2.5 flex-wrap">
+  <div class="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-1 sm:pb-0 scrollbar-none flex-nowrap sm:flex-wrap">
     <!-- Auto-resolver con API -->
     <button
       type="button"
-      class="action-pill-btn primary text-xs py-2 px-3.5 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+      class="action-pill-btn primary text-xs py-2 px-3 flex items-center gap-1.5 cursor-pointer disabled:opacity-60 whitespace-nowrap shrink-0"
       [disabled]="resolvingAuto() || vm.busy()"
       (click)="autoResolveBets()"
       title="Verificar marcadores oficiales vía ESPN/MLB y resolver automáticamente"
@@ -18,7 +18,7 @@
 
     <!-- Botón Exportar CSV -->
     <a
-      class="secondary button-link text-xs py-2 px-3.5 flex items-center gap-1.5"
+      class="secondary button-link text-xs py-2 px-3 flex items-center gap-1.5 whitespace-nowrap shrink-0"
       href="/api/export/bets.csv"
       download="apuestas.csv"
       title="Descargar archivo CSV de todas las apuestas"
@@ -30,7 +30,7 @@
     <!-- Botón Importar CSV -->
     <button
       type="button"
-      class="secondary text-xs py-2 px-3.5 cursor-pointer flex items-center gap-1.5"
+      class="secondary text-xs py-2 px-3 cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0"
       [class.!border-[var(--accent)]]="showCsvTransfer()"
       [class.!text-[var(--accent)]]="showCsvTransfer()"
       (click)="showCsvTransfer.update(v => !v)"
@@ -43,112 +43,112 @@
 </div>
 
 <!-- Visual Activity Counters (4 Visual Cards) -->
-<div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6" aria-label="Resumen de actividad">
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 mb-6" aria-label="Resumen de actividad">
   <!-- Card 1: En juego / Pendientes -->
   <button
     type="button"
-    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    class="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
     [class.!border-accent]="betFilter() === 'pending'"
     [class.!bg-accent/5]="betFilter() === 'pending'"
     [class.shadow-md]="betFilter() === 'pending'"
     (click)="showResult('pending')"
   >
-    <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="flex items-center justify-between gap-1.5 mb-2">
       <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
         <span>En juego</span>
       </span>
-      <span class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Pendientes</span>
+      <span class="text-[9px] sm:text-[10px] font-bold text-accent bg-accent/10 px-1.5 sm:px-2 py-0.5 rounded-full border border-accent/20">Pendientes</span>
     </div>
     <div class="my-1">
-      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums">
+      <strong class="text-xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums truncate block">
         {{ activity().pending }}
       </strong>
     </div>
-    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+    <div class="text-[10px] sm:text-[11px] text-muted flex items-center justify-between border-t border-border pt-1.5 mt-1.5">
       <span>En riesgo:</span>
-      <strong class="font-mono text-text font-semibold">{{ vm.format(activity().pendingStake) }}</strong>
+      <strong class="font-mono text-text font-semibold truncate ml-1">{{ vm.format(activity().pendingStake) }}</strong>
     </div>
   </button>
 
   <!-- Card 2: Ganadas -->
   <button
     type="button"
-    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-emerald-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    class="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border hover:border-emerald-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
     [class.!border-emerald-500]="betFilter() === 'won'"
     [class.!bg-emerald-500/5]="betFilter() === 'won'"
     [class.shadow-md]="betFilter() === 'won'"
     (click)="showResult('won')"
   >
-    <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="flex items-center justify-between gap-1.5 mb-2">
       <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
         <span>Ganadas</span>
       </span>
-      <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Acertadas</span>
+      <span class="text-[9px] sm:text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-1.5 sm:px-2 py-0.5 rounded-full border border-emerald-500/20">Acertadas</span>
     </div>
     <div class="my-1">
-      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-emerald-400 font-mono tabular-nums">
+      <strong class="text-xl sm:text-3xl font-extrabold tracking-tight text-emerald-400 font-mono tabular-nums truncate block">
         {{ activity().won }}
       </strong>
     </div>
-    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+    <div class="text-[10px] sm:text-[11px] text-muted flex items-center justify-between border-t border-border pt-1.5 mt-1.5">
       <span>Ganancia neta:</span>
-      <strong class="font-mono text-emerald-400 font-semibold">+{{ vm.format(activity().wonProfit) }}</strong>
+      <strong class="font-mono text-emerald-400 font-semibold truncate ml-1">+{{ vm.format(activity().wonProfit) }}</strong>
     </div>
   </button>
 
   <!-- Card 3: Perdidas -->
   <button
     type="button"
-    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-rose-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    class="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border hover:border-rose-500 hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
     [class.!border-rose-500]="betFilter() === 'lost'"
     [class.!bg-rose-500/5]="betFilter() === 'lost'"
     [class.shadow-md]="betFilter() === 'lost'"
     (click)="showResult('lost')"
   >
-    <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="flex items-center justify-between gap-1.5 mb-2">
       <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_#f43f5e]"></span>
         <span>Perdidas</span>
       </span>
-      <span class="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-full border border-rose-500/20">Falladas</span>
+      <span class="text-[9px] sm:text-[10px] font-bold text-rose-400 bg-rose-500/10 px-1.5 sm:px-2 py-0.5 rounded-full border border-rose-500/20">Falladas</span>
     </div>
     <div class="my-1">
-      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-400 font-mono tabular-nums">
+      <strong class="text-xl sm:text-3xl font-extrabold tracking-tight text-rose-400 font-mono tabular-nums truncate block">
         {{ activity().lost }}
       </strong>
     </div>
-    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+    <div class="text-[10px] sm:text-[11px] text-muted flex items-center justify-between border-t border-border pt-1.5 mt-1.5">
       <span>Perdido:</span>
-      <strong class="font-mono text-rose-400 font-semibold">-{{ vm.format(activity().lostStake) }}</strong>
+      <strong class="font-mono text-rose-400 font-semibold truncate ml-1">-{{ vm.format(activity().lostStake) }}</strong>
     </div>
   </button>
 
   <!-- Card 4: Efectividad / Win Rate -->
   <button
     type="button"
-    class="p-4 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
+    class="p-3.5 sm:p-5 rounded-2xl bg-surface border border-border hover:border-accent hover:shadow-lg transition-all duration-200 text-left flex flex-col justify-between cursor-pointer select-none relative overflow-hidden"
     [class.!border-accent]="betFilter() === 'all'"
     [class.!bg-accent/5]="betFilter() === 'all'"
     [class.shadow-md]="betFilter() === 'all'"
     (click)="showResult('all')"
   >
-    <div class="flex items-center justify-between gap-2 mb-2">
+    <div class="flex items-center justify-between gap-1.5 mb-2">
       <span class="text-xs font-semibold text-muted flex items-center gap-1.5">
         <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
         <span>Win Rate</span>
       </span>
-      <span class="text-[10px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">Efectividad</span>
+      <span class="text-[9px] sm:text-[10px] font-bold text-accent bg-accent/10 px-1.5 sm:px-2 py-0.5 rounded-full border border-accent/20">Efectividad</span>
     </div>
     <div class="my-1 flex items-baseline gap-2">
-      <strong class="text-2xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums">
+      <strong class="text-xl sm:text-3xl font-extrabold tracking-tight text-text font-mono tabular-nums truncate block">
         {{ activity().winRate }}%
       </strong>
     </div>
-    <div class="text-[11px] text-muted flex items-center justify-between border-t border-border pt-2 mt-2">
+    <div class="text-[10px] sm:text-[11px] text-muted flex items-center justify-between border-t border-border pt-1.5 mt-1.5">
       <span>Total apuestas:</span>
-      <strong class="font-mono text-text font-semibold">{{ activity().total }} tickets</strong>
+      <strong class="font-mono text-text font-semibold truncate ml-1">{{ activity().total }}</strong>
     </div>
   </button>
 </div>
@@ -524,15 +524,15 @@
         <app-csv-transfer />
       </div>
     }
-    <section class="panel p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
-      <div class="flex items-center justify-between gap-4 flex-wrap mb-6">
+    <section class="panel p-3.5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm">
+      <div class="flex items-center justify-between gap-3 flex-wrap mb-5">
         <div>
           <span class="text-[10px] font-bold tracking-wider text-[var(--accent)] uppercase">TUS REGISTROS</span>
-          <h2 class="text-2xl font-bold tracking-tight text-[var(--text)] m-0 mt-1">Tus tickets</h2>
-          <p class="text-xs text-[var(--muted)] mt-1 mb-0">{{ filteredBets().length }} de {{ vm.data().bets.length }} apuestas</p>
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)] m-0 mt-0.5">Tus tickets</h2>
+          <p class="text-xs text-[var(--muted)] mt-0.5 mb-0">{{ filteredBets().length }} de {{ vm.data().bets.length }} apuestas</p>
         </div>
         <input
-          class="text-xs p-2.5 px-4 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none min-w-[240px]"
+          class="text-xs p-2.5 px-4 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] outline-none w-full sm:w-auto min-w-0 sm:min-w-[240px]"
           type="search"
           aria-label="Buscar apuestas"
           placeholder="Buscar evento o casa…"
@@ -540,11 +540,11 @@
           (ngModelChange)="search.set($event)"
         />
       </div>
-      <div class="flex items-center justify-between flex-wrap gap-3.5 mb-3">
-        <div class="flex gap-1.5 flex-wrap" role="group" aria-label="Tipo de apuesta en el historial">
+      <div class="flex items-center justify-between flex-wrap gap-2.5 mb-3">
+        <div class="flex gap-1.5 overflow-x-auto scrollbar-none w-full sm:w-auto pb-1 sm:pb-0" role="group" aria-label="Tipo de apuesta en el historial">
           @for (option of historyTypes; track option.value) {
             <button
-              class="text-xs py-2 px-3.5 border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] rounded-full hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
+              class="text-xs py-1.5 px-3 border border-[var(--border)] bg-[var(--surface)] text-[var(--muted)] rounded-full hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] whitespace-nowrap shrink-0 transition-all duration-200 cursor-pointer"
               [class.!bg-[var(--accent-soft)]]="typeFilter() === option.value"
               [class.!border-[var(--accent)]]="typeFilter() === option.value"
               [class.!text-[var(--accent)]]="typeFilter() === option.value"
@@ -557,7 +557,7 @@
             </button>
           }
         </div>
-        <label class="flex gap-2 items-center text-xs text-[var(--muted)] cursor-pointer"
+        <label class="flex gap-2 items-center text-xs text-[var(--muted)] cursor-pointer py-1"
           ><input
             type="checkbox"
             class="rounded"
@@ -567,7 +567,7 @@
           Ver eliminadas</label
         >
       </div>
-      <div class="tabs mb-4" role="group" aria-label="Filtrar por resultado">
+      <div class="tabs mb-4 overflow-x-auto scrollbar-none flex-nowrap" role="group" aria-label="Filtrar por resultado">
         @for (tab of tabs; track tab.value) {
           <button
             [class.selected]="betFilter() === tab.value"
