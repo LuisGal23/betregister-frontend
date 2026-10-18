@@ -1,16 +1,20 @@
-<details open class="picker" (toggle)="toggle($event)">
-  <summary>
-    <small class="step-label">1 · Encuentra tu partido</small>Partidos
-    <span>{{
+<details open class="panel p-6 bg-surface border border-border rounded-2xl" (toggle)="toggle($event)">
+  <summary class="cursor-pointer list-none text-xl sm:text-2xl font-bold tracking-tight text-text">
+    <small class="block text-[11px] text-accent font-semibold mb-1">1 · Encuentra tu partido</small>Partidos
+    <span class="block text-xs font-normal text-muted mt-1">{{
       selected().length ? selected().length + ' seleccionado(s)' : 'Elige uno para empezar'
     }}</span>
   </summary>
 
-  <div class="sport-tabs" role="group" aria-label="Deporte del calendario">
+  <div class="flex gap-1.5 p-1 bg-surface-high border border-border rounded-xl my-4.5" role="group" aria-label="Deporte del calendario">
     @for (name of ['Fútbol', 'Béisbol', 'Americano']; track name) {
       <button
         type="button"
-        [class.active]="sport() === name"
+        class="flex-1 min-h-[40px] p-2 text-xs font-semibold rounded-lg text-muted cursor-pointer transition-all hover:text-text"
+        [class.bg-surface]="sport() === name"
+        [class.text-accent]="sport() === name"
+        [class.shadow-sm]="sport() === name"
+        [class.font-bold]="sport() === name"
         [attr.aria-pressed]="sport() === name"
         (click)="changeSport(name)"
       >
@@ -18,26 +22,30 @@
       </button>
     }
   </div>
-  <div class="filters">
-    <label
+
+  <div class="grid grid-cols-1 sm:grid-cols-[1fr_150px] gap-2.5 mb-3">
+    <label class="text-xs font-medium"
       >Liga<select
         [(ngModel)]="league"
         (ngModelChange)="load()"
         [ngModelOptions]="{ standalone: true }"
+        class="mt-1"
       >
         @for (l of options(); track l.id) {
           <option [value]="l.id">{{ l.name }}{{ l.configured ? '' : ' · requiere clave' }}</option>
         }
       </select></label
     >
-    <label
+    <label class="text-xs font-medium"
       >Fecha de partidos<input
         type="date"
         [(ngModel)]="day"
         (ngModelChange)="load()"
         [ngModelOptions]="{ standalone: true }"
+        class="mt-1"
     /></label>
   </div>
+
   <input
     type="search"
     aria-label="Buscar equipo"
@@ -45,56 +53,64 @@
     [ngModel]="query()"
     (ngModelChange)="query.set($event)"
     [ngModelOptions]="{ standalone: true }"
+    class="w-full h-10 px-3.5 rounded-xl bg-surface-high border border-border text-text text-xs outline-none focus:border-accent focus:ring-2 focus:ring-accent/20 my-2"
   />
-  <details class="calendar-options">
-    <summary>En vivo y actualización</summary>
-    <small>Horario: {{ vm.data().profile.timezone || 'America/Mexico_City' }}</small>
-    <div class="toolbar">
-      <label class="check"
+
+  <details class="my-3 text-xs text-muted">
+    <summary class="cursor-pointer font-medium hover:text-text transition-colors">En vivo y actualización</summary>
+    <small class="block text-[11px] text-muted mt-1">Horario: {{ vm.data().profile.timezone || 'America/Mexico_City' }}</small>
+    <div class="flex flex-wrap items-center gap-3 my-3">
+      <label class="flex items-center gap-2 text-xs cursor-pointer"
         ><input
           type="checkbox"
           [ngModel]="onlyLive()"
           (ngModelChange)="onlyLive.set($event)"
           [ngModelOptions]="{ standalone: true }"
+          class="w-auto m-0"
         />
         Solo en juego</label
       >
-      <label class="check"
+      <label class="flex items-center gap-2 text-xs cursor-pointer"
         ><input
           type="checkbox"
           [(ngModel)]="automatic"
           (ngModelChange)="schedule()"
           [ngModelOptions]="{ standalone: true }"
+          class="w-auto m-0"
         />
         Actualización automática</label
       >
-      <button type="button" class="secondary" [disabled]="loading()" (click)="load()">
+      <button type="button" class="secondary ml-auto text-xs py-1.5 px-3" [disabled]="loading()" (click)="load()">
         Actualizar partidos
       </button>
     </div>
     @if (board(); as data) {
-      <p class="source">
+      <p class="text-[11px] text-muted mt-2">
         {{ data.source }} ·
         {{ data.updated_at ? 'Última consulta: ' + updated(data.updated_at) : 'Sin actualizar' }}
       </p>
     }
   </details>
+
   @if (loading()) {
-    <p role="status">Consultando partidos…</p>
+    <p role="status" class="text-xs text-muted my-4">Consultando partidos…</p>
   }
   @if (error()) {
-    <p role="alert">{{ error() }}</p>
+    <p role="alert" class="text-xs text-red-400 my-4">{{ error() }}</p>
   }
   @if (board(); as data) {
     @if (data.message) {
-      <p class="connection" role="status">{{ data.message }}</p>
+      <p class="border-l-3 border-accent p-3 bg-surface-high text-xs text-text my-3" role="status">{{ data.message }}</p>
     }
-    <div class="games">
+    <div class="grid grid-cols-1 gap-3 my-4 max-h-[500px] overflow-y-auto pr-1">
       @for (game of matches(); track game.id) {
         <button
           type="button"
-          class="game"
-          [class.selected]="chosen(game.id)"
+          class="block p-0 bg-surface border border-border rounded-xl overflow-hidden text-left min-w-0 transition-all hover:border-accent cursor-pointer"
+          [class.border-accent]="chosen(game.id)"
+          [class.ring-2]="chosen(game.id)"
+          [class.ring-accent/30]="chosen(game.id)"
+          [class.bg-surface-high]="chosen(game.id)"
           [attr.aria-pressed]="chosen(game.id)"
           [attr.aria-label]="
             (chosen(game.id) ? 'Quitar ' : 'Seleccionar ') + game.away + ' vs ' + game.home
@@ -102,13 +118,14 @@
           [disabled]="limit() > 1 && selected().length >= limit() && !chosen(game.id)"
           (click)="choose(game)"
         >
-          <app-score-card [game]="game" /><span class="choose">{{
-            chosen(game.id) ? '✓ Seleccionado' : 'Seleccionar partido'
-          }}</span>
+          <app-score-card [game]="game" />
+          <span class="block border-t border-border py-2 px-3 text-xs text-center font-semibold transition-colors" [class.bg-accent]="chosen(game.id)" [class.text-white]="chosen(game.id)" [class.bg-surface-high]="!chosen(game.id)" [class.text-accent]="!chosen(game.id)">
+            {{ chosen(game.id) ? '✓ Seleccionado' : 'Seleccionar partido' }}
+          </span>
         </button>
       } @empty {
         @if (!data.message) {
-          <p>
+          <p class="text-xs text-muted py-4 text-center">
             No hay partidos para esta fecha y estos filtros. Puedes cambiar de día o registrar el
             evento manualmente.
           </p>
@@ -117,17 +134,22 @@
     </div>
   }
 </details>
+
 @if (selected().length) {
-  <div class="chosen">
-    <strong>Partidos vinculados · {{ selected().length }}/{{ limit() }}</strong
-    ><button type="button" class="text-button" (click)="complete.emit()">Completar ticket →</button>
+  <div class="border border-border rounded-xl bg-surface p-4.5 mt-3.5 text-xs">
+    <div class="flex justify-between items-center gap-2 mb-2">
+      <strong>Partidos vinculados · {{ selected().length }}/{{ limit() }}</strong>
+      <button type="button" class="text-accent underline text-xs font-semibold cursor-pointer" (click)="complete.emit()">Completar ticket →</button>
+    </div>
     @for (game of selected(); track game.id) {
-      <div>
-        <span
-          >{{ game.away }} vs {{ game.home }}<small>{{ game.league_name }}</small></span
-        ><button
+      <div class="flex justify-between items-center gap-2.5 pt-2 border-t border-border first:border-t-0">
+        <div>
+          <span class="font-medium text-text">{{ game.away }} vs {{ game.home }}</span>
+          <small class="block text-[10px] text-muted">{{ game.league_name }}</small>
+        </div>
+        <button
           type="button"
-          class="text-button"
+          class="text-red-400 hover:text-red-500 text-xs font-medium cursor-pointer"
           [attr.aria-label]="'Quitar partido ' + game.away + ' vs ' + game.home"
           (click)="remove(game.id)"
         >

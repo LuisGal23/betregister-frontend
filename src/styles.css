@@ -1,7 +1,9 @@
 @import './styles/tokens.css';
 @import './styles/base.css';
 @import './styles/components.css';
-
 @import './styles/experience.css';
-
 @import './styles/identity.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

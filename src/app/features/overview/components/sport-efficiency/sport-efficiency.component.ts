@@ -6,7 +6,7 @@ import { sportEfficiency } from '../../models/sport-efficiency';
   selector: 'app-sport-efficiency',
   imports: [RouterLink],
   templateUrl: './sport-efficiency.component.html',
-  styleUrl: './sport-efficiency.component.css',
+  host: { class: 'block mt-6' },
 })
 export class SportEfficiencyComponent {
   vm = inject(LedgerState);

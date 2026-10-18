@@ -20,7 +20,6 @@ import { timestamp } from '../../../../shared/utils/date.utils';
   selector: 'app-detail-card',
   imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './detail-card.component.html',
-  styleUrl: './detail-card.component.css',
 })
 export class DetailCardComponent implements AfterViewInit, OnDestroy {
   private opener = document.activeElement as HTMLElement | null;

@@ -1,37 +1,188 @@
-<div class="legal-page"><nav aria-label="Información legal"><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/delete-account">Eliminar cuenta</a><a routerLink="/support">Soporte</a></nav>
-<span class="eyebrow">BETREGISTER · TRANSPARENCIA</span>
-@if(kind==='terms'){
-<h1>Términos de uso</h1><p class="lead">Un registro personal de apuestas realizadas fuera de BetRegister. Última actualización: 5 de octubre de 2026.</p>
-<section><h2>1. Responsable y contacto</h2><p>BetRegister es operado por {{info().operator}}. Contacto: <a [href]="mail()">{{info().email}}</a>. Estos términos regulan el uso de la web y la aplicación móvil.</p></section>
-<section><h2>2. Qué hace el servicio</h2><p>Permite anotar tickets, resultados, saldos de referencia y movimientos realizados en plataformas externas, y consultar estadísticas de esos registros. BetRegister no es una casa de apuestas: no acepta ni ejecuta apuestas, no custodia dinero, no procesa depósitos o retiros reales y no paga premios. Los importes y botones de registro solo actualizan tu historial.</p></section>
-<section><h2>3. Edad y cuenta</h2><p>El servicio se ofrece únicamente a personas de 18 años o más. Al registrarte declaras que cumples ese requisito y que tienes capacidad para aceptar estos términos. Debes proporcionar un correo al que tengas acceso, proteger tu contraseña y usar el servicio conforme a las leyes aplicables. La declaración de edad no sustituye otras verificaciones que pudieran resultar necesarias.</p></section>
-<section><h2>4. Datos y resultados</h2><p>Eres responsable de revisar lo que registras. Los partidos y marcadores externos pueden estar incompletos o retrasados. Las cuotas y los resultados de tus tickets se confirman manualmente; un marcador no liquida un ticket por sí solo. Los tipos de cambio son referencias informativas, no operaciones de cambio de divisas.</p></section>
-<section><h2>5. Cálculos y protección</h2><p>Las estadísticas describen tus registros; no garantizan ganancias ni acreditan habilidad profesional. Kelly y el valor esperado dependen de probabilidades que introduces tú y pueden producir resultados inadecuados si esas estimaciones son incorrectas. No constituyen asesoramiento financiero personalizado.</p><p>Anti-Tilt es una pausa voluntaria del registro en esta app. No bloquea a una casa externa, no controla fondos y no sustituye ayuda profesional. El historial puede ser incompleto o incorrecto. No uses dinero destinado a necesidades esenciales ni intentes recuperar pérdidas aumentando el importe.</p></section>
-<section><h2>6. Lectura opcional de capturas</h2><p>Cuando esté habilitada, podrás enviar voluntariamente una captura a un proveedor de IA para obtener un borrador. Debes tener derecho a usarla, ocultar datos personales innecesarios y revisar lo extraído. No subas credenciales, códigos de acceso, documentos de identidad ni datos de terceros. La lectura puede equivocarse y no demuestra la autenticidad del boleto. Requiere consentimiento separado antes del envío.</p></section>
-<section><h2>7. Uso permitido y propiedad</h2><p>No uses el servicio para fraude, suplantación, acceso no autorizado, distribución de información ajena o interferencia con otros usuarios. Conservas los derechos sobre tus datos y autorizas el tratamiento necesario para prestar las funciones que solicites. Las marcas y escudos de terceros identifican a sus titulares; su aparición no implica afiliación ni una licencia de uso comercial para otros fines.</p></section>
-<section><h2>8. Disponibilidad, cambios y responsabilidad</h2><p>Puede haber mantenimiento, interrupciones y errores. Puedes exportar tus registros para conservar una copia. Las funciones de terceros pueden cambiar o desactivarse. Informaremos cambios materiales de estos términos dentro del servicio; los derechos que la ley reconoce al usuario no se excluyen por este documento. No se promete aprobación por ninguna tienda de aplicaciones.</p></section>
-<section><h2>9. Cierre de cuenta y consultas</h2><p>Puedes <a routerLink="/delete-account">eliminar tu cuenta y los datos asociados</a> o escribir al contacto indicado para solicitar ayuda. Eliminar registros aquí no modifica cuentas ni operaciones en casas externas. Si se incorporan planes de pago, sus precios, condiciones y cancelación se mostrarán antes de contratar; esta versión no procesa suscripciones.</p></section>
-}
-@if(kind==='privacy'){
-<h1>Aviso de privacidad</h1><p class="lead">Cómo tratamos la información en BetRegister. Última actualización: 5 de octubre de 2026.</p>
-<section><h2>Responsable</h2><p>{{info().operator}} es responsable de BetRegister. Para consultas o solicitudes sobre tus datos escribe a <a [href]="mail()">{{info().email}}</a>.</p></section>
-<section><h2>Información que se trata</h2><ul><li>Correo, contraseña protegida mediante hash, verificaciones de correo y sesiones de acceso.</li><li>Casas que añades, monedas, importes, tickets, mercados, resultados, movimientos, retos y preferencias.</li><li>Declaraciones de mayoría de edad y aceptación de términos, con fecha y versión.</li><li>Datos técnicos de seguridad: intentos de acceso, identificadores seudonimizados y registros operativos que pueden incluir dirección IP y datos de solicitud.</li><li>Si activas la lectura por IA: la captura seleccionada y los campos extraídos. No se accede a otras imágenes de tu dispositivo.</li></ul></section>
-<section><h2>Para qué se utiliza</h2><p>Para autenticarte, mantener tu historial, calcular estadísticas, aplicar límites de seguridad y pausas, mostrar partidos, responder solicitudes y prevenir abuso. No utilizamos tus datos para vender publicidad ni incorporamos publicidad de casas de apuestas en esta versión.</p></section>
-<section><h2>Proveedores y comunicación de datos</h2><ul><li>Vercel aloja la web y el backend; Supabase aloja la base de datos en producción.</li><li>Google/Gmail presta el envío de códigos de verificación al correo que registras.</li><li>Los proveedores deportivos reciben consultas de ligas, fechas y partidos. BetRegister no incluye tu correo ni tu historial privado en esas consultas. La carga de escudos remotos puede comunicar tu IP al servidor que los entrega.</li><li>El proveedor de tipos de cambio Frankfurter puede recibir consultas directamente desde tu navegador.</li><li>OpenAI recibe la captura solo cuando solicitas su lectura y aceptas el envío. BetRegister no conserva la imagen en su base de datos ni en archivos; puede procesarla temporalmente. El proveedor aplica su propia política de conservación y seguridad, que puedes consultar en <a href="https://platform.openai.com/docs/guides/your-data" target="_blank" rel="noopener">tratamiento de datos de la API</a>. Los campos revisados se guardan si registras el ticket.</li></ul><p>Estos proveedores pueden procesar información fuera de tu país. Las condiciones y regiones de infraestructura dependen de sus servicios. No se comparten contraseñas con APIs deportivas ni con el lector de capturas.</p></section>
-<section><h2>Conservación y eliminación</h2><p>Los registros asociados a tu cuenta se conservan mientras la mantengas. Al eliminarla se borran de la base activa el usuario, sus sesiones, casas, movimientos, tickets, retos y preferencias. Las capturas no se archivan. Los contadores de seguridad seudonimizados caducan y se depuran con la actividad del sistema; los registros técnicos y copias de seguridad de proveedores siguen sus ciclos de retención. Las copias de seguridad no son una función para recuperar tu cuenta. Si existe una obligación legal concreta de conservar datos, te informaremos del alcance correspondiente.</p></section>
-<section><h2>Tus opciones</h2><p>Puedes consultar, corregir y exportar registros, cambiar preferencias y <a routerLink="/delete-account">eliminar tu cuenta</a>. Puedes solicitar acceso, rectificación, cancelación, oposición u otras opciones que te correspondan escribiendo al contacto del responsable. Para proteger tu información podremos verificar que la solicitud proviene del titular; nunca envíes tu contraseña por correo.</p></section>
-<section><h2>Cookies, dispositivo y seguridad</h2><p>Usamos una cookie de sesión y almacenamiento local para preferencias de interfaz. No son cookies publicitarias. Empleamos controles de acceso por usuario, conexiones cifradas en producción y protección de contraseñas. Ningún sistema garantiza seguridad absoluta. La app no necesita ubicación, micrófono ni acceso general a tu galería; para una captura eliges un archivo mediante el selector del dispositivo.</p></section>
-<section><h2>Menores y cambios</h2><p>El servicio no está dirigido a menores de 18 años. Si detectas datos de un menor, contacta al responsable. Publicaremos aquí cualquier actualización de este aviso e informaremos cambios materiales dentro del servicio.</p></section>
-}
-@if(kind==='delete'){
-<h1>Eliminar tu cuenta</h1><p class="lead">Puedes hacerlo desde esta página web, sin instalar la app.</p><section><h2>Qué se elimina</h2><p>Tu cuenta de BetRegister, sesiones, casas, tickets, resultados, movimientos, retos y preferencias se eliminan de la base activa. La acción es permanente. No cancela ni retira dinero en casas de apuestas externas.</p><p>Exporta tus registros antes si deseas conservarlos. Consulta el <a routerLink="/privacy">aviso de privacidad</a> para la conservación técnica de seguridad y copias de proveedores.</p></section>
-@if(deleted()){<p class="notice" role="status">Tu cuenta y sus datos fueron eliminados. La sesión quedó cerrada.</p>}@else if(vm.authenticated()){
-<section class="delete-action"><h2>Confirmar identidad</h2><p>Has iniciado sesión como {{vm.data().profile.email}}. Te pediremos tu contraseña y una confirmación escrita.</p><button class="danger-button" (click)="open()">Eliminar mi cuenta</button></section>
-<dialog #deletionDialog (cancel)="close($event)" aria-labelledby="deletion-title"><h2 id="deletion-title">¿Eliminar tu cuenta definitivamente?</h2><p>Esta acción borra tu cuenta y todo su historial. No puede deshacerse.</p><form ngNativeValidate (ngSubmit)="remove()"><label>Contraseña actual<input type="password" name="deletePassword" [(ngModel)]="password" required minlength="10" maxlength="128" autocomplete="current-password" /></label><label>Escribe ELIMINAR MI CUENTA<input name="confirmation" [(ngModel)]="confirmation" required autocomplete="off" /></label>@if(error()){<p role="alert">{{error()}}</p>}<div class="dialog-actions"><button type="button" class="secondary" (click)="close()" [disabled]="busy()">Cancelar</button><button class="danger-button" [disabled]="busy() || confirmation!=='ELIMINAR MI CUENTA'">{{busy()?'Eliminando…':'Eliminar permanentemente'}}</button></div></form></dialog>
-}@else{<p><a class="primary button-link" routerLink="/login" [queryParams]="{returnTo:'/delete-account'}">Iniciar sesión para eliminar mi cuenta</a></p>}
-<section><h2>¿No puedes acceder?</h2><p>Solicita la eliminación a <a [href]="mail()">{{info().email}}</a> desde el correo asociado a tu cuenta. Indica «Eliminar mi cuenta de BetRegister». No envíes contraseña, códigos ni documentos de identidad. Verificaremos la titularidad antes de borrar datos. Puedes usar este canal sin entrar a la aplicación.</p></section>
-}
-@if(kind==='support'){
-<h1>Estamos para ayudarte</h1><p class="lead">Dudas sobre tu registro, privacidad o eliminación de cuenta.</p><section><h2>Contacto</h2><p>{{info().operator}} · <a [href]="mail()">{{info().email}}</a></p><p>Describe el problema y la pantalla donde ocurre. Si adjuntas una captura, oculta datos personales y saldos que no sean necesarios. Nunca compartas contraseñas ni códigos de verificación.</p></section><section><h2>Una herramienta de registro</h2><p>BetRegister no recibe apuestas ni dinero. Para incidencias con una apuesta, cobro, retiro o depósito real debes contactar a la plataforma donde hiciste esa operación.</p><p>Si apostar te está causando malestar o dificultades económicas, considera detenerte y buscar apoyo profesional o de una persona de confianza. Las pausas de esta app solo bloquean nuevos registros aquí.</p></section>
-}
-<a class="back-link" [routerLink]="vm.authenticated()?'/settings':'/'">← Volver a BetRegister</a></div>
+<div class="max-w-[820px] mx-auto px-6 pt-9 pb-16 text-text">
+  <nav aria-label="Información legal" class="flex gap-2.5 flex-wrap mb-12">
+    <a routerLink="/terms" class="px-4 py-2 border border-border rounded-full no-underline text-xs text-muted hover:text-accent hover:border-accent transition-colors">Términos</a>
+    <a routerLink="/privacy" class="px-4 py-2 border border-border rounded-full no-underline text-xs text-muted hover:text-accent hover:border-accent transition-colors">Privacidad</a>
+    <a routerLink="/delete-account" class="px-4 py-2 border border-border rounded-full no-underline text-xs text-muted hover:text-accent hover:border-accent transition-colors">Eliminar cuenta</a>
+    <a routerLink="/support" class="px-4 py-2 border border-border rounded-full no-underline text-xs text-muted hover:text-accent hover:border-accent transition-colors">Soporte</a>
+  </nav>
+
+  <span class="eyebrow">BETREGISTER · TRANSPARENCIA</span>
+
+  @if (kind === 'terms') {
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight my-4 leading-tight text-text">Términos de uso</h1>
+    <p class="text-base text-muted leading-relaxed mb-6">Un registro personal de apuestas realizadas fuera de BetRegister. Última actualización: 5 de octubre de 2026.</p>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">1. Responsable y contacto</h2>
+      <p class="text-sm text-muted leading-relaxed">BetRegister es operado por {{ info().operator }}. Contacto: <a [href]="mail()" class="text-accent underline hover:opacity-80 break-all">{{ info().email }}</a>. Estos términos regulan el uso de la web y la aplicación móvil.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">2. Qué hace el servicio</h2>
+      <p class="text-sm text-muted leading-relaxed">Permite anotar tickets, resultados, saldos de referencia y movimientos realizados en plataformas externas, y consultar estadísticas de esos registros. BetRegister no es una casa de apuestas: no acepta ni ejecuta apuestas, no custodia dinero, no procesa depósitos o retiros reales y no paga premios. Los importes y botones de registro solo actualizan tu historial.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">3. Edad y cuenta</h2>
+      <p class="text-sm text-muted leading-relaxed">El servicio se ofrece únicamente a personas de 18 años o más. Al registrarte declaras que cumples ese requisito y que tienes capacidad para aceptar estos términos. Debes proporcionar un correo al que tengas acceso, proteger tu contraseña y usar el servicio conforme a las leyes aplicables. La declaración de edad no sustituye otras verificaciones que pudieran resultar necesarias.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">4. Datos y resultados</h2>
+      <p class="text-sm text-muted leading-relaxed">Eres responsable de revisar lo que registras. Los partidos y marcadores externos pueden estar incompletos o retrasados. Las cuotas y los resultados de tus tickets se confirman manualmente; un marcador no liquida un ticket por sí solo. Los tipos de cambio son referencias informativas, no operaciones de cambio de divisas.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">5. Cálculos y protección</h2>
+      <p class="text-sm text-muted leading-relaxed">Las estadísticas describen tus registros; no garantizan ganancias ni acreditan habilidad profesional. Kelly y el valor esperado dependen de probabilidades que introduces tú y pueden producir resultados inadecuados si esas estimaciones son incorrectas. No constituyen asesoramiento financiero personalizado.</p>
+      <p class="text-sm text-muted leading-relaxed">Anti-Tilt es una pausa voluntaria del registro en esta app. No bloquea a una casa externa, no controla fondos y no sustituye ayuda profesional. El historial puede ser incompleto o incorrecto. No uses dinero destinado a necesidades esenciales ni intentes recuperar pérdidas aumentando el importe.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">6. Lectura opcional de capturas</h2>
+      <p class="text-sm text-muted leading-relaxed">Cuando esté habilitada, podrás enviar voluntariamente una captura a un proveedor de IA para obtener un borrador. Debes tener derecho a usarla, ocultar datos personales innecesarios y revisar lo extraído. No subas credenciales, códigos de acceso, documentos de identidad ni datos de terceros. La lectura puede equivocarse y no demuestra la autenticidad del boleto. Requiere consentimiento separado antes del envío.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">7. Uso permitido y propiedad</h2>
+      <p class="text-sm text-muted leading-relaxed">No uses el servicio para fraude, suplantación, acceso no autorizado, distribución de información ajena o interferencia con otros usuarios. Conservas los derechos sobre tus datos y autorizas el tratamiento necesario para prestar las funciones que solicites. Las marcas y escudos de terceros identifican a sus titulares; su aparición no implica afiliación ni una licencia de uso comercial para otros fines.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">8. Disponibilidad, cambios y responsabilidad</h2>
+      <p class="text-sm text-muted leading-relaxed">Puede haber mantenimiento, interrupciones y errores. Puedes exportar tus registros para conservar una copia. Las funciones de terceros pueden cambiar o desactivarse. Informaremos cambios materiales de estos términos dentro del servicio; los derechos que la ley reconoce al usuario no se excluyen por este documento. No se promete aprobación por ninguna tienda de aplicaciones.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">9. Cierre de cuenta y consultas</h2>
+      <p class="text-sm text-muted leading-relaxed">Puedes <a routerLink="/delete-account" class="text-accent underline hover:opacity-80">eliminar tu cuenta y los datos asociados</a> o escribir al contacto indicado para solicitar ayuda. Eliminar registros aquí no modifica cuentas ni operaciones en casas externas. Si se incorporan planes de pago, sus precios, condiciones y cancelación se mostrarán antes de contratar; esta versión no procesa suscripciones.</p>
+    </section>
+  }
+
+  @if (kind === 'privacy') {
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight my-4 leading-tight text-text">Aviso de privacidad</h1>
+    <p class="text-base text-muted leading-relaxed mb-6">Cómo tratamos la información en BetRegister. Última actualización: 5 de octubre de 2026.</p>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Responsable</h2>
+      <p class="text-sm text-muted leading-relaxed">{{ info().operator }} es responsable de BetRegister. Para consultas o solicitudes sobre tus datos escribe a <a [href]="mail()" class="text-accent underline hover:opacity-80 break-all">{{ info().email }}</a>.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Información que se trata</h2>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-muted leading-relaxed">
+        <li>Correo, contraseña protegida mediante hash, verificaciones de correo y sesiones de acceso.</li>
+        <li>Casas que añades, monedas, importes, tickets, mercados, resultados, movimientos, retos y preferencias.</li>
+        <li>Declaraciones de mayoría de edad y aceptación de términos, con fecha y versión.</li>
+        <li>Datos técnicos de seguridad: intentos de acceso, identificadores seudonimizados y registros operativos que pueden incluir dirección IP y datos de solicitud.</li>
+        <li>Si activas la lectura por IA: la captura seleccionada y los campos extraídos. No se accede a otras imágenes de tu dispositivo.</li>
+      </ul>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Para qué se utiliza</h2>
+      <p class="text-sm text-muted leading-relaxed">Para autenticarte, mantener tu historial, calcular estadísticas, aplicar límites de seguridad y pausas, mostrar partidos, responder solicitudes y prevenir abuso. No utilizamos tus datos para vender publicidad ni incorporamos publicidad de casas de apuestas en esta versión.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Proveedores y comunicación de datos</h2>
+      <ul class="list-disc pl-5 space-y-2 text-sm text-muted leading-relaxed">
+        <li>Vercel aloja la web y el backend; Supabase aloja la base de datos en producción.</li>
+        <li>Google/Gmail presta el envío de códigos de verificación al correo que registras.</li>
+        <li>Los proveedores deportivos reciben consultas de ligas, fechas y partidos. BetRegister no incluye tu correo ni tu historial privado en esas consultas. La carga de escudos remotos puede comunicar tu IP al servidor que los entrega.</li>
+        <li>El proveedor de tipos de cambio Frankfurter puede recibir consultas directamente desde tu navegador.</li>
+        <li>OpenAI recibe la captura solo cuando solicitas su lectura y aceptas el envío. BetRegister no conserva la imagen en su base de datos ni en archivos; puede procesarla temporalmente. El proveedor aplica su propia política de conservación y seguridad, que puedes consultar en <a href="https://platform.openai.com/docs/guides/your-data" target="_blank" rel="noopener" class="text-accent underline hover:opacity-80">tratamiento de datos de la API</a>. Los campos revisados se guardan si registras el ticket.</li>
+      </ul>
+      <p class="text-sm text-muted leading-relaxed mt-2">Estos proveedores pueden procesar información fuera de tu país. Las condiciones y regiones de infraestructura dependen de sus servicios. No se comparten contraseñas con APIs deportivas ni con el lector de capturas.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Conservación y eliminación</h2>
+      <p class="text-sm text-muted leading-relaxed">Los registros asociados a tu cuenta se conservan mientras la mantengas. Al eliminarla se borran de la base activa el usuario, sus sesiones, casas, movimientos, tickets, retos y preferencias. Las capturas no se archivan. Los contadores de seguridad seudonimizados caducan y se depuran con la actividad del sistema; los registros técnicos y copias de seguridad de proveedores siguen sus ciclos de retención. Las copias de seguridad no son una función para recuperar tu cuenta. Si existe una obligación legal concreta de conservar datos, te informaremos del alcance correspondiente.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Tus opciones</h2>
+      <p class="text-sm text-muted leading-relaxed">Puedes consultar, corregir y exportar registros, cambiar preferencias y <a routerLink="/delete-account" class="text-accent underline hover:opacity-80">eliminar tu cuenta</a>. Puedes solicitar acceso, rectificación, cancelación, oposición u otras opciones que te correspondan escribiendo al contacto del responsable. Para proteger tu información podremos verificar que la solicitud proviene del titular; nunca envíes tu contraseña por correo.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Cookies, dispositivo y seguridad</h2>
+      <p class="text-sm text-muted leading-relaxed">Usamos una cookie de sesión y almacenamiento local para preferencias de interfaz. No son cookies publicitarias. Empleamos controles de acceso por usuario, conexiones cifradas en producción y protección de contraseñas. Ningún sistema garantiza seguridad absoluta. La app no necesita ubicación, micrófono ni acceso general a tu galería; para una captura eliges un archivo mediante el selector del dispositivo.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Menores y cambios</h2>
+      <p class="text-sm text-muted leading-relaxed">El servicio no está dirigido a menores de 18 años. Si detectas datos de un menor, contacta al responsable. Publicaremos aquí cualquier actualización de este aviso e informaremos cambios materiales dentro del servicio.</p>
+    </section>
+  }
+
+  @if (kind === 'delete') {
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight my-4 leading-tight text-text">Eliminar tu cuenta</h1>
+    <p class="text-base text-muted leading-relaxed mb-6">Puedes hacerlo desde esta página web, sin instalar la app.</p>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Qué se elimina</h2>
+      <p class="text-sm text-muted leading-relaxed">Tu cuenta de BetRegister, sesiones, casas, tickets, resultados, movimientos, retos y preferencias se eliminan de la base activa. La acción es permanente. No cancela ni retira dinero en casas de apuestas externas.</p>
+      <p class="text-sm text-muted leading-relaxed">Exporta tus registros antes si deseas conservarlos. Consulta el <a routerLink="/privacy" class="text-accent underline hover:opacity-80">aviso de privacidad</a> para la conservación técnica de seguridad y copias de proveedores.</p>
+    </section>
+
+    @if (deleted()) {
+      <p class="notice my-4" role="status">Tu cuenta y sus datos fueron eliminados. La sesión quedó cerrada.</p>
+    } @else if (vm.authenticated()) {
+      <section class="border border-red-500/30 rounded-2xl p-6 bg-surface my-6 space-y-3">
+        <h2 class="text-lg font-semibold text-text">Confirmar identidad</h2>
+        <p class="text-sm text-muted">Has iniciado sesión como {{ vm.data().profile.email }}. Te pediremos tu contraseña y una confirmación escrita.</p>
+        <button class="danger-button mt-2" (click)="open()">Eliminar mi cuenta</button>
+      </section>
+
+      <dialog #deletionDialog (cancel)="close($event)" aria-labelledby="deletion-title" class="fixed inset-0 m-auto bg-surface text-text border border-border rounded-3xl p-7 w-[min(530px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto backdrop:bg-black/75 backdrop:blur-sm">
+        <h2 id="deletion-title" class="text-xl font-bold mb-2">¿Eliminar tu cuenta definitivamente?</h2>
+        <p class="text-sm text-muted mb-4">Esta acción borra tu cuenta y todo su historial. No puede deshacerse.</p>
+        <form ngNativeValidate (ngSubmit)="remove()" class="space-y-4">
+          <label class="block text-sm font-medium">Contraseña actual
+            <input type="password" name="deletePassword" [(ngModel)]="password" required minlength="10" maxlength="128" autocomplete="current-password" class="mt-1 w-full" />
+          </label>
+          <label class="block text-sm font-medium">Escribe ELIMINAR MI CUENTA
+            <input name="confirmation" [(ngModel)]="confirmation" required autocomplete="off" class="mt-1 w-full" />
+          </label>
+          @if (error()) {
+            <p role="alert" class="text-sm text-red-400">{{ error() }}</p>
+          }
+          <div class="flex gap-3 justify-end flex-wrap pt-2">
+            <button type="button" class="secondary" (click)="close()" [disabled]="busy()">Cancelar</button>
+            <button class="danger-button" [disabled]="busy() || confirmation !== 'ELIMINAR MI CUENTA'">
+              {{ busy() ? 'Eliminando…' : 'Eliminar permanentemente' }}
+            </button>
+          </div>
+        </form>
+      </dialog>
+    } @else {
+      <p class="my-6"><a class="primary button-link" routerLink="/login" [queryParams]="{ returnTo: '/delete-account' }">Iniciar sesión para eliminar mi cuenta</a></p>
+    }
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">¿No puedes acceder?</h2>
+      <p class="text-sm text-muted leading-relaxed">Solicita la eliminación a <a [href]="mail()" class="text-accent underline hover:opacity-80 break-all">{{ info().email }}</a> desde el correo asociado a tu cuenta. Indica «Eliminar mi cuenta de BetRegister». No envíes contraseña, códigos ni documentos de identidad. Verificaremos la titularidad antes de borrar datos. Puedes usar este canal sin entrar a la aplicación.</p>
+    </section>
+  }
+
+  @if (kind === 'support') {
+    <h1 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight my-4 leading-tight text-text">Estamos para ayudarte</h1>
+    <p class="text-base text-muted leading-relaxed mb-6">Dudas sobre tu registro, privacidad o eliminación de cuenta.</p>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Contacto</h2>
+      <p class="text-sm text-muted leading-relaxed">{{ info().operator }} · <a [href]="mail()" class="text-accent underline hover:opacity-80 break-all">{{ info().email }}</a></p>
+      <p class="text-sm text-muted leading-relaxed">Describe el problema y la pantalla donde ocurre. Si adjuntas una captura, oculta datos personales y saldos que no sean necesarios. Nunca compartas contraseñas ni códigos de verificación.</p>
+    </section>
+
+    <section class="py-4.5 border-b border-border space-y-2">
+      <h2 class="text-lg font-semibold tracking-tight text-text">Una herramienta de registro</h2>
+      <p class="text-sm text-muted leading-relaxed">BetRegister no recibe apuestas ni dinero. Para incidencias con una apuesta, cobro, retiro o depósito real debes contactar a la plataforma donde hiciste esa operación.</p>
+      <p class="text-sm text-muted leading-relaxed">Si apostar te está causando malestar o dificultades económicas, considera detenerte y buscar apoyo profesional o de una persona de confianza. Las pausas de esta app solo bloquean nuevos registros aquí.</p>
+    </section>
+  }
+
+  <a class="inline-block mt-8 text-accent hover:underline text-sm font-medium" [routerLink]="vm.authenticated() ? '/settings' : '/'">← Volver a BetRegister</a>
+</div>

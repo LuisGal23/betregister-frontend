@@ -9,7 +9,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
   selector: 'app-auth',
   imports: [FormsModule, IconComponent, RouterLink],
   templateUrl: './auth-page.component.html',
-  styleUrl: './auth-page.component.css',
+  host: { class: 'block w-full min-h-[calc(100vh-120px)]' },
 })
 export class AuthPageComponent implements OnDestroy {
   vm = inject(LedgerState);

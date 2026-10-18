@@ -17,7 +17,6 @@ import { LedgerState } from '../../../../core/services/ledger-state.service';
   selector: 'app-money-dialog',
   imports: [ConfirmationsPageComponent, TransactionsPageComponent],
   templateUrl: './money-dialog.component.html',
-  styleUrl: './money-dialog.component.css',
 })
 export class MoneyDialogComponent implements AfterViewInit, OnInit, OnDestroy {
   initial = input('new');

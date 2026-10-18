@@ -1,8 +1,63 @@
-<div class="score-card" [class.live]="game().state === 'live' && !game().stale">
-  <div class="meta"><span>{{ game().league_name }}</span><span>{{ game().stale ? 'Dato sin actualizar' : states[game().state] }}</span></div>
-  <div class="team"><span class="crest">@if (game().away_logo; as logo) { @if (!failed.has(logo)) { <img [src]="logo" alt="" loading="lazy" referrerpolicy="no-referrer" (error)="logoFailed(logo)" /> } @else { {{ initials(game().away) }} } } @else { {{ initials(game().away) }} }</span><span class="team-name">{{ game().away }} <small>Visitante</small></span><strong>{{ game().away_score ?? '—' }}</strong></div>
-  <div class="team"><span class="crest">@if (game().home_logo; as logo) { @if (!failed.has(logo)) { <img [src]="logo" alt="" loading="lazy" referrerpolicy="no-referrer" (error)="logoFailed(logo)" /> } @else { {{ initials(game().home) }} } } @else { {{ initials(game().home) }} }</span><span class="team-name">{{ game().home }} <small>Local</small></span><strong>{{ game().home_score ?? '—' }}</strong></div>
-  <div class="meta bottom"><span>{{ time(game().start) }}</span><span>{{ game().state === 'scheduled' ? 'Por comenzar' : game().detail }}</span></div>
-  @if (game().updated_at) { <small>Consultado: {{ time(game().updated_at!) }}</small> }
-  @if (game().message) { <p class="message">{{ game().message }}</p> }
+<div class="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-surface border border-border transition-all hover:border-accent/40 shadow-sm" [class.border-emerald-500]="game().state === 'live' && !game().stale">
+  <div class="flex justify-between items-center flex-wrap gap-2 text-muted text-xs mb-3">
+    <span class="font-semibold text-text uppercase tracking-wider text-[10px]">{{ game().league_name }}</span>
+    <span [class.text-emerald-400]="game().state === 'live' && !game().stale" [class.font-bold]="game().state === 'live' && !game().stale" class="text-[11px]">
+      {{ game().stale ? 'Dato sin actualizar' : states[game().state] }}
+    </span>
+  </div>
+  
+  <!-- Away Team -->
+  <div class="flex justify-between items-center gap-4 my-2.5">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-10 h-10 flex items-center justify-center shrink-0">
+        @if (game().away_logo; as logo) {
+          @if (!failed.has(logo)) {
+            <img [src]="logo" alt="" loading="lazy" referrerpolicy="no-referrer" (error)="logoFailed(logo)" class="w-8 h-8 object-contain drop-shadow-md" />
+          } @else {
+            <span class="text-xs font-bold text-muted">{{ initials(game().away) }}</span>
+          }
+        } @else {
+          <span class="text-xs font-bold text-muted">{{ initials(game().away) }}</span>
+        }
+      </div>
+      <div class="min-w-0">
+        <strong class="block text-sm font-semibold text-text truncate">{{ game().away }}</strong>
+        <small class="block text-[10px] text-muted">Visitante</small>
+      </div>
+    </div>
+    <strong class="text-xl font-bold font-mono text-text shrink-0">{{ game().away_score ?? '—' }}</strong>
+  </div>
+
+  <!-- Home Team -->
+  <div class="flex justify-between items-center gap-4 my-2.5">
+    <div class="flex items-center gap-3 min-w-0">
+      <div class="w-10 h-10 flex items-center justify-center shrink-0">
+        @if (game().home_logo; as logo) {
+          @if (!failed.has(logo)) {
+            <img [src]="logo" alt="" loading="lazy" referrerpolicy="no-referrer" (error)="logoFailed(logo)" class="w-8 h-8 object-contain drop-shadow-md" />
+          } @else {
+            <span class="text-xs font-bold text-muted">{{ initials(game().home) }}</span>
+          }
+        } @else {
+          <span class="text-xs font-bold text-muted">{{ initials(game().home) }}</span>
+        }
+      </div>
+      <div class="min-w-0">
+        <strong class="block text-sm font-semibold text-text truncate">{{ game().home }}</strong>
+        <small class="block text-[10px] text-muted">Local</small>
+      </div>
+    </div>
+    <strong class="text-xl font-bold font-mono text-text shrink-0">{{ game().home_score ?? '—' }}</strong>
+  </div>
+
+  <div class="flex justify-between items-center gap-2 border-t border-border pt-3 mt-3 text-[11px] text-muted">
+    <span>{{ time(game().start) }}</span>
+    <span class="font-medium text-accent">{{ game().state === 'scheduled' ? 'Por comenzar' : game().detail }}</span>
+  </div>
+  @if (game().updated_at) {
+    <small class="block text-[10px] text-muted/70 mt-1.5">Consultado: {{ time(game().updated_at!) }}</small>
+  }
+  @if (game().message) {
+    <p class="text-xs text-muted leading-relaxed mt-2 p-2 rounded-lg bg-surface-high">{{ game().message }}</p>
+  }
 </div>

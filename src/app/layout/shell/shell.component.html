@@ -1,111 +1,114 @@
 @if (vm.loading()) {
-  <div class="boot">
-    <img width="40" src="favicon.svg" alt="BetRegister" />
-    <p>Preparando tu espacio…</p>
+  <div class="min-h-screen grid place-content-center text-center">
+    <img width="40" src="favicon.svg" alt="BetRegister" class="mx-auto mb-3" />
+    <p class="text-sm text-[var(--muted)]">Preparando tu espacio…</p>
   </div>
 } @else {
   @if (publicPage()) {
-    <header class="public-header">
-      <a class="brand" routerLink="/"
-        ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister"
+    <header class="max-w-[1220px] mx-auto flex justify-between items-center gap-6 px-7 py-4.5 sticky top-0 z-50 backdrop-blur-md max-[760px]:p-5 max-[760px]:gap-4">
+      <a class="block" routerLink="/"
+        ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[120px]"
       /></a>
-      <nav aria-label="Acceso">
-        <a routerLink="/" fragment="como-funciona" class="how-link">Cómo funciona</a
+      <nav aria-label="Acceso" class="flex gap-5 items-center max-[760px]:gap-3">
+        <a routerLink="/" fragment="como-funciona" class="no-underline text-[13px] font-medium text-[#94a3b8] hover:text-white transition-colors max-[760px]:hidden">Cómo funciona</a
         ><button
-          class="theme-switch"
+          class="w-9 h-9 rounded-full bg-white/5 text-[#94a3b8] hover:text-white hover:bg-white/10 border border-white/10 grid place-items-center transition-all cursor-pointer max-[760px]:hidden"
           [attr.aria-label]="theme.dark() ? 'Usar tema claro' : 'Usar tema oscuro'"
           (click)="theme.toggle()"
         >
-          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" />
+          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" class="w-4 h-4" />
         </button>
         @if (vm.authenticated()) {
-          <a class="primary button-link" routerLink="/overview"
+          <a class="primary button-link px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2.5 max-[760px]:text-[11px]" routerLink="/overview"
             >Mi resumen <app-icon name="arrow"
           /></a>
         } @else {
-          <a class="login-link" routerLink="/login">Iniciar sesión</a
-          ><a class="primary button-link" routerLink="/register">Crear cuenta</a>
+          <a class="no-underline text-[13px] font-medium text-[#cbd5e1] hover:text-white transition-colors max-[760px]:text-[11px]" routerLink="/login">Iniciar sesión</a
+          ><a class="primary button-link px-5 py-2.5 text-[13px] max-[760px]:px-3 max-[760px]:py-2.5 max-[760px]:text-[11px]" routerLink="/register">Crear cuenta</a>
         }
       </nav>
     </header>
   } @else {
-    <a class="skip-link" href="#main-content" (click)="focusMain($event)">Saltar al contenido</a>
+    <a class="fixed -top-20 left-[230px] z-[150] bg-[var(--surface)] p-4 rounded-xl shadow-lg focus:top-2.5 transition-all text-xs font-semibold text-[var(--accent)] max-[760px]:left-4.5" href="#main-content" (click)="focusMain($event)">Saltar al contenido</a>
     @if (sidebarOpen()) {
-      <button class="sidebar-scrim" aria-label="Cerrar menú" (click)="closeMenu()"></button>
+      <button class="fixed inset-0 rounded-none bg-[#06142666] backdrop-blur-sm z-40 block cursor-pointer border-none" aria-label="Cerrar menú" (click)="closeMenu()"></button>
     }
     <aside
       id="workspace-menu"
       #sidebar
       (keydown)="trapMenu($event)"
-      class="sidebar"
-      [class.open]="sidebarOpen()"
+      class="w-[216px] fixed inset-y-0 left-0 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-45 pt-7 pb-4.5 px-4 overflow-y-auto overscroll-contain max-[1050px]:w-[192px] max-[1050px]:px-3 max-[760px]:w-[230px] max-[760px]:-translate-x-full max-[760px]:transition-transform max-[760px]:duration-250 max-[760px]:ease-out max-[760px]:invisible max-[760px]:max-h-[100dvh] max-[760px]:pt-5 max-[760px]:pb-[calc(20px+env(safe-area-inset-bottom))]"
+      [class.!translate-x-0]="sidebarOpen()"
+      [class.!visible]="sidebarOpen()"
       (keydown.escape)="closeMenu()"
     >
-      <div class="sidebar-brand">
-        <a class="brand" routerLink="/overview"
-          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" /></a
-        ><button class="mobile-close" aria-label="Cerrar menú lateral" (click)="closeMenu()">
-          <app-icon name="close" />
+      <div class="px-2 pb-7 flex items-center justify-between max-[760px]:pb-4.5">
+        <a class="block" routerLink="/overview"
+          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[120px]" /></a
+        ><button class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 ml-auto cursor-pointer border-none" aria-label="Cerrar menú lateral" (click)="closeMenu()">
+          <app-icon name="close" class="w-4 h-4" />
         </button>
       </div>
-      <span class="nav-label">MI ESPACIO</span>
-      <nav aria-label="Navegación principal">
+      <span class="text-[10px] tracking-widest text-[var(--muted)] px-3 mb-3.5 uppercase font-semibold">MI ESPACIO</span>
+      <nav aria-label="Navegación principal" class="flex flex-col gap-1.5">
         @for (link of links; track link.path) {
           @if (link.path === 'tickets') {
             <button
               type="button"
-              class="sidebar-ticket-btn"
+              class="flex gap-3 items-center px-3 py-2.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-[13px] min-h-[46px] rounded-[11px] relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium"
               (click)="ticketModal.open(); closeMenu()"
             >
-              <app-icon [name]="link.icon" /><span>{{ link.label }}</span>
+              <app-icon [name]="link.icon" class="w-[17px] h-[17px] shrink-0" /><span>{{ link.label }}</span>
             </button>
           } @else {
             <a
               [routerLink]="'/' + link.path"
               routerLinkActive="active"
               ariaCurrentWhenActive="page"
+              class="flex gap-3 items-center px-3 py-2.5 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-[13px] min-h-[46px] rounded-[11px] relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium [&.active]:bg-[var(--surface-high)] [&.active]:text-[var(--accent)] [&.active]:font-semibold [&.active]:before:content-[''] [&.active]:before:absolute [&.active]:before:-left-4 max-[1050px]:[&.active]:before:-left-3 [&.active]:before:w-[3px] [&.active]:before:h-6 [&.active]:before:bg-[var(--accent)] [&.active]:before:rounded-r"
               (click)="closeMenu()"
-              ><app-icon [name]="link.icon" /><span>{{ link.label }}</span></a
+              ><app-icon [name]="link.icon" class="w-[17px] h-[17px] shrink-0" /><span>{{ link.label }}</span></a
             >
           }
         }
       </nav>
-      <div class="sidebar-bottom">
-        <button #tutorialButton class="theme-row" (click)="tutorial.set(true); closeMenu()">
-          <app-icon name="chat" />Tutorial de cómo usar</button
-        ><button class="theme-row" (click)="theme.toggle()">
-          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" />{{
+      <div class="mt-auto pt-6 max-[760px]:pt-3 flex flex-col gap-1">
+        <button #tutorialButton class="w-full flex items-center gap-3 justify-start px-3 py-2.5 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" (click)="tutorial.set(true); closeMenu()">
+          <app-icon name="chat" class="w-4 h-4" />Tutorial de cómo usar</button
+        ><button class="w-full flex items-center gap-3 justify-start px-3 py-2.5 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" (click)="theme.toggle()">
+          <app-icon [name]="theme.dark() ? 'sun' : 'moon'" class="w-4 h-4" />{{
             theme.dark() ? 'Tema claro' : 'Tema oscuro'
           }}
         </button>
-        <div class="account">
-          <span class="avatar">{{ vm.data().profile.email.slice(0, 2).toUpperCase() }}</span>
-          <div>
-            <strong>Mi cuenta</strong><small>{{ vm.data().profile.email }}</small>
+        <div class="flex items-center gap-2.5 border-t border-[var(--border)] mt-3.5 pt-4.5 px-2 pb-2.5 min-w-0">
+          <span class="w-8 h-8 grid place-items-center bg-[var(--surface-high)] text-[var(--accent)] text-[10px] font-bold rounded-full shrink-0">{{ vm.data().profile.email.slice(0, 2).toUpperCase() }}</span>
+          <div class="min-w-0">
+            <strong class="block text-xs font-semibold text-[var(--text)]">Mi cuenta</strong><small class="block text-[9px] text-[var(--muted)] truncate mt-1">{{ vm.data().profile.email }}</small>
           </div>
         </div>
-        <button class="logout" [disabled]="vm.busy()" (click)="auth.logout()">
-          <app-icon name="logout" />Cerrar sesión</button
-        ><small class="adult-label">18+ · Registro responsable</small>
+        <button class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" [disabled]="vm.busy()" (click)="auth.logout()">
+          <app-icon name="logout" class="w-4 h-4" />Cerrar sesión</button
+        ><small class="block text-[9px] text-[var(--muted)] px-3 pt-2">18+ · Registro responsable</small>
       </div>
     </aside>
-    <header class="workspace-header">
-      <div class="workspace-location">
+    <header class="ml-[216px] h-[72px] flex justify-between items-center px-9 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_86%,var(--bg))] max-[1050px]:ml-[192px] max-[1050px]:px-5.5 max-[760px]:ml-0 max-[760px]:h-[62px] max-[760px]:px-4.5">
+      <div class="flex items-center text-xs text-[var(--muted)]">
         <button
           #menuButton
-          class="mobile-menu"
+          class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 mr-2 cursor-pointer border-none"
           aria-label="Abrir menú"
           [attr.aria-expanded]="sidebarOpen()"
           (click)="openMenu()"
         >
-          <app-icon name="menu" /></button
-        ><span
-          >Mi espacio <b>/</b> <strong>{{ currentTitle() }}</strong></span
+          <app-icon name="menu" class="w-5 h-5" /></button
+        ><span class="text-xs"
+          >Mi espacio <b class="font-normal mx-2 opacity-40 max-[760px]:mx-1.5">/</b> <strong class="font-medium text-[var(--text)]">{{ currentTitle() }}</strong></span
         >
       </div>
-      <label
+      <label class="flex items-center gap-2 m-0 text-[10px] text-[var(--muted)] max-[760px]:text-[0px]"
         >Moneda<select
           aria-label="Moneda de vista"
+          class="m-0 py-1.5 px-2.5 min-h-[30px] text-[11px] w-20 bg-[var(--surface-high)] border-0 rounded-md text-[var(--text)] outline-none"
           [ngModel]="vm.currency()"
           (ngModelChange)="bank.savePreferences($event)"
           [disabled]="vm.busy()"
@@ -118,7 +121,7 @@
   }
   @if (!publicPage()) {
     <nav
-      class="bottom-navigation"
+      class="hidden max-[760px]:grid max-[760px]:grid-cols-5 fixed bottom-0 left-0 right-0 z-35 bg-[var(--surface)] border-t border-[var(--border)] p-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] shadow-[0_-4px_24px_rgba(16,45,84,0.04)]"
       aria-label="Navegación móvil"
       [attr.inert]="sidebarOpen() ? '' : null"
     >
@@ -127,9 +130,14 @@
           [routerLink]="'/' + link.path"
           routerLinkActive="active"
           ariaCurrentWhenActive="page"
-          [class.create-ticket]="link.path === 'tickets'"
+          class="flex flex-col items-center justify-center gap-1.5 min-h-[52px] py-1 px-0.5 rounded-[10px] text-[var(--muted)] bg-transparent no-underline text-[10px] leading-tight font-medium [&.active]:text-[var(--accent)] [&.active]:bg-[var(--surface-high)]"
+          [class.[&>app-icon]:p-1]="link.path === 'tickets'"
+          [class.[&>app-icon]:box-content]="link.path === 'tickets'"
+          [class.[&>app-icon]:rounded-[9px]]="link.path === 'tickets'"
+          [class.[&>app-icon]:bg-[var(--accent)]]="link.path === 'tickets'"
+          [class.[&>app-icon]:text-white]="link.path === 'tickets'"
         >
-          <app-icon [name]="link.icon" /><span>{{
+          <app-icon [name]="link.icon" class="w-[21px] h-[21px]" /><span>{{
             link.path === 'history'
               ? 'Historial'
               : link.path === 'tickets'
@@ -139,14 +147,18 @@
         </a>
       }
       <button
+        class="flex flex-col items-center justify-center gap-1.5 min-h-[52px] py-1 px-0.5 rounded-[10px] text-[var(--muted)] bg-transparent border-none text-[10px] leading-tight font-medium cursor-pointer"
         (click)="openMenu()"
         aria-controls="workspace-menu"
         [attr.aria-expanded]="sidebarOpen()"
-        [class.active]="
+        [class.!text-[var(--accent)]]="
+          path() === '/insights' || path() === '/challenges' || path() === '/settings'
+        "
+        [class.!bg-[var(--surface-high)]]="
           path() === '/insights' || path() === '/challenges' || path() === '/settings'
         "
       >
-        <app-icon name="menu" /><span>Más</span>
+        <app-icon name="menu" class="w-[21px] h-[21px]" /><span>Más</span>
       </button>
     </nav>
   }
@@ -154,21 +166,31 @@
     [attr.inert]="sidebarOpen() ? '' : null"
     id="main-content"
     tabindex="-1"
-    [class.main-content]="!publicPage()"
-    [class.public-content]="publicPage()"
+    class="max-w-[1550px] outline-none"
+    [class.ml-[216px]]="!publicPage()"
+    [class.max-[1050px]:ml-[192px]]="!publicPage()"
+    [class.max-[760px]:ml-0]="!publicPage()"
+    [class.p-8]="!publicPage()"
+    [class.max-[1050px]:p-5.5]="!publicPage()"
+    [class.max-[760px]:p-4.5]="!publicPage()"
+    [class.max-[760px]:pb-20]="!publicPage()"
+    [class.min-h-[calc(100vh-130px)]]="!publicPage()"
+    [class.min-h-[calc(100vh-150px)]]="publicPage()"
     [attr.aria-busy]="vm.busy()"
   >
     @if (vm.busy()) {
-      <span class="sync-indicator" role="status">Sincronizando…</span>
+      <span class="fixed top-5 right-44 text-[10px] text-[var(--accent)] z-50 max-[760px]:top-17 max-[760px]:right-4.5 font-semibold" role="status">Sincronizando…</span>
     }
     @if (vm.authenticated() && vm.error()) {
-      <div class="feedback alert" role="alert">
-        {{ vm.error() }}<button class="text-button" (click)="vm.error.set('')">Cerrar</button>
+      <div class="fixed top-20 right-7 z-[100] w-[min(420px,calc(100vw-36px))] shadow-[0_8px_30px_rgba(16,45,84,0.08)] flex items-center gap-4.5 p-3 px-4 rounded-xl alert bg-[rgba(244,63,94,0.12)] border border-[rgba(244,63,94,0.3)] text-[var(--negative)] text-xs max-[760px]:top-20 max-[760px]:right-4.5" role="alert">
+        <span>{{ vm.error() }}</span>
+        <button class="text-button text-xs ml-auto text-inherit font-bold" (click)="vm.error.set('')">Cerrar</button>
       </div>
     }
     @if (vm.authenticated() && vm.notice()) {
-      <div class="feedback notice" role="status">
-        {{ vm.notice() }}<button class="text-button" (click)="vm.notice.set('')">Cerrar</button>
+      <div class="fixed top-20 right-7 z-[100] w-[min(420px,calc(100vw-36px))] shadow-[0_8px_30px_rgba(16,45,84,0.08)] flex items-center gap-4.5 p-3 px-4 rounded-xl notice bg-[rgba(16,185,129,0.12)] border border-[rgba(16,185,129,0.3)] text-[#10b981] text-xs max-[760px]:top-20 max-[760px]:right-4.5" role="status">
+        <span>{{ vm.notice() }}</span>
+        <button class="text-button text-xs ml-auto text-inherit font-bold" (click)="vm.notice.set('')">Cerrar</button>
       </div>
     }
     <router-outlet (activate)="closeMenu()" />
@@ -177,7 +199,13 @@
     <app-tutorial (dismiss)="closeTutorial()" />
   }
   <app-create-ticket-modal />
-  <footer [class.private-footer]="!publicPage()">
-    BetRegister <span>Registro personal · 18+</span><a routerLink="/terms">Términos</a><a routerLink="/privacy">Privacidad</a><a routerLink="/support">Soporte</a><a routerLink="/delete-account">Eliminar cuenta</a>
+  <footer 
+    class="py-5 px-7 text-[var(--muted)] text-[10px] flex justify-center gap-5 border-t border-[var(--border)]"
+    [class.ml-[216px]]="!publicPage()"
+    [class.max-[1050px]:ml-[192px]]="!publicPage()"
+    [class.max-[760px]:ml-0]="!publicPage()"
+    [class.max-[760px]:pb-[calc(90px+env(safe-area-inset-bottom))]]="!publicPage()"
+  >
+    BetRegister <span>Registro personal · 18+</span><a routerLink="/terms" class="hover:text-[var(--text)] transition-colors">Términos</a><a routerLink="/privacy" class="hover:text-[var(--text)] transition-colors">Privacidad</a><a routerLink="/support" class="hover:text-[var(--text)] transition-colors">Soporte</a><a routerLink="/delete-account" class="hover:text-[var(--text)] transition-colors">Eliminar cuenta</a>
   </footer>
 }

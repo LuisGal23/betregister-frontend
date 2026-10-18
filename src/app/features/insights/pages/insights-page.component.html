@@ -1,11 +1,11 @@
-<div class="page-heading">
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
   <div>
-    <h1>Tu rendimiento</h1>
-    <p>Explora qué deportes y mercados han tenido mejores resultados en tu registro.</p>
+    <h1 class="text-3xl font-bold tracking-tight text-text">Tu rendimiento</h1>
+    <p class="text-xs text-muted mt-1">Explora qué deportes y mercados han tenido mejores resultados en tu registro.</p>
   </div>
-  <button class="secondary" [disabled]="vm.busy()" (click)="refresh()">Actualizar</button>
+  <button class="secondary text-xs py-2 px-4" [disabled]="vm.busy()" (click)="refresh()">Actualizar</button>
 </div>
-<div class="tabs" role="group" aria-label="Sección de análisis">
+<div class="flex flex-wrap border-b border-border mb-5 gap-1" role="group" aria-label="Sección de análisis">
   @for (
     t of [
       { id: 'efficiency', label: 'Eficiencia' },
@@ -15,7 +15,9 @@
     track t.id
   ) {
     <button
-      [class.selected]="tab() === t.id"
+      class="bg-transparent text-muted py-2.5 px-4 text-xs font-semibold border-b-2 border-transparent transition-all cursor-pointer hover:text-text"
+      [class.border-b-accent]="tab() === t.id"
+      [class.text-accent]="tab() === t.id"
       [attr.aria-pressed]="tab() === t.id"
       (click)="tab.set(t.id)"
     >
@@ -23,11 +25,15 @@
     </button>
   }
 </div>
-<section class="filter-stack" aria-label="Filtros del análisis">
-  <div class="chip-row" role="group" aria-label="Deporte">
+<section class="grid gap-4 mb-6" aria-label="Filtros del análisis">
+  <div class="flex flex-wrap gap-2" role="group" aria-label="Deporte">
     @for (sport of sports; track sport) {
       <button
-        [class.active]="insights.sport() === sport"
+        class="py-2 px-3.5 border border-border rounded-full bg-surface text-muted text-xs font-medium transition-all hover:text-text cursor-pointer"
+        [class.bg-accent/10]="insights.sport() === sport"
+        [class.border-accent]="insights.sport() === sport"
+        [class.text-accent]="insights.sport() === sport"
+        [class.font-semibold]="insights.sport() === sport"
         [attr.aria-pressed]="insights.sport() === sport"
         (click)="chooseSport(sport)"
       >
@@ -35,24 +41,32 @@
       </button>
     }
   </div>
-  <div class="tabs" role="group" aria-label="Agrupar resultados">
-    <button [class.selected]="insights.mode() === 'market'" (click)="chooseMode('market')">
+  <div class="flex flex-wrap border-b border-border gap-1 my-1" role="group" aria-label="Agrupar resultados">
+    <button class="bg-transparent text-muted py-2 px-3 text-xs font-semibold border-b-2 border-transparent cursor-pointer hover:text-text" [class.border-b-accent]="insights.mode() === 'market'" [class.text-accent]="insights.mode() === 'market'" (click)="chooseMode('market')">
       Por mercado</button
-    ><button [class.selected]="insights.mode() === 'type'" (click)="chooseMode('type')">
+    ><button class="bg-transparent text-muted py-2 px-3 text-xs font-semibold border-b-2 border-transparent cursor-pointer hover:text-text" [class.border-b-accent]="insights.mode() === 'type'" [class.text-accent]="insights.mode() === 'type'" (click)="chooseMode('type')">
       Por tipo de apuesta
     </button>
   </div>
   @if (insights.mode() === 'market') {
-    <div class="chip-row subfilters" role="group" aria-label="Mercado">
+    <div class="flex flex-wrap gap-1.5" role="group" aria-label="Mercado">
       <button
-        [class.active]="!insights.market()"
+        class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium transition-all hover:text-text cursor-pointer"
+        [class.bg-accent/10]="!insights.market()"
+        [class.border-accent]="!insights.market()"
+        [class.text-accent]="!insights.market()"
+        [class.font-semibold]="!insights.market()"
         (click)="insights.market.set(''); selected.set(null)"
       >
         Todos los mercados
       </button>
       @for (market of markets(); track market) {
         <button
-          [class.active]="insights.market() === market"
+          class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium transition-all hover:text-text cursor-pointer"
+          [class.bg-accent/10]="insights.market() === market"
+          [class.border-accent]="insights.market() === market"
+          [class.text-accent]="insights.market() === market"
+          [class.font-semibold]="insights.market() === market"
           [attr.aria-pressed]="insights.market() === market"
           (click)="insights.market.set(market); selected.set(null)"
         >
@@ -61,28 +75,29 @@
       }
     </div>
   }
-  <details>
-    <summary>Más opciones</summary>
-    <div class="chip-row">
-      <button [class.active]="!insights.type()" (click)="insights.type.set('')">
+  <details class="text-xs text-muted">
+    <summary class="cursor-pointer font-medium hover:text-text transition-colors">Más opciones</summary>
+    <div class="flex flex-wrap gap-2 mt-3">
+      <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="!insights.type()" [class.text-accent]="!insights.type()" [class.border-accent]="!insights.type()" (click)="insights.type.set('')">
         Todos los tickets
       </button>
       @for (type of ['simple', 'parlay', 'same_game']; track type) {
-        <button [class.active]="insights.type() === type" (click)="insights.type.set(type)">
+        <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="insights.type() === type" [class.text-accent]="insights.type() === type" [class.border-accent]="insights.type() === type" (click)="insights.type.set(type)">
           {{ typeLabel(type) }}
         </button>
       }
     </div>
-    <label class="check"
+    <label class="flex items-center gap-2.5 text-xs text-muted cursor-pointer my-3"
       ><input
         type="checkbox"
         [ngModel]="insights.includeArchived()"
         (ngModelChange)="insights.includeArchived.set($event); insights.market.set('')"
+        class="w-auto m-0"
       />Incluir casas eliminadas</label
     >
-    <div class="chip-row" aria-label="Ordenar">
+    <div class="flex flex-wrap gap-2" aria-label="Ordenar">
       @for (sort of ['profit', 'frequency', 'yield']; track sort) {
-        <button [class.active]="insights.sort() === sort" (click)="insights.sort.set($any(sort))">
+        <button class="py-1.5 px-3 border border-border rounded-full bg-surface text-muted text-[11px] font-medium cursor-pointer" [class.bg-accent/10]="insights.sort() === sort" [class.text-accent]="insights.sort() === sort" [class.border-accent]="insights.sort() === sort" (click)="insights.sort.set($any(sort))">
           {{ sort === 'profit' ? 'Neto' : sort === 'frequency' ? 'Frecuencia' : 'Yield' }}
         </button>
       }
@@ -91,79 +106,83 @@
 </section>
 <app-advanced-analysis [mode]="tab()" />
 @if (tab() === 'efficiency') {
-  <p class="analysis-caption">
-    <strong>{{ insights.total() }}</strong> tickets · {{ insights.closed() }} cerrados ·
-    <strong>{{ pending() }} pendientes</strong> · Todo el historial
+  <p class="text-xs text-muted my-3">
+    <strong class="text-text font-semibold">{{ insights.total() }}</strong> tickets · {{ insights.closed() }} cerrados ·
+    <strong class="text-accent font-semibold">{{ pending() }} pendientes</strong> · Todo el historial
   </p>
   @if (pending()) {
     <p class="info-note">
       Los pendientes ya están registrados.
-      <a routerLink="/history" [queryParams]="{ status: 'pending' }">Resuelve sus resultados</a>
+      <a routerLink="/history" [queryParams]="{ status: 'pending' }" class="text-accent underline">Resuelve sus resultados</a>
       para incluirlos en las ganancias.
     </p>
   }
   @if (insights.unclassified()) {
     <p class="info-note">
       {{ insights.unclassified() }} tickets sin mercado preciso.
-      <a routerLink="/history">Editar sus etiquetas</a>.
+      <a routerLink="/history" class="text-accent underline">Editar sus etiquetas</a>.
     </p>
   }
   @if (insights.missingRate()) {
     <p class="alert">
-      Falta una tasa de cambio para comparar importes. <a routerLink="/bank">Revisar moneda</a>.
+      Falta una tasa de cambio para comparar importes. <a routerLink="/bank" class="text-accent underline">Revisar moneda</a>.
     </p>
   }
   @if (insights.total()) {
-    <div class="highlights">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-5">
       @if (insights.ranked().best; as best) {
-        <button class="panel highlight" (click)="selected.set(best.key)">
-          <small>MEJOR NETO</small><strong>{{ marketLabel(best.market) }}</strong
-          ><span class="positive">{{ vm.format(best.profit) }}</span
-          ><small>{{ best.sport }} · {{ best.won }} ganadas / {{ best.lost }} perdidas</small>
+        <button class="panel p-5 grid justify-stretch justify-items-start text-left gap-2 text-text hover:border-accent/40 transition-colors cursor-pointer" (click)="selected.set(best.key)">
+          <small class="text-[10px] text-muted font-bold tracking-wider">MEJOR NETO</small><strong class="text-base font-semibold">{{ marketLabel(best.market) }}</strong
+          ><span class="text-2xl font-bold font-mono text-emerald-400">{{ vm.format(best.profit) }}</span
+          ><small class="text-xs text-muted">{{ best.sport }} · {{ best.won }} ganadas / {{ best.lost }} perdidas</small>
         </button>
       }
       @if (insights.ranked().worst; as worst) {
-        <button class="panel highlight" (click)="selected.set(worst.key)">
-          <small>MAYOR PÉRDIDA</small><strong>{{ marketLabel(worst.market) }}</strong
-          ><span class="negative">{{ vm.format(worst.profit) }}</span
-          ><small>{{ worst.sport }} · {{ worst.won }} ganadas / {{ worst.lost }} perdidas</small>
+        <button class="panel p-5 grid justify-stretch justify-items-start text-left gap-2 text-text hover:border-accent/40 transition-colors cursor-pointer" (click)="selected.set(worst.key)">
+          <small class="text-[10px] text-muted font-bold tracking-wider">MAYOR PÉRDIDA</small><strong class="text-base font-semibold">{{ marketLabel(worst.market) }}</strong
+          ><span class="text-2xl font-bold font-mono text-red-400">{{ vm.format(worst.profit) }}</span
+          ><small class="text-xs text-muted">{{ worst.sport }} · {{ worst.won }} ganadas / {{ worst.lost }} perdidas</small>
         </button>
       }
     </div>
-    <section class="panel results">
-      <div class="section-heading">
+    <section class="panel p-5">
+      <div class="section-heading mb-4">
         <h2>{{ insights.mode() === 'market' ? 'Tus mercados' : 'Tus tipos de apuesta' }}</h2>
-        <span>{{ vm.currency() }}</span>
+        <span class="currency-tag">{{ vm.currency() }}</span>
       </div>
       @for (group of insights.rows(); track group.key) {
-        <button class="result-row" (click)="selected.set(group.key)">
-          <span
-            ><strong>{{ marketLabel(group.market) }}</strong
-            ><small>{{ group.sport }} · {{ group.total }} tickets</small
-            ><span class="market-bar" aria-hidden="true"
+        <button class="grid grid-cols-1 sm:grid-cols-[1fr_1.2fr_1fr] gap-4 w-full bg-transparent text-text text-left rounded-none border-t border-border py-4.5 text-xs hover:bg-surface-high transition-colors cursor-pointer" (click)="selected.set(group.key)">
+          <span>
+            <strong class="block text-sm font-semibold">{{ marketLabel(group.market) }}</strong>
+            <small class="block text-muted text-[11px] mt-1">{{ group.sport }} · {{ group.total }} tickets</small>
+            <span class="block w-full h-1.5 bg-surface-high rounded-full mt-2 overflow-hidden" aria-hidden="true"
               ><i
+                class="block h-full rounded-full transition-all duration-300"
                 [style.width.%]="(Math.abs(group.profit ?? 0) / barMax()) * 100"
-                [class.loss]="(group.profit ?? 0) < 0"
-              ></i></span></span
-          ><span
-            ><strong>{{ group.won }} ganadas · {{ group.lost }} perdidas</strong
-            ><small
+                [class.bg-emerald-400]="(group.profit ?? 0) >= 0"
+                [class.bg-red-500]="(group.profit ?? 0) < 0"
+              ></i></span
+          ></span>
+          <span>
+            <strong class="block text-xs font-medium">{{ group.won }} ganadas · {{ group.lost }} perdidas</strong>
+            <small class="block text-muted text-[11px] mt-1"
               >{{ group.pending }} pendientes · {{ group.cashout }} cashout ·
               {{ group.voided }} anuladas</small
             ></span
-          ><span class="row-net"
+          ><span class="text-right sm:text-right"
             ><strong
-              [class.positive]="(group.profit ?? 0) > 0"
-              [class.negative]="(group.profit ?? 0) < 0"
+              class="block text-sm font-bold font-mono"
+              [class.text-emerald-400]="(group.profit ?? 0) > 0"
+              [class.text-red-400]="(group.profit ?? 0) < 0"
               >{{ group.closed ? vm.format(group.profit) : 'Por resolver' }}</strong
-            ><small>Yield {{ percent(group.yield) }} · Ver tickets →</small></span
+            ><small class="block text-muted text-[11px] mt-1">Yield {{ percent(group.yield) }} · Ver tickets →</small></span
           >
         </button>
       }
     </section>
     @if (detail(); as group) {
-      <section class="panel evidence" aria-live="polite">
-        <div class="section-heading">
+      <section class="panel p-5 mt-5" aria-live="polite">
+        <div class="section-heading mb-4">
           <div>
             <span class="eyebrow">REGISTROS DEL GRUPO</span>
             <h2>{{ marketLabel(group.market) }} · {{ group.sport }}</h2>
@@ -172,7 +191,7 @@
               {{ group.total }} tickets. Los registros ocultos del historial también cuentan.
             </p>
           </div>
-          <button class="secondary" (click)="selected.set(null)">Cerrar detalle</button>
+          <button class="secondary text-xs py-1.5 px-3" (click)="selected.set(null)">Cerrar detalle</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -212,7 +231,7 @@
             </tbody>
           </table>
         </div>
-        <a class="text-button" routerLink="/history">Consultar o clasificar mis apuestas →</a>
+        <a class="text-accent underline text-xs inline-block mt-3" routerLink="/history">Consultar o clasificar mis apuestas →</a>
       </section>
     }
   } @else {
@@ -222,20 +241,20 @@
       <a routerLink="/tickets" class="primary button-link">Registrar ticket</a>
     </section>
   }
-  <details class="method">
-    <summary>Cómo leer estos resultados</summary>
-    <p>
+  <details class="text-xs text-muted mt-6 leading-relaxed">
+    <summary class="cursor-pointer font-medium hover:text-text transition-colors">Cómo leer estos resultados</summary>
+    <p class="mt-2">
       Son resultados pasados, no predicciones. Una muestra pequeña puede cambiar mucho. El neto es
       retorno menos importe apostado; el yield divide ese neto entre el importe de los tickets
       cerrados. Depósitos y retiros no cuentan como ganancias.
     </p>
-    <p>
+    <p class="mt-2">
       En mercados se muestra el resultado completo de los tickets que los incluyen. Un parlay con
       varios mercados aparece en cada uno: no sumes esas filas ni atribuyas su resultado a una
       selección individual. Por tipo de apuesta cada ticket cuenta una sola vez. Los tickets ocultos
       cuentan; las casas eliminadas se incluyen con la opción correspondiente.
     </p>
-    <p>
+    <p class="mt-2">
       Los mercados antiguos con unidad explícita se agrupan con los nuevos (por ejemplo Over
       carreras y Carreras). Los Over/Under genéricos requieren clasificación manual. Cashout y
       anuladas no cuentan para la tasa de acierto.

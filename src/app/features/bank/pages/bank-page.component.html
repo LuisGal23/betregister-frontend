@@ -39,8 +39,8 @@
         }
       </div>
       @if (unitMode === 'percent') {
-        <label class="unit-rebalance"
-          ><input type="checkbox" name="unitDynamic" [(ngModel)]="unitDynamic" />Recalcular cuando
+        <label class="flex items-center gap-2.5 text-xs text-muted cursor-pointer my-2"
+          ><input type="checkbox" name="unitDynamic" [(ngModel)]="unitDynamic" class="w-auto m-0" />Recalcular cuando
           cambie el bank</label
         >
         <p class="field-help">
@@ -66,39 +66,40 @@
       </div>
       <span class="currency-tag">{{ vm.data().houses.length }} casas</span>
     </div>
-    <div class="house-list">
+    <div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-3.5">
       @for (h of vm.data().houses; track h.id) {
-        <article class="house-card">
-          <div class="house-card-head">
-            <span class="mini-house">{{ h.name.slice(0, 1).toUpperCase() }}</span>
-            <h3>{{ h.name }}</h3>
+        <article class="border border-border rounded-xl p-5 bg-surface">
+          <div class="flex items-center gap-2.5 mb-5">
+            <span class="w-7 h-7 grid place-items-center bg-surface-high border border-border rounded text-xs text-text font-bold">{{ h.name.slice(0, 1).toUpperCase() }}</span>
+            <h3 class="flex-1 m-0 text-xs font-semibold">{{ h.name }}</h3>
             <span class="currency-tag">{{ h.currency }}</span>
           </div>
-          <span class="house-balance">{{ vm.native(h.balance, h.currency) }}</span
-          ><small
+          <span class="block text-2xl font-bold tracking-tight break-all text-text">{{ vm.native(h.balance, h.currency) }}</span
+          ><small class="block mt-1.5 text-muted text-[10px] leading-relaxed"
             >Saldo disponible
             @if (h.currency !== vm.currency()) {
               · ≈ {{ vm.money(h.balance, h.currency) }}
             }
           </small>
-          <div class="house-details">
+          <div class="flex justify-between gap-3.5 border-t border-border pt-3.5 mt-4 text-[10px] text-muted">
             <span
-              >Pendiente<strong>{{ vm.native(h.pending, h.currency) }}</strong></span
+              >Pendiente<strong class="block text-text text-[11px] font-medium mt-1">{{ vm.native(h.pending, h.currency) }}</strong></span
             ><span
               >Ganancia neta<strong
+                class="block text-[11px] font-medium mt-1"
                 [class.negative]="h.profit < 0"
                 [class.positive]="h.profit >= 0"
                 >{{ vm.native(h.profit, h.currency) }}</strong
               ></span
             >
           </div>
-          <div class="house-details">
+          <div class="flex justify-between gap-3.5 border-t border-border pt-3.5 mt-4 text-[10px] text-muted">
             <span
-              >Depósitos<strong>{{
+              >Depósitos<strong class="block text-text text-[11px] font-medium mt-1">{{
                 vm.native(movementTotal(h.id, 'deposit'), h.currency)
               }}</strong></span
             ><span
-              >Retiros<strong>{{
+              >Retiros<strong class="block text-text text-[11px] font-medium mt-1">{{
                 vm.native(movementTotal(h.id, 'withdrawal'), h.currency)
               }}</strong></span
             >
@@ -167,11 +168,11 @@
         </p>
         <button class="primary" [disabled]="vm.busy()"><app-icon name="plus" />Añadir casa</button>
       </form>
-      <div class="bank-next">
+      <div class="flex gap-3 border-t border-border pt-4 mt-5 text-muted text-xs">
         <app-icon name="confirmations" />
         <p>
           Después de añadir una casa, registra y confirma su saldo inicial como depósito en
-          <a routerLink="/confirmations">Depósitos y retiros</a>.
+          <a routerLink="/confirmations" class="text-accent underline">Depósitos y retiros</a>.
         </p>
       </div>
     </details>
@@ -180,7 +181,7 @@
   }
 </div>
 @if (settingsOnly) {
-  <details class="panel fx-panel collapsible">
+  <details class="panel collapsible my-6">
     <summary>Tipo de cambio · USD / MXN</summary>
     <div class="section-heading">
       <div>
@@ -191,8 +192,8 @@
     </div>
     <div class="form-grid">
       <div>
-        <div class="exchange-value">
-          1 USD <span>=</span> {{ vm.rate() === null ? '—' : (vm.rate() | number: '1.2-6') }} MXN
+        <div class="text-2xl font-bold tracking-tight my-2 text-text">
+          1 USD <span class="text-muted font-normal px-2">=</span> {{ vm.rate() === null ? '—' : (vm.rate() | number: '1.2-6') }} MXN
         </div>
         <p class="panel-subtitle">
           {{ vm.rateSource() }}

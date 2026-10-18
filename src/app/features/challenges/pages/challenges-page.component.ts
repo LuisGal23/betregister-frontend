@@ -8,7 +8,7 @@ import type { Challenge } from '../models/challenge.model';
   selector: 'app-challenges-page',
   imports: [FormsModule, RouterLink],
   templateUrl: './challenges-page.component.html',
-  styleUrl: './challenges-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class ChallengesPageComponent implements OnInit {
   vm = inject(LedgerState);

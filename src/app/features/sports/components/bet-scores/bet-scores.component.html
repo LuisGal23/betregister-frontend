@@ -1,14 +1,23 @@
-<dialog #dialog aria-labelledby="scores-title" (cancel)="$event.preventDefault(); dismiss.emit()">
-  <header><div><span class="eyebrow">SEGUIMIENTO</span><h2 id="scores-title">Marcadores de tu apuesta</h2></div><button type="button" class="secondary" aria-label="Cerrar marcadores" (click)="dismiss.emit()">✕</button></header>
-  <p>{{ title() }}</p>
-  <p class="help">El marcador es informativo y puede llegar con retraso. Confirma el resultado de tu selección y las reglas de tu casa antes de liquidar la apuesta.</p>
-  <div class="toolbar"><label><input type="checkbox" [(ngModel)]="automatic" (ngModelChange)="schedule()" /> Actualizar automáticamente</label><button type="button" class="secondary" [disabled]="loading()" (click)="load()">Actualizar marcadores</button></div>
-  @if (loading()) { <p role="status">Actualizando marcadores…</p> }
-  @if (error()) { <p role="alert">{{ error() }}</p> }
+<dialog #dialog aria-labelledby="scores-title" (cancel)="$event.preventDefault(); dismiss.emit()" class="fixed inset-0 m-auto p-6 sm:p-7 w-[min(720px,calc(100vw-32px))] max-h-[85dvh] overflow-y-auto border border-border rounded-3xl bg-surface text-text backdrop:bg-[#05090dcc] backdrop:blur-sm shadow-2xl">
+  <header class="flex justify-between items-center gap-3.5 mb-4">
+    <div>
+      <span class="eyebrow">SEGUIMIENTO</span>
+      <h2 id="scores-title" class="text-xl font-bold tracking-tight text-text mt-1">Marcadores de tu apuesta</h2>
+    </div>
+    <button type="button" class="secondary" aria-label="Cerrar marcadores" (click)="dismiss.emit()">✕</button>
+  </header>
+  <p class="text-sm font-semibold text-text mb-2">{{ title() }}</p>
+  <p class="text-xs text-muted leading-relaxed mb-4">El marcador es informativo y puede llegar con retraso. Confirma el resultado de tu selección y las reglas de tu casa antes de liquidar la apuesta.</p>
+  <div class="flex justify-between items-center gap-3.5 flex-wrap my-4">
+    <label class="flex items-center gap-2 text-xs cursor-pointer"><input type="checkbox" [(ngModel)]="automatic" (ngModelChange)="schedule()" class="w-auto m-0" /> Actualizar automáticamente</label>
+    <button type="button" class="secondary text-xs py-1.5 px-3" [disabled]="loading()" (click)="load()">Actualizar marcadores</button>
+  </div>
+  @if (loading()) { <p role="status" class="text-xs text-muted my-3">Actualizando marcadores…</p> }
+  @if (error()) { <p role="alert" class="text-xs text-red-400 my-3">{{ error() }}</p> }
   @if (result(); as data) {
-    <small>Intervalo de consulta: {{ data.refresh_seconds / 60 }} min. Se pausa al cerrar la tarjeta o dejar la pestaña en segundo plano.</small>
-    @for (message of data.messages; track message) { <p class="help">{{ message }}</p> }
-    <div class="games">@for (game of data.events; track game.id) { <app-score-card [game]="game" /> } @empty { <p>Esta apuesta no tiene partidos vinculados.</p> }</div>
-    <small>Fuentes: MLB Stats API, ESPN (fuente pública no oficial), API-Baseball para KBO.</small>
+    <small class="block text-[11px] text-muted mb-3">Intervalo de consulta: {{ data.refresh_seconds / 60 }} min. Se pausa al cerrar la tarjeta o dejar la pestaña en segundo plano.</small>
+    @for (message of data.messages; track message) { <p class="text-xs text-muted p-2 rounded bg-surface-high mb-2">{{ message }}</p> }
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 my-4">@for (game of data.events; track game.id) { <app-score-card [game]="game" /> } @empty { <p class="text-xs text-muted py-4">Esta apuesta no tiene partidos vinculados.</p> }</div>
+    <small class="block text-[10px] text-muted/70 mt-3 border-t border-border pt-2">Fuentes: MLB Stats API, ESPN (fuente pública no oficial), API-Baseball para KBO.</small>
   }
 </dialog>

@@ -1,6 +1,6 @@
-<section class="protection" aria-label="Pausa de registro">
-@if(locked()){<p role="status"><strong>Pausa activa</strong> hasta {{protection()!.until*1000 | date:'short'}}. {{protection()!.reason}} Puedes consultar y resolver tickets, pero el servidor rechazará nuevos registros.</p>}
-@if(warning()){<p class="warning">{{warning()}}</p>}
-@if(error()){<p role="alert">{{error()}}</p><button type="button" class="text-button" (click)="load()">Reintentar</button>}
-<div><button type="button" class="secondary" [disabled]="busy() || locked()" (click)="pause()">Necesito una pausa · 6 h</button><a routerLink="/settings">Configurar Anti-Tilt</a></div>
-<small>La pausa solo afecta a BetRegister; no bloquea apuestas ni dinero en otras plataformas.</small></section>
+<section class="my-4 p-3.5 border border-border rounded-xl bg-surface-high/30" aria-label="Pausa de registro">
+@if(locked()){<p role="status" class="leading-relaxed text-sm"><strong>Pausa activa</strong> hasta {{protection()!.until*1000 | date:'short'}}. {{protection()!.reason}} Puedes consultar y resolver tickets, pero el servidor rechazará nuevos registros.</p>}
+@if(warning()){<p class="warning leading-relaxed text-sm">{{warning()}}</p>}
+@if(error()){<p role="alert" class="leading-relaxed text-sm text-red-500">{{error()}}</p><button type="button" class="text-button" (click)="load()">Reintentar</button>}
+<div class="flex gap-3 items-center flex-wrap mt-2.5"><button type="button" class="secondary" [disabled]="busy() || locked()" (click)="pause()">Necesito una pausa · 6 h</button><a routerLink="/settings" class="text-accent hover:underline text-sm font-medium">Configurar Anti-Tilt</a></div>
+<small class="block mt-2.5 text-text-muted text-xs leading-relaxed">La pausa solo afecta a BetRegister; no bloquea apuestas ni dinero en otras plataformas.</small></section>

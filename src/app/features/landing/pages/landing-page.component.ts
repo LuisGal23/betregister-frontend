@@ -19,7 +19,7 @@ export interface SportAuditExample {
   selector: 'app-landing',
   imports: [RouterLink, IconComponent],
   templateUrl: './landing-page.component.html',
-  styleUrl: './landing-page.component.css',
+  host: { class: 'block w-full' },
 })
 export class LandingPageComponent {
   vm = inject(LedgerState);

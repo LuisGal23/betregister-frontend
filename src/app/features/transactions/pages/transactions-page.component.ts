@@ -14,7 +14,7 @@ import { timestamp } from '../../../shared/utils/date.utils';
   selector: 'app-transactions-page',
   imports: [FormsModule, DatePipe, IconComponent],
   templateUrl: './transactions-page.component.html',
-  styleUrl: './transactions-page.component.css',
+  host: { class: 'block space-y-6' },
 })
 export class TransactionsPageComponent {
   vm = inject(LedgerState);

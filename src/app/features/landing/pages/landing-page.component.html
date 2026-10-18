@@ -1,145 +1,151 @@
-<div class="landing-wrap">
+<div class="max-w-[1180px] mx-auto px-6 pb-16">
   <!-- Top announcement bar inspired by FabLabs -->
-  <div class="top-announcement">
-    <a [routerLink]="vm.authenticated() ? '/overview' : '/register'" class="announcement-link">
-      <span class="announcement-tag">PRO</span>
+  <div class="flex justify-center mt-4 mb-6">
+    <a [routerLink]="vm.authenticated() ? '/overview' : '/register'" class="inline-flex items-center gap-2.5 py-1.5 pl-2 pr-4.5 rounded-full bg-accent/10 border border-accent/25 text-slate-200 text-xs font-medium no-underline hover:bg-accent/15 hover:border-accent/40 hover:-translate-y-0.5 transition-all">
+      <span class="bg-accent text-[#060812] text-[10px] font-bold tracking-wide px-2 py-0.5 rounded-full">PRO</span>
       <span>Control de Bankroll auditado · Seguimiento en vivo con ESPN y MLB</span>
-      <span class="announcement-arrow">→</span>
+      <span class="text-accent font-semibold transition-transform">→</span>
     </a>
   </div>
 
-  <section class="hero-section">
-    <div class="hero-center">
+  <section class="py-6 pb-14 text-center">
+    <div class="max-w-[820px] mx-auto">
       <!-- Pill badge with glowing cyan dot -->
-      <div class="hero-pill">
-        <span class="pill-dot"></span>
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-300 text-[11px] font-semibold tracking-widest uppercase mb-6">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]"></span>
         <span>WNBA, NBA, NFL Y FÚTBOL · CONTROL AUDITADO POR PARTIDO</span>
       </div>
 
       <!-- Headline with serif italic highlight and cyan trailing cursor pipe -->
-      <h1 class="hero-title">
+      <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.08]">
         Control de apuestas que<br />
-        <em class="serif-italic">rinde cuentas.</em><span class="cursor-pipe">|</span>
+        <em class="font-serif italic font-normal text-slate-100">rinde cuentas.</em><span class="text-accent font-light not-italic ml-0.5 animate-pulse">|</span>
       </h1>
 
-      <p class="hero-desc">
+      <p class="text-base sm:text-lg text-slate-400 max-w-[660px] mx-auto mb-8 leading-relaxed">
         Registra cada jugada con partidos oficiales de ESPN y MLB, gestiona tus saldos por casa
         y audita tu rentabilidad real antes y después de cada partido. Nada se borra. Cero sesgos.
       </p>
 
       <!-- Action buttons -->
-      <div class="hero-actions">
-        <a class="primary-pill" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+      <div class="flex items-center justify-center gap-4 flex-wrap mb-12">
+        <a class="inline-flex items-center justify-center gap-2 bg-white text-[#060812] text-sm font-semibold px-6 py-3 rounded-full no-underline shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
           {{ vm.authenticated() ? 'Ver mi resumen' : 'Empezar mi registro' }}
         </a>
 
-        <div class="sport-switch-group" role="group" aria-label="Deportes">
+        <div class="inline-flex items-center gap-1.5 bg-white/5 p-1 rounded-full border border-white/10" role="group" aria-label="Deportes">
           <button
             type="button"
-            class="sport-btn"
-            [class.active]="activeSport() === 'NFL'"
+            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            [class.bg-white/15]="activeSport() === 'NFL'"
+            [class.text-white]="activeSport() === 'NFL'"
+            [class.text-slate-400]="activeSport() !== 'NFL'"
             (click)="activeSport.set('NFL')"
           >
             NFL
           </button>
           <button
             type="button"
-            class="sport-btn"
-            [class.active]="activeSport() === 'MLB'"
+            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            [class.bg-white/15]="activeSport() === 'MLB'"
+            [class.text-white]="activeSport() === 'MLB'"
+            [class.text-slate-400]="activeSport() !== 'MLB'"
             (click)="activeSport.set('MLB')"
           >
             MLB
           </button>
           <button
             type="button"
-            class="sport-btn"
-            [class.active]="activeSport() === 'Fútbol'"
+            class="text-xs font-semibold py-1.5 px-4 rounded-full transition-colors"
+            [class.bg-white/15]="activeSport() === 'Fútbol'"
+            [class.text-white]="activeSport() === 'Fútbol'"
+            [class.text-slate-400]="activeSport() !== 'Fútbol'"
             (click)="activeSport.set('Fútbol')"
           >
             Fútbol
           </button>
         </div>
 
-        <a class="how-text-link" href="#como-funciona">
-          Cómo funciona el modelo <span class="arrow-sym">→</span>
+        <a class="inline-flex items-center gap-1.5 text-slate-300 text-xs font-medium no-underline py-2 px-3 hover:text-accent transition-colors" href="#como-funciona">
+          Cómo funciona el modelo <span class="text-accent">→</span>
         </a>
       </div>
     </div>
 
     <!-- The Showcased Match & Calibration Card (FabLabs style) -->
-    <div class="showcase-container">
-      <div class="audit-showcase-card">
-        <div class="match-side">
-          <div class="match-meta-row">
-            <span class="match-badge">{{ currentExample().badge }}</span>
-            <span class="meta-note">Probabilidad registrada antes del inicio</span>
+    <div class="max-w-[820px] mx-auto mb-9">
+      <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] bg-[#0d1322]/85 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden text-left">
+        <div class="p-6 sm:p-7 md:border-r border-white/10 border-b md:border-b-0 flex flex-col justify-between">
+          <div class="flex items-center justify-between gap-3 mb-6">
+            <span class="inline-flex items-center px-3 py-1 rounded-full bg-accent/15 border border-accent/25 text-accent text-[11px] font-bold tracking-wider">{{ currentExample().badge }}</span>
+            <span class="text-[11px] text-slate-500">Probabilidad registrada antes del inicio</span>
           </div>
 
-          <div class="match-teams-row">
-            <div class="team-col away">
-              <span class="team-name">
-                <span class="team-dot away"></span>
+          <div class="flex justify-between items-end mb-4">
+            <div class="flex flex-col gap-2">
+              <span class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-slate-500"></span>
                 {{ currentExample().awayTeam }}
               </span>
-              <strong class="team-pct">{{ currentExample().awayProb }}%</strong>
+              <strong class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-400 leading-none">{{ currentExample().awayProb }}%</strong>
             </div>
 
-            <div class="team-col home">
-              <span class="team-name">
+            <div class="flex flex-col gap-2 items-end text-right">
+              <span class="text-sm font-semibold text-slate-300 flex items-center gap-2">
                 {{ currentExample().homeTeam }}
-                <span class="team-dot home"></span>
+                <span class="w-2 h-2 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]"></span>
               </span>
-              <strong class="team-pct">{{ currentExample().homeProb }}%</strong>
+              <strong class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-none">{{ currentExample().homeProb }}%</strong>
             </div>
           </div>
 
-          <div class="dual-prob-track" role="progressbar" [attr.aria-valuenow]="currentExample().homeProb">
-            <div class="track-segment away" [style.width.%]="currentExample().awayProb"></div>
-            <div class="track-segment home" [style.width.%]="currentExample().homeProb"></div>
+          <div class="flex h-2 rounded-full overflow-hidden bg-white/10 gap-0.5 mt-2" role="progressbar" [attr.aria-valuenow]="currentExample().homeProb">
+            <div class="bg-slate-700 h-full rounded-l-full" [style.width.%]="currentExample().awayProb"></div>
+            <div class="bg-gradient-to-r from-sky-400 to-accent h-full shadow-[0_0_12px_rgba(41,184,245,0.6)] rounded-r-full" [style.width.%]="currentExample().homeProb"></div>
           </div>
         </div>
 
-        <div class="calibration-side">
-          <span class="calib-header">CALIBRACIÓN AUDITADA</span>
-          <p class="calib-context">{{ currentExample().calibrationLabel }}</p>
-          <strong class="calib-metric">{{ currentExample().calibrationStat }}</strong>
-          <div class="calib-subinfo">
-            <span>Rendimiento neto: <b>{{ currentExample().calibrationYield }}</b></span>
+        <div class="p-6 sm:p-7 flex flex-col justify-between bg-[#131b2e]/40">
+          <span class="text-[11px] font-bold tracking-widest text-accent uppercase">CALIBRACIÓN AUDITADA</span>
+          <p class="text-xs text-slate-400 my-2">{{ currentExample().calibrationLabel }}</p>
+          <strong class="text-lg font-bold text-white tracking-tight leading-snug">{{ currentExample().calibrationStat }}</strong>
+          <div class="my-2.5 text-xs text-slate-400">
+            <span>Rendimiento neto: <b class="text-emerald-400">{{ currentExample().calibrationYield }}</b></span>
           </div>
-          <a class="calib-action" href="#como-funciona">
-            Ver el control de aciertos <span class="arrow-sym">→</span>
+          <a class="text-slate-200 text-xs font-semibold no-underline inline-flex items-center gap-1.5 hover:text-accent transition-colors" href="#como-funciona">
+            Ver el control de aciertos <span class="text-accent">→</span>
           </a>
         </div>
       </div>
     </div>
 
     <!-- Secondary Interactive Bankroll Preview Card -->
-    <div class="preview-deck">
-      <div class="bank-glance-card">
-        <div class="glance-top">
-          <div class="glance-label">
-            <span class="live-dot"></span>
+    <div class="max-w-[820px] mx-auto">
+      <div class="bg-[#0d1322]/70 border border-white/10 rounded-2xl p-6 sm:p-7 text-left backdrop-blur-xl">
+        <div class="flex items-center justify-between mb-5 pb-3.5 border-b border-white/10">
+          <div class="flex items-center gap-2 text-sm text-slate-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]"></span>
             <strong>Control de Bankroll en Vivo</strong>
           </div>
-          <span class="bank-tag">Multi-casa · MXN y USD</span>
+          <span class="text-[11px] text-slate-400 border border-white/10 px-2 py-0.5 rounded-md">Multi-casa · MXN y USD</span>
         </div>
 
-        <div class="glance-body">
-          <div class="glance-metrics">
-            <div class="metric-block">
-              <small>Bank total consolidado</small>
-              <strong>$14,850<span class="currency-tag">.00 MXN</span></strong>
-              <p>Disponible + apuestas en juego</p>
+        <div>
+          <div class="flex gap-9 mb-4 flex-wrap">
+            <div>
+              <small class="block text-[11px] text-slate-400 mb-1">Bank total consolidado</small>
+              <strong class="block text-3xl font-extrabold tracking-tight text-white">$14,850<span class="text-sm font-medium text-slate-400">.00 MXN</span></strong>
+              <p class="text-[11px] text-slate-500 mt-1">Disponible + apuestas en juego</p>
             </div>
-            <div class="metric-block">
-              <small>Rendimiento / Yield</small>
-              <strong class="positive-text">+18.4%</strong>
-              <p>Retorno sobre inversión real</p>
+            <div>
+              <small class="block text-[11px] text-slate-400 mb-1">Rendimiento / Yield</small>
+              <strong class="block text-3xl font-extrabold tracking-tight text-emerald-400">+18.4%</strong>
+              <p class="text-[11px] text-slate-500 mt-1">Retorno sobre inversión real</p>
             </div>
           </div>
 
           <!-- Dynamic SVG Bank Curve -->
-          <svg viewBox="0 0 480 130" class="curve-chart" role="img" aria-label="Evolución de bankroll">
+          <svg viewBox="0 0 480 130" class="w-full h-auto my-3" role="img" aria-label="Evolución de bankroll">
             <defs>
               <linearGradient id="fabCyanGlow" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color="#29b8f5" stop-opacity="0.35" />
@@ -161,18 +167,18 @@
             <circle cx="480" cy="30" r="5" fill="#29b8f5" stroke="#ffffff" stroke-width="2.5" />
           </svg>
 
-          <div class="glance-bottom">
-            <div class="sub-stat">
-              <small>Disponible</small>
-              <strong>$13,200</strong>
+          <div class="flex items-center gap-7 border-t border-white/10 pt-4 flex-wrap">
+            <div>
+              <small class="block text-[10px] text-slate-400">Disponible</small>
+              <strong class="block text-lg font-bold text-white mt-0.5">$13,200</strong>
             </div>
-            <div class="sub-stat">
-              <small>En juego</small>
-              <strong>$1,650</strong>
+            <div>
+              <small class="block text-[10px] text-slate-400">En juego</small>
+              <strong class="block text-lg font-bold text-white mt-0.5">$1,650</strong>
             </div>
-            <div class="winrate-badge">
-              <span class="pct">68%</span>
-              <small>Aciertos</small>
+            <div class="ml-auto flex items-center gap-2 bg-accent/10 border border-accent/25 rounded-full px-3.5 py-1.5">
+              <span class="text-base font-extrabold text-accent">68%</span>
+              <small class="text-[11px] text-slate-300 font-medium">Aciertos</small>
             </div>
           </div>
         </div>
@@ -181,60 +187,60 @@
   </section>
 
   <!-- How It Works Section -->
-  <section id="como-funciona" class="how-section">
-    <div class="section-header">
-      <span class="section-eyebrow">METODOLOGÍA AUDITADA</span>
-      <h2 class="section-title">
+  <section id="como-funciona" class="py-14 border-t border-white/10">
+    <div class="text-center max-w-[650px] mx-auto mb-10">
+      <span class="text-accent text-[11px] font-bold tracking-widest">METODOLOGÍA AUDITADA</span>
+      <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-white my-3 leading-tight">
         Todo lo importante.<br />
-        <em class="serif-italic">Sin perderte entre números.</em>
+        <em class="font-serif italic font-normal text-slate-200">Sin perderte entre números.</em>
       </h2>
-      <p class="section-desc">
+      <p class="text-sm text-slate-400 leading-relaxed">
         Construido para apostadores serios que buscan rentabilidad a largo plazo basada en datos y disciplina.
       </p>
     </div>
 
-    <div class="feature-cards-grid">
-      <article class="feature-card">
-        <div class="feature-card-top">
-          <div class="icon-wrap">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <article class="p-7 bg-[#0d1322]/70 border border-white/10 rounded-2xl backdrop-blur-md hover:-translate-y-1 hover:border-accent/30 transition-all">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
             <app-icon name="bank" />
           </div>
-          <span class="step-num">01</span>
+          <span class="text-xs font-bold text-slate-500 font-mono">01</span>
         </div>
-        <h3>Controla cada casa</h3>
-        <p>Añade tus casas de apuestas, registra depósitos, retiros y visualiza tu exposición por divisa en tiempo real.</p>
+        <h3 class="text-lg font-bold text-white mb-2 tracking-tight">Controla cada casa</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Añade tus casas de apuestas, registra depósitos, retiros y visualiza tu exposición por divisa en tiempo real.</p>
       </article>
 
-      <article class="feature-card featured">
-        <div class="feature-card-top">
-          <div class="icon-wrap cyan">
+      <article class="p-7 bg-gradient-to-br from-accent/10 to-[#0d1322]/80 border border-accent/25 rounded-2xl backdrop-blur-md hover:-translate-y-1 hover:border-accent/40 transition-all">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-11 h-11 rounded-xl bg-accent/15 border border-accent/30 flex items-center justify-center text-accent">
             <app-icon name="bets" />
           </div>
-          <span class="step-num">02</span>
+          <span class="text-xs font-bold text-slate-500 font-mono">02</span>
         </div>
-        <h3>Registra con datos oficiales</h3>
-        <p>Consulta partidos en vivo de ESPN, MLB y NFL. Vincula cuotas, hándicaps o selecciones de mismo partido sin errores.</p>
+        <h3 class="text-lg font-bold text-white mb-2 tracking-tight">Registra con datos oficiales</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Consulta partidos en vivo de ESPN, MLB y NFL. Vincula cuotas, hándicaps o selecciones de mismo partido sin errores.</p>
       </article>
 
-      <article class="feature-card">
-        <div class="feature-card-top">
-          <div class="icon-wrap">
+      <article class="p-7 bg-[#0d1322]/70 border border-white/10 rounded-2xl backdrop-blur-md hover:-translate-y-1 hover:border-accent/30 transition-all">
+        <div class="flex items-center justify-between mb-6">
+          <div class="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-300">
             <app-icon name="trend" />
           </div>
-          <span class="step-num">03</span>
+          <span class="text-xs font-bold text-slate-500 font-mono">03</span>
         </div>
-        <h3>Audita tus números reales</h3>
-        <p>Identifica qué ligas y mercados te dan ganancias reales, sigue tus retos y protege tu bank con alertas de disciplina.</p>
+        <h3 class="text-lg font-bold text-white mb-2 tracking-tight">Audita tus números reales</h3>
+        <p class="text-xs text-slate-400 leading-relaxed">Identifica qué ligas y mercados te dan ganancias reales, sigue tus retos y protege tu bank con alertas de disciplina.</p>
       </article>
     </div>
   </section>
 
   <!-- Responsible Gaming 18+ Section -->
-  <section class="responsible-section" id="uso-responsable">
-    <div class="responsible-badge">18+</div>
-    <div class="responsible-text">
-      <h3>El registro empieza por un límite.</h3>
-      <p>
+  <section class="flex items-start gap-6 p-7 sm:p-8 rounded-2xl bg-[#0d1322]/60 border border-white/10 my-10 max-sm:gap-4 max-sm:p-5" id="uso-responsable">
+    <div class="w-12 h-12 sm:w-14 sm:h-14 shrink-0 rounded-full border-2 border-accent flex items-center justify-center text-lg sm:text-xl font-extrabold text-accent bg-accent/10">18+</div>
+    <div>
+      <h3 class="text-base sm:text-lg font-bold text-white mb-2">El registro empieza por un límite.</h3>
+      <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
         Las apuestas son exclusivamente para mayores de 18 años. Puedes perder el dinero apostado.
         BetRegister es una herramienta de gestión y análisis personal: no recibe apuestas ni garantiza ganancias.
         Establece límites claros y nunca arriesgues fondos destinados a necesidades esenciales.
@@ -243,16 +249,16 @@
   </section>
 
   <!-- Closing Call to Action -->
-  <section class="cta-closing">
-    <div class="cta-box">
-      <h2>
+  <section class="py-14 text-center">
+    <div class="max-w-[680px] mx-auto p-8 sm:p-11 rounded-3xl bg-gradient-to-br from-accent/10 to-[#0d1322]/80 border border-accent/25">
+      <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white mb-3 leading-tight">
         Tu próxima decisión empieza<br />
-        <em class="serif-italic">por entender tu historial.</em>
+        <em class="font-serif italic font-normal text-slate-200">por entender tu historial.</em>
       </h2>
-      <p>Comienza a registrar hoy mismo. Cero costos ocultos.</p>
-      <a class="primary-pill large" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
+      <p class="text-sm text-slate-400 mb-7">Comienza a registrar hoy mismo. Cero costos ocultos.</p>
+      <a class="inline-flex items-center justify-center gap-2 bg-white text-[#060812] text-sm font-semibold px-8 py-3.5 rounded-full no-underline shadow-lg hover:bg-slate-100 hover:-translate-y-0.5 transition-all" [routerLink]="vm.authenticated() ? '/overview' : '/register'">
         {{ vm.authenticated() ? 'Abrir mi resumen' : 'Empezar mi registro' }}
-        <span class="arrow-sym">→</span>
+        <span class="text-accent">→</span>
       </a>
     </div>
   </section>

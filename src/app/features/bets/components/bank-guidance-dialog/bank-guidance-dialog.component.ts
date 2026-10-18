@@ -12,7 +12,6 @@ import { BankGuidanceComponent } from '../bank-guidance/bank-guidance.component'
   selector: 'app-bank-guidance-dialog',
   imports: [BankGuidanceComponent],
   templateUrl: './bank-guidance-dialog.component.html',
-  styleUrl: './bank-guidance-dialog.component.css',
 })
 export class BankGuidanceDialogComponent implements AfterViewInit, OnDestroy {
   houseId = input.required<string>();
