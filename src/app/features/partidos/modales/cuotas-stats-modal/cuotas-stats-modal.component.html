@@ -1,0 +1,424 @@
+@if (isOpen() && game(); as g) {
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+    (click)="close()"
+    (keydown.escape)="close()"
+    tabindex="0"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div 
+      class="w-full max-w-4xl max-h-[92vh] flex flex-col bg-surface border border-border rounded-3xl shadow-2xl overflow-hidden animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)] text-text relative"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- MODAL TOP BAR: TITLE & CLOSE -->
+      <div class="flex items-center justify-between px-5 sm:px-7 py-3.5 border-b border-border bg-surface-high/40">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="w-2 h-2 rounded-full bg-accent animate-pulse shrink-0"></span>
+          <span class="text-xs font-bold uppercase tracking-wider text-accent font-mono truncate">
+            {{ g.league_name }} · AUDITORÍA DE CUOTAS Y ESTADÍSTICAS
+          </span>
+        </div>
+
+        <button 
+          type="button" 
+          class="w-8 h-8 rounded-full bg-surface-high border border-border text-muted hover:text-accent hover:border-accent hover:rotate-90 grid place-items-center cursor-pointer transition-all duration-200 text-sm shrink-0 active:scale-95" 
+          (click)="close()" 
+          aria-label="Cerrar modal"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- MATCH SWITCHER CAROUSEL STRIP (Líneas para cambiar de partido) -->
+      @if (allGames().length > 1) {
+        <div class="flex items-center gap-2 px-3 sm:px-6 py-2 bg-surface-high/80 border-b border-border/80">
+          <button 
+            type="button" 
+            class="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-text hover:border-accent flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all text-xs"
+            (click)="prevGame()"
+            title="Partido anterior"
+          >
+            ‹
+          </button>
+
+          <!-- Horizontal scrollable strip of matches -->
+          <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none flex-1 py-1">
+            @for (item of allGames(); track item.id; let idx = $index) {
+              <button
+                type="button"
+                class="shrink-0 px-3 py-1 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer border flex items-center gap-1.5 whitespace-nowrap"
+                [class.bg-accent]="g.id === item.id"
+                [class.text-white]="g.id === item.id"
+                [class.border-accent]="g.id === item.id"
+                [class.shadow-md]="g.id === item.id"
+                [class.scale-105]="g.id === item.id"
+                [class.bg-surface]="g.id !== item.id"
+                [class.border-border]="g.id !== item.id"
+                [class.text-muted]="g.id !== item.id"
+                [class.hover:text-text]="g.id !== item.id"
+                [class.hover:border-accent/40]="g.id !== item.id"
+                (click)="selectGame(item)"
+              >
+                <span class="font-mono text-[11px] font-bold">{{ shortCode(item.home) }} vs {{ shortCode(item.away) }}</span>
+                @if (item.state === 'live') {
+                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                }
+              </button>
+            }
+          </div>
+
+          <button 
+            type="button" 
+            class="w-7 h-7 rounded-lg bg-surface border border-border text-muted hover:text-text hover:border-accent flex items-center justify-center shrink-0 cursor-pointer active:scale-95 transition-all text-xs"
+            (click)="nextGame()"
+            title="Siguiente partido"
+          >
+            ›
+          </button>
+        </div>
+      }
+
+      <!-- MODAL SCROLLABLE BODY -->
+      <div class="overflow-y-auto px-4 sm:px-7 py-5 flex flex-col gap-6 max-h-[calc(92vh-130px)] scrollbar-thin">
+
+        <!-- HERO MATCHUP BANNER -->
+        <div class="relative overflow-hidden p-5 sm:p-7 rounded-2xl sm:rounded-3xl bg-surface-high/40 border border-border flex flex-col gap-5 shadow-lg">
+          <!-- Ambient gradient -->
+          <div class="absolute -right-10 -top-10 w-44 h-44 bg-accent/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <!-- Top Meta -->
+          <div class="flex justify-between items-center gap-3 relative z-1 flex-wrap">
+            <span class="text-xs text-muted font-medium">
+              {{ formatMatchDate(g.start) }} · {{ g.league_name }}
+            </span>
+
+            <div class="flex items-center gap-2">
+              @if (g.state === 'live') {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-red-500/15 text-red-500 border border-red-500/35">
+                  <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> EN VIVO {{ g.detail ? '· ' + g.detail : '' }}
+                </span>
+              } @else if (g.state === 'final') {
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-surface-high text-muted border border-border">
+                  FINAL {{ g.detail ? '· ' + g.detail : '' }}
+                </span>
+              } @else {
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-accent/15 text-accent border border-accent/30">
+                  <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> POR JUGARSE
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Teams Centerpiece with Big Centered Logos -->
+          <div class="flex items-center justify-between gap-3 sm:gap-6 py-2 relative z-1">
+            <!-- Home Team (Visita) -->
+            <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+              <div class="flex flex-col text-right flex-1 min-w-0">
+                <span class="text-xs font-mono font-bold text-accent truncate">{{ shortCode(g.home) }}</span>
+                <strong class="text-base sm:text-2xl font-black text-text leading-tight truncate">{{ g.home }}</strong>
+                <small class="text-xs text-muted">visita</small>
+              </div>
+              <div class="relative w-16 h-16 sm:w-22 sm:h-22 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface border border-border/80 shadow-md">
+                @if (g.home_logo) {
+                  <img [src]="g.home_logo" [alt]="g.home" class="w-full h-full object-contain filter drop-shadow-md" />
+                } @else {
+                  <span class="text-2xl font-black text-text font-mono">{{ shortCode(g.home) }}</span>
+                }
+              </div>
+            </div>
+
+            <!-- Score / Versus Center -->
+            <div class="flex flex-col items-center justify-center shrink-0 min-w-[70px] sm:min-w-[100px] px-2">
+              @if (g.state === 'live' || g.state === 'final') {
+                <div class="flex items-center gap-2 text-3xl sm:text-4xl font-black font-mono tracking-tight text-text">
+                  <span>{{ g.home_score ?? 0 }}</span>
+                  <span class="text-muted font-light">–</span>
+                  <span>{{ g.away_score ?? 0 }}</span>
+                </div>
+                @if (g.detail) {
+                  <small class="text-xs text-accent font-semibold mt-1 text-center truncate max-w-[110px]">{{ g.detail }}</small>
+                }
+              } @else {
+                <span class="text-sm font-black tracking-widest text-muted">VS</span>
+                <span class="text-xs font-bold text-text mt-1 font-mono">{{ g.start | date:'HH:mm' }}</span>
+              }
+            </div>
+
+            <!-- Away Team (Local) -->
+            <div class="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 flex-row-reverse">
+              <div class="flex flex-col text-left flex-1 min-w-0">
+                <span class="text-xs font-mono font-bold text-accent truncate">{{ shortCode(g.away) }}</span>
+                <strong class="text-base sm:text-2xl font-black text-text leading-tight truncate">{{ g.away }}</strong>
+                <small class="text-xs text-muted">local</small>
+              </div>
+              <div class="relative w-16 h-16 sm:w-22 sm:h-22 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface border border-border/80 shadow-md">
+                @if (g.away_logo) {
+                  <img [src]="g.away_logo" [alt]="g.away" class="w-full h-full object-contain filter drop-shadow-md" />
+                } @else {
+                  <span class="text-2xl font-black text-text font-mono">{{ shortCode(g.away) }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- WIN PROBABILITY GAUGE (Local / Empate / Visitante) -->
+          @if (effectiveProbabilities(); as prob) {
+            <div class="flex flex-col gap-2.5 pt-3 border-t border-border/50 relative z-1">
+              <div class="flex justify-between items-center text-xs flex-wrap gap-2">
+                <span class="font-bold uppercase tracking-wider text-muted text-[11px]">PROBABILIDADES ESTIMADAS</span>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-accent/15 text-accent border border-accent/25">
+                  {{ prob.source }}
+                </span>
+              </div>
+
+              <!-- Segmented Bar -->
+              <div class="w-full h-3.5 rounded-full bg-surface overflow-hidden flex p-0.5 border border-border">
+                <div 
+                  class="h-full rounded-l-full bg-accent transition-all duration-700" 
+                  [style.width.%]="prob.homePct"
+                  [title]="g.home + ': ' + prob.homePct + '%'"
+                ></div>
+                @if (prob.drawPct) {
+                  <div 
+                    class="h-full bg-amber-400 transition-all duration-700" 
+                    [style.width.%]="prob.drawPct"
+                    [title]="'Empate: ' + prob.drawPct + '%'"
+                  ></div>
+                }
+                <div 
+                  class="h-full rounded-r-full bg-emerald-400 transition-all duration-700" 
+                  [style.width.%]="prob.awayPct"
+                  [title]="g.away + ': ' + prob.awayPct + '%'"
+                ></div>
+              </div>
+
+              <!-- Values Legend -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-accent shrink-0"></span>
+                  <span class="text-xs text-text font-medium truncate">{{ g.home }}</span>
+                  <strong class="text-xs font-mono font-bold text-accent ml-auto">{{ prob.homePct }}%</strong>
+                </div>
+
+                @if (prob.drawPct) {
+                  <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></span>
+                    <span class="text-xs text-text font-medium">Empate</span>
+                    <strong class="text-xs font-mono font-bold text-amber-400 ml-auto">{{ prob.drawPct }}%</strong>
+                  </div>
+                }
+
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0"></span>
+                  <span class="text-xs text-text font-medium truncate">{{ g.away }}</span>
+                  <strong class="text-xs font-mono font-bold text-emerald-400 ml-auto">{{ prob.awayPct }}%</strong>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- LOADING DETAILS SPINNER / STATE -->
+        @if (loadingDetails()) {
+          <div class="py-8 flex flex-col items-center justify-center gap-2 text-muted text-xs">
+            <div class="w-6 h-6 rounded-full border-2 border-accent border-t-transparent animate-spin"></div>
+            <span>Consultando cuotas en vivo y estadísticas de casas deportivas…</span>
+          </div>
+        }
+
+        <!-- ODDS & MARKETS SECTION -->
+        @if (details(); as det) {
+          @if (det.odds; as odds) {
+            <section class="flex flex-col gap-3.5">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-bold text-text">Cuotas de Casas de Apuestas</h3>
+                  <p class="text-xs text-muted">Haz clic en cualquier cuota para seleccionarla en tu ticket.</p>
+                </div>
+                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-surface-high text-muted border border-border">
+                  Proveedor: {{ odds.provider }}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                <!-- MONEYLINE (1X2) -->
+                <div class="p-4 rounded-2xl bg-surface-high/40 border border-border flex flex-col gap-2.5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-muted">MONEYLINE (GANADOR)</span>
+                  
+                  <div class="flex flex-col gap-2">
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addMoneylineBet('home', odds.moneyline.home_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text truncate max-w-[120px]">{{ g.home }}</span>
+                      <strong class="text-sm font-mono font-bold text-accent">{{ odds.moneyline.home_decimal ?? '1.95' }}</strong>
+                    </button>
+
+                    @if (odds.moneyline.draw_decimal || g.sport === 'Fútbol') {
+                      <button 
+                        type="button" 
+                        class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                        (click)="addMoneylineBet('draw', odds.moneyline.draw_decimal)"
+                      >
+                        <span class="text-xs font-bold text-text">Empate (X)</span>
+                        <strong class="text-sm font-mono font-bold text-amber-400">{{ odds.moneyline.draw_decimal ?? '3.25' }}</strong>
+                      </button>
+                    }
+
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addMoneylineBet('away', odds.moneyline.away_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text truncate max-w-[120px]">{{ g.away }}</span>
+                      <strong class="text-sm font-mono font-bold text-emerald-400">{{ odds.moneyline.away_decimal ?? '2.10' }}</strong>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- SPREAD / HÁNDICAP -->
+                <div class="p-4 rounded-2xl bg-surface-high/40 border border-border flex flex-col gap-2.5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-muted">HÁNDICAP (SPREAD)</span>
+
+                  <div class="flex flex-col gap-2">
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addSpreadBet('home', odds.spread.home_line, odds.spread.home_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text truncate max-w-[120px]">{{ shortCode(g.home) }} {{ formatLine(odds.spread.home_line ?? -0.5) }}</span>
+                      <strong class="text-sm font-mono font-bold text-accent">{{ odds.spread.home_decimal ?? '1.90' }}</strong>
+                    </button>
+
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addSpreadBet('away', odds.spread.away_line, odds.spread.away_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text truncate max-w-[120px]">{{ shortCode(g.away) }} {{ formatLine(odds.spread.away_line ?? 0.5) }}</span>
+                      <strong class="text-sm font-mono font-bold text-emerald-400">{{ odds.spread.away_decimal ?? '1.90' }}</strong>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- TOTAL (OVER / UNDER) -->
+                <div class="p-4 rounded-2xl bg-surface-high/40 border border-border flex flex-col gap-2.5">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-muted">TOTAL (MÁS / MENOS)</span>
+
+                  <div class="flex flex-col gap-2">
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addTotalBet('over', odds.total.line, odds.total.over_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text">Más de (Over) {{ odds.total.line ?? 2.5 }}</span>
+                      <strong class="text-sm font-mono font-bold text-accent">{{ odds.total.over_decimal ?? '1.90' }}</strong>
+                    </button>
+
+                    <button 
+                      type="button" 
+                      class="flex items-center justify-between p-2.5 rounded-xl bg-surface hover:bg-accent/15 border border-border hover:border-accent transition-all cursor-pointer text-left"
+                      (click)="addTotalBet('under', odds.total.line, odds.total.under_decimal)"
+                    >
+                      <span class="text-xs font-bold text-text">Menos de (Under) {{ odds.total.line ?? 2.5 }}</span>
+                      <strong class="text-sm font-mono font-bold text-emerald-400">{{ odds.total.under_decimal ?? '1.90' }}</strong>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          }
+
+          <!-- PLAYER PROPS SECTION (If players available) -->
+          @if (det.players && det.players.length > 0) {
+            <section class="flex flex-col gap-3.5 pt-2 border-t border-border/50">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 class="text-base font-bold text-text">Props y Rendimiento de Jugadores</h3>
+                  <p class="text-xs text-muted">Líneas individuales de goles, puntos o asistencias.</p>
+                </div>
+
+                @if (playerPropCategories().length > 1) {
+                  <div class="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+                    <button
+                      type="button"
+                      class="pill-filter-btn text-[11px] py-1 px-2.5"
+                      [class.active]="playerCategoryFilter() === 'all'"
+                      (click)="playerCategoryFilter.set('all')"
+                    >
+                      Todos
+                    </button>
+                    @for (cat of playerPropCategories(); track cat) {
+                      <button
+                        type="button"
+                        class="pill-filter-btn text-[11px] py-1 px-2.5 shrink-0"
+                        [class.active]="playerCategoryFilter() === cat"
+                        (click)="playerCategoryFilter.set(cat)"
+                      >
+                        {{ cat }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                @for (player of filteredPlayers(); track player.name + player.category) {
+                  <div class="p-3.5 rounded-xl bg-surface-high/40 border border-border flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      @if (player.headshot) {
+                        <img [src]="player.headshot" [alt]="player.name" class="w-9 h-9 rounded-full object-cover bg-surface border border-border shrink-0" />
+                      }
+                      <div class="flex flex-col min-w-0">
+                        <strong class="text-xs font-bold text-text truncate">{{ player.name }}</strong>
+                        <span class="text-[10px] text-muted">{{ player.position || (player.team_side === 'home' ? g.home : g.away) }}</span>
+                        <span class="text-[10px] text-accent font-semibold mt-0.5">{{ player.display_stat }}</span>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="action-pill-btn primary py-1.5 px-3 text-xs shrink-0"
+                      (click)="addPlayerBet(player, player.category_label || player.category)"
+                    >
+                      + Apostar
+                    </button>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+        }
+
+      </div>
+
+      <!-- MODAL FOOTER -->
+      <div class="flex items-center justify-between px-5 sm:px-7 py-3.5 border-t border-border bg-surface-high/30">
+        <span class="text-xs text-muted">
+          Partido {{ currentIndex() + 1 }} de {{ allGames().length }}
+        </span>
+
+        <div class="flex items-center gap-2.5">
+          <button 
+            type="button" 
+            class="action-pill-btn py-2 px-4 text-xs"
+            (click)="close()"
+          >
+            Cerrar
+          </button>
+
+          <button 
+            type="button" 
+            class="action-pill-btn primary py-2 px-5 text-xs font-bold shadow-md hover:scale-105 active:scale-95 transition-all"
+            (click)="addMoneylineBet('home')"
+          >
+            <span>+ Crear Ticket</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

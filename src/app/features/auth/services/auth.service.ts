@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../../core/services/api.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
-import type { Credentials } from '../models/auth.model';
+import type { Credentials } from './auth.model';
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   verification = signal<{challenge: string; expires_in: number; resend_after: number} | null>(null);

@@ -6,10 +6,10 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LedgerState } from '../../core/services/ledger-state.service';
 import { AuthService } from '../../features/auth/services/auth.service';
-import { BankService } from '../../features/bank/services/bank.service';
+import { BankService } from '../../features/banco/services/bank.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { CreateTicketModalComponent } from '../../features/bets/components/create-ticket-modal/create-ticket-modal.component';
-import { TicketModalService } from '../../features/bets/services/ticket-modal.service';
+import { CreateTicketModalComponent } from '../../features/apuestas/modales/registrar-ticket-modal/create-ticket-modal.component';
+import { TicketModalService } from '../../features/apuestas/services/ticket-modal.service';
 import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
@@ -49,7 +49,6 @@ export class ShellComponent implements OnInit {
   links = computed(() => [
     { path: 'overview', label: this.i18n.t().myOverview, icon: 'overview' },
     { path: 'matches', label: this.i18n.t().matches, icon: 'calendar' },
-    { path: 'match-analysis', label: this.i18n.t().oddsAndStats, icon: 'trend' },
     { path: 'community', label: this.i18n.t().community, icon: 'chat' },
     { path: 'tickets', label: this.i18n.t().registerTicket, icon: 'plus' },
     { path: 'bank', label: this.i18n.t().myBank, icon: 'bank' },

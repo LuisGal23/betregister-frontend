@@ -1,0 +1,351 @@
+@if (isOpen()) {
+  <div 
+    class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]"
+    (click)="close()"
+  >
+    <div 
+      class="w-full max-w-xl max-h-[92vh] overflow-y-auto p-4 sm:p-7 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-2xl flex flex-col gap-3.5 sm:gap-4 text-text scrollbar-thin animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)]"
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-border/50 pb-3">
+        <div>
+          <span class="eyebrow !text-accent font-mono font-bold">COMPARTIR CON LA COMUNIDAD</span>
+          <h2 class="text-base sm:text-lg font-black text-text mt-0.5">Publicar Pronóstico de Tipster</h2>
+        </div>
+        <button 
+          type="button" 
+          class="secondary !w-8 !h-8 !p-0 rounded-full grid place-items-center cursor-pointer hover:rotate-90 hover:border-accent hover:text-accent transition-all text-sm shrink-0"
+          (click)="close()"
+        >
+          ✕
+        </button>
+      </div>
+
+      @if (createError()) {
+        <div class="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+          {{ createError() }}
+        </div>
+      }
+
+      <!-- TAB SELECTOR: TICKET / SPORTS API / MANUAL -->
+      <div class="flex items-center gap-1 sm:gap-1.5 p-1 bg-surface-high rounded-xl sm:rounded-2xl border border-border">
+        <button
+          type="button"
+          class="flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5"
+          [class.bg-accent]="creationTab() === 'ticket'"
+          [class.text-surface]="creationTab() === 'ticket'"
+          [class.text-muted]="creationTab() !== 'ticket'"
+          (click)="creationTab.set('ticket')"
+        >
+          <span>🎟️</span>
+          <span class="hidden sm:inline">Desde mis Tickets</span>
+          <span class="sm:hidden">Tickets</span>
+        </button>
+
+        <button
+          type="button"
+          class="flex-1 py-2 px-1.5 sm:px-2.5 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5"
+          [class.bg-accent]="creationTab() === 'api'"
+          [class.text-surface]="creationTab() === 'api'"
+          [class.text-muted]="creationTab() !== 'api'"
+          (click)="creationTab.set('api')"
+        >
+          <span>⚽</span>
+          <span class="hidden sm:inline">Partido de Hoy (APIs)</span>
+          <span class="sm:hidden">Partidos</span>
+        </button>
+
+        <button
+          type="button"
+          class="py-2 px-2 sm:px-3 text-[11px] sm:text-xs font-bold rounded-lg sm:rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1 shrink-0"
+          [class.bg-accent]="creationTab() === 'manual'"
+          [class.text-surface]="creationTab() === 'manual'"
+          [class.text-muted]="creationTab() !== 'manual'"
+          (click)="creationTab.set('manual')"
+        >
+          <span>✏️</span>
+          <span>Manual</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: PICK FROM USER REGISTERED BETS -->
+      @if (creationTab() === 'ticket') {
+        <div class="flex flex-col gap-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-text">Elige un ticket de tu historial registrado:</span>
+            <span class="text-[10px] text-muted">Autocompleta cuota, unidades y evento</span>
+          </div>
+
+          @if (userTickets().length === 0) {
+            <div class="p-4 rounded-2xl bg-surface-high/60 border border-border text-center text-xs text-muted flex flex-col items-center gap-2">
+              <span>No tienes tickets registrados aún en tu cuenta.</span>
+              <button type="button" class="action-pill-btn text-xs py-1 px-3" (click)="creationTab.set('api')">
+                Buscar partido con las APIs deportivas →
+              </button>
+            </div>
+          } @else {
+            <div class="max-h-44 overflow-y-auto flex flex-col gap-2 pr-1 scrollbar-thin">
+              @for (t of userTickets(); track t.id) {
+                <button
+                  type="button"
+                  class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-xs text-left w-full hover:border-accent"
+                  [class.border-accent]="selectedTicketId() === t.id"
+                  [class.bg-accent/10]="selectedTicketId() === t.id"
+                  [class.border-border]="selectedTicketId() !== t.id"
+                  [class.bg-surface-high/40]="selectedTicketId() !== t.id"
+                  (click)="selectTicket(t)"
+                >
+                  <div class="flex flex-col min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-text truncate">{{ t.event }}</span>
+                      <span class="px-1.5 py-0.5 rounded text-[10px] bg-surface-high border border-border text-muted font-mono shrink-0">
+                        #{{ t.id }}
+                      </span>
+                    </div>
+                    <div class="flex items-center gap-2 text-[10px] text-muted mt-0.5">
+                      <span>{{ t.house }}</span>
+                      <span>·</span>
+                      <span class="text-accent font-semibold font-mono">Cuota {{ t.odds }}</span>
+                      @if (t.sport_tag) {
+                        <span>·</span>
+                        <span>{{ t.sport_tag }}</span>
+                      }
+                    </div>
+                  </div>
+
+                  @if (selectedTicketId() === t.id) {
+                    <span class="text-accent font-bold text-xs shrink-0 flex items-center gap-1">
+                      ✓ Seleccionado
+                    </span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- TAB 2: PICK OFFICIAL GAME FROM SPORTS APIS -->
+      @if (creationTab() === 'api') {
+        <div class="flex flex-col gap-2.5">
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold text-text shrink-0">Liga Oficial:</label>
+            <select
+              [ngModel]="selectedApiLeague()"
+              (ngModelChange)="onApiLeagueChange($event)"
+              class="h-9 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent w-full"
+            >
+              @for (lg of apiLeagues(); track lg.id) {
+                <option [value]="lg.id">{{ lg.name }} ({{ lg.sport }})</option>
+              }
+            </select>
+          </div>
+
+          @if (loadingApiMatches()) {
+            <div class="py-6 text-center text-xs text-muted flex items-center justify-center gap-2">
+              <div class="w-4 h-4 rounded-full border-2 border-accent border-t-transparent animate-spin"></div>
+              <span>Cargando partidos oficiales del día…</span>
+            </div>
+          } @else if (apiMatches().length === 0) {
+            <div class="p-3 text-center text-xs text-muted bg-surface-high/50 rounded-2xl border border-border">
+              No hay partidos programados para hoy en esta liga. Prueba seleccionando otra liga arriba.
+            </div>
+          } @else {
+            <div class="max-h-44 overflow-y-auto flex flex-col gap-2 pr-1 scrollbar-thin">
+              @for (m of apiMatches(); track m.id) {
+                <button
+                  type="button"
+                  class="p-2.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-xs text-left w-full hover:border-accent"
+                  [class.border-accent]="selectedApiGameId() === m.id"
+                  [class.bg-accent/10]="selectedApiGameId() === m.id"
+                  [class.border-border]="selectedApiGameId() !== m.id"
+                  [class.bg-surface-high/40]="selectedApiGameId() !== m.id"
+                  (click)="selectApiGame(m)"
+                >
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    @if (m.home_logo) {
+                      <img [src]="m.home_logo" class="w-5 h-5 object-contain" alt="" />
+                    }
+                    <span class="font-bold text-text truncate">{{ m.home }} vs {{ m.away }}</span>
+                    @if (m.away_logo) {
+                      <img [src]="m.away_logo" class="w-5 h-5 object-contain" alt="" />
+                    }
+                  </div>
+
+                  <div class="flex items-center gap-2 shrink-0">
+                    @if (m.state === 'live') {
+                      <span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30 animate-pulse">
+                        EN VIVO
+                      </span>
+                    }
+                    @if (selectedApiGameId() === m.id) {
+                      <span class="text-accent font-bold">✓</span>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      }
+
+      <!-- ACTIVE SELECTION CARD (if event is chosen) -->
+      @if (newPostEvent()) {
+        <div class="p-3 px-4 rounded-2xl bg-surface-high/80 border border-border flex items-center justify-between gap-3">
+          <div class="flex items-center gap-2.5 min-w-0">
+            @if (newPostHomeLogo()) {
+              <img [src]="newPostHomeLogo()" class="w-6 h-6 object-contain" alt="" />
+            }
+            <div class="flex flex-col min-w-0">
+              <span class="text-xs font-black text-text truncate">{{ newPostEvent() }}</span>
+              <span class="text-[10px] text-muted">{{ newPostSport() }} · {{ newPostLeague() || 'General' }}</span>
+            </div>
+            @if (newPostAwayLogo()) {
+              <img [src]="newPostAwayLogo()" class="w-6 h-6 object-contain" alt="" />
+            }
+          </div>
+
+          @if (selectedTicketId()) {
+            <span class="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 shrink-0">
+              🎟️ Ticket #{{ selectedTicketId() }}
+            </span>
+          }
+        </div>
+      }
+
+      <!-- FORM DETAILS -->
+      <form (ngSubmit)="submitPost()" class="flex flex-col gap-3.5">
+
+        <!-- If Manual Mode, show manual event input -->
+        @if (creationTab() === 'manual') {
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-text">Partido o Evento</label>
+            <input
+              type="text"
+              [ngModel]="newPostEvent()"
+              (ngModelChange)="newPostEvent.set($event)"
+              name="event"
+              required
+              placeholder="Ej. Real Madrid vs Barcelona"
+              class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent font-semibold"
+            />
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-text">Deporte</label>
+              <select
+                [ngModel]="newPostSport()"
+                (ngModelChange)="newPostSport.set($event)"
+                name="sport"
+                class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent"
+              >
+                <option value="Fútbol">Fútbol</option>
+                <option value="NFL">NFL</option>
+                <option value="Béisbol">Béisbol</option>
+                <option value="NBA">NBA</option>
+                <option value="Tenis">Tenis</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-xs font-bold text-text">Liga (Opcional)</label>
+              <input
+                type="text"
+                [ngModel]="newPostLeague()"
+                (ngModelChange)="newPostLeague.set($event)"
+                name="league"
+                placeholder="Ej. Champions League"
+                class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- Market & Selection -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-text">Mercado de Apuesta</label>
+            <input
+              type="text"
+              [ngModel]="newPostMarket()"
+              (ngModelChange)="newPostMarket.set($event)"
+              name="market"
+              placeholder="Ej. Ambos Anotan, Moneyline, Hándicap"
+              class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-text">Pronóstico / Tu Selección</label>
+            <input
+              type="text"
+              [ngModel]="newPostPick()"
+              (ngModelChange)="newPostPick.set($event)"
+              name="pick"
+              required
+              placeholder="Ej. Ambos Anotan (Sí) o Más de 2.5"
+              class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent font-semibold"
+            />
+          </div>
+        </div>
+
+        <!-- Odds & Units -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-text">Cuota Decimal</label>
+            <input
+              type="text"
+              [ngModel]="newPostOdds()"
+              (ngModelChange)="newPostOdds.set($event)"
+              name="odds"
+              placeholder="1.90"
+              class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent font-mono font-bold"
+            />
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-xs font-bold text-text">Stake en Unidades (u)</label>
+            <input
+              type="number"
+              step="0.5"
+              min="0.5"
+              max="10"
+              [ngModel]="newPostUnits()"
+              (ngModelChange)="newPostUnits.set($event)"
+              name="units"
+              placeholder="1.5"
+              class="h-10 px-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent font-mono font-bold"
+            />
+          </div>
+        </div>
+
+        <!-- Rationale -->
+        <div class="flex flex-col gap-1">
+          <label class="text-xs font-bold text-text">Argumento / Análisis del Pronóstico</label>
+          <textarea
+            rows="3"
+            [ngModel]="newPostRationale()"
+            (ngModelChange)="newPostRationale.set($event)"
+            name="rationale"
+            required
+            placeholder="Explica las razones de valor para que la comunidad comprenda tu estrategia (ej. estadísticas ofensivas, bajas importantes, rachas)."
+            class="w-full p-3 rounded-xl bg-surface-high border border-border text-xs text-text outline-none focus:border-accent resize-none leading-relaxed"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-border/50">
+          <button type="button" class="action-pill-btn flex-1 sm:flex-initial py-2 px-4 text-xs justify-center" (click)="close()">
+            Cancelar
+          </button>
+          <button type="submit" class="action-pill-btn primary flex-1 sm:flex-initial py-2 px-5 text-xs font-bold justify-center shadow-md hover:scale-105 active:scale-95 transition-all" [disabled]="creatingPost()">
+            {{ creatingPost() ? 'Publicando…' : 'Publicar Pronóstico' }}
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+}

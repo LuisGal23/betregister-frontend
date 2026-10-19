@@ -25,7 +25,7 @@ export const routes: Routes = [
     path: 'overview',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/overview/pages/overview-page.component').then(
+      import('./features/resumen/pages/overview-page.component').then(
         (m) => m.OverviewPageComponent,
       ),
   },
@@ -33,29 +33,25 @@ export const routes: Routes = [
     path: 'matches',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/sports/pages/matches-page/matches-page.component').then(
+      import('./features/partidos/pages/matches-page/matches-page.component').then(
         (m) => m.MatchesPageComponent,
       ),
   },
   {
     path: 'match-analysis',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/sports/pages/match-analysis-page/match-analysis-page.component').then(
-        (m) => m.MatchAnalysisPageComponent,
-      ),
+    redirectTo: 'matches',
   },
   {
     path: 'cuotas',
-    redirectTo: 'match-analysis',
+    redirectTo: 'matches',
   },
   {
     path: 'odds',
-    redirectTo: 'match-analysis',
+    redirectTo: 'matches',
   },
   {
     path: 'estadisticas',
-    redirectTo: 'match-analysis',
+    redirectTo: 'matches',
   },
   {
     path: 'partidos',
@@ -65,33 +61,33 @@ export const routes: Routes = [
     path: 'bank',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/bank/pages/bank-page.component').then((m) => m.BankPageComponent),
+      import('./features/banco/pages/bank-page.component').then((m) => m.BankPageComponent),
   },
   {
     path: 'tickets',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/bets/pages/bets-page.component').then((m) => m.BetsPageComponent),
+      import('./features/apuestas/pages/bets-page.component').then((m) => m.BetsPageComponent),
   },
   {
     path: 'history',
     canActivate: [authGuard],
     data: { history: true },
     loadComponent: () =>
-      import('./features/bets/pages/bets-page.component').then((m) => m.BetsPageComponent),
+      import('./features/apuestas/pages/bets-page.component').then((m) => m.BetsPageComponent),
   },
   {
     path: 'settings',
     canActivate: [authGuard],
     data: { settings: true },
     loadComponent: () =>
-      import('./features/bank/pages/bank-page.component').then((m) => m.BankPageComponent),
+      import('./features/banco/pages/bank-page.component').then((m) => m.BankPageComponent),
   },
   {
     path: 'bets',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/bets/pages/bets-page.component').then((m) => m.BetsPageComponent),
+      import('./features/apuestas/pages/bets-page.component').then((m) => m.BetsPageComponent),
   },
   {
     path: 'transactions',
@@ -111,7 +107,7 @@ export const routes: Routes = [
     path: 'insights',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/insights/pages/insights-page.component').then(
+      import('./features/rentabilidad/pages/insights-page.component').then(
         (m) => m.InsightsPageComponent,
       ),
   },
@@ -119,7 +115,7 @@ export const routes: Routes = [
     path: 'community',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/community/pages/community-page/community-page.component').then(
+      import('./features/comunidad/pages/community-page/community-page.component').then(
         (m) => m.CommunityPageComponent,
       ),
   },
@@ -131,7 +127,7 @@ export const routes: Routes = [
     path: 'profile',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/profile/pages/profile-page/profile-page.component').then(
+      import('./features/perfil/pages/profile-page/profile-page.component').then(
         (m) => m.ProfilePageComponent,
       ),
   },

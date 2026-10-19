@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { LedgerState } from '../../../core/services/ledger-state.service';
-import type { MovementKind } from '../../confirmations/models/movement.model';
-import type { TransactionFilter } from '../models/transaction-filter.model';
+import type { MovementKind } from '../../confirmations/services/movement.model';
+import type { TransactionFilter } from './transaction-filter.model';
 @Injectable({ providedIn: 'root' })
 export class TransactionsService {
   private state = inject(LedgerState);

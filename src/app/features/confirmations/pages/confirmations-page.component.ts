@@ -7,7 +7,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 import { signal } from '@angular/core';
 import { MovementsService } from '../services/movements.service';
-import type { Movement, MovementKind } from '../models/movement.model';
+import type { Movement, MovementKind } from '../services/movement.model';
 import type { Review } from '../../../shared/models/review.model';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { timestamp } from '../../../shared/utils/date.utils';
