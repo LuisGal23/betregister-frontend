@@ -1,104 +1,377 @@
-<div class="selection-editor block">
-  @if(value().source_text){<p class="info-note mb-3 p-3 bg-surface-high/50 border border-border rounded-xl text-xs text-text-muted">Texto leído: {{value().source_text}}. Confirma que los campos coincidan; usa Otro si incluye jugador, periodo o una condición específica.</p>}
-  @if (showSport()) {
-    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
-      >Deporte de la selección {{ index() + 1
-      }}<select
-        class="mt-1 block w-full clean-select"
-        [name]="'selectionSport' + index()"
-        [ngModel]="value().sport"
-        (ngModelChange)="changeSport($event)"
-      >
-        <option>Fútbol</option>
-        <option>Béisbol</option>
-        <option value="Americano">NFL</option>
-      </select></label
-    >
+<div class="selection-editor flex flex-col gap-3">
+  @if (value().source_text) {
+    <p class="mb-1 p-2.5 bg-[var(--surface-high)]/60 border border-[var(--border)] rounded-xl text-xs text-[var(--muted)] flex items-center gap-2">
+      <span class="text-xs">💡</span>
+      <span>Texto leído por IA: <strong>{{ value().source_text }}</strong></span>
+    </p>
   }
+
+  <!-- Sport Selector (if mixed or multi-sport selection) -->
+  @if (showSport()) {
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] font-semibold text-[var(--muted)]">Deporte de la selección #{{ index() + 1 }}</span>
+      <div class="grid grid-cols-4 gap-1 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+        @for (sp of ['Fútbol', 'Americano', 'Básquetbol', 'Béisbol']; track sp) {
+          <button
+            type="button"
+            class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+            [class.!bg-[var(--surface)]]="value().sport === sp"
+            [class.!border-[var(--accent)]]="value().sport === sp"
+            [class.text-[var(--accent)]]="value().sport === sp"
+            [class.shadow-sm]="value().sport === sp"
+            [class.text-[var(--muted)]]="value().sport !== sp"
+            (click)="changeSport(sp)"
+          >
+            {{ sp === 'Americano' ? 'NFL' : sp === 'Básquetbol' ? 'NBA' : sp === 'Béisbol' ? 'MLB' : 'Fútbol' }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Game Selector (if parlay with multiple games) -->
   @if (games().length > 1) {
-    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
-      >Partido de la selección {{ index() + 1
-      }}<select
-        class="mt-1 block w-full clean-select"
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] font-semibold text-[var(--muted)]">Partido asignado a esta selección</span>
+      <select
+        class="w-full h-10 px-3 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-xs outline-none focus:border-[var(--accent)] cursor-pointer"
         [name]="'selectionGame' + index()"
         [ngModel]="value().game_id"
         (ngModelChange)="changeGame($event)"
         required
       >
-        <option value="" disabled>Elige el partido</option>
+        <option value="" disabled>Selecciona el partido…</option>
         @for (g of games(); track g.id) {
-          <option [value]="g.id">{{ g.away }} vs {{ g.home }}</option>
+          <option [value]="g.id">{{ g.away }} vs {{ g.home }} ({{ g.sport }})</option>
         }
-      </select></label
-    >
+      </select>
+    </div>
   }
+
+  <!-- Manual Event Input (if not linked to API game) -->
   @if (!games().length && showManual()) {
-    <label class="block mb-3.5 text-xs font-semibold text-text-muted"
-      >Partido {{ index() + 1
-      }}<input
-        class="mt-1 block w-full clean-input"
+    <label class="flex flex-col gap-1">
+      <span class="text-[11px] font-semibold text-[var(--muted)]">Partido #{{ index() + 1 }}</span>
+      <input
+        class="w-full h-10 px-3 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-xs outline-none focus:border-[var(--accent)]"
         [name]="'manualEvent' + index()"
         [(ngModel)]="value().event_label"
         required
         maxlength="120"
-        placeholder="Ej. América vs. Pumas"
-    /></label>
+        placeholder="Ej. Real Madrid vs Barcelona o Chiefs vs 49ers"
+      />
+    </label>
   }
-  <label class="block mb-3.5 text-xs font-semibold text-text-muted"
-    >Mercado de la selección {{ index() + 1
-    }}<select
-      class="mt-1 block w-full clean-select"
-      [name]="'selectionMarket' + index()"
-      [ngModel]="value().market"
-      (ngModelChange)="changeMarket($event)"
-    >
-      @for (market of markets[value().sport]; track market) {
-        <option [value]="market">
-          {{ market === 'ML' ? 'Moneyline · ganador del partido' : market }}
-        </option>
+
+  <!-- CUSTOM COMPOSITE MARKET SELECTOR DROPDOWN -->
+  <div class="relative flex flex-col gap-1">
+    <div class="flex justify-between items-center">
+      <span class="text-[11px] font-semibold text-[var(--muted)]">Mercado de apuesta</span>
+      @if (currentMarketDef(); as def) {
+        <span
+          class="text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+          [class.bg-sky-500/15]="def.category === 'principales'"
+          [class.text-sky-400]="def.category === 'principales'"
+          [class.border]="def.category === 'principales'"
+          [class.border-sky-500/30]="def.category === 'principales'"
+          [class.bg-purple-500/15]="def.category === 'props_jugador'"
+          [class.text-purple-400]="def.category === 'props_jugador'"
+          [class.border]="def.category === 'props_jugador'"
+          [class.border-purple-500/30]="def.category === 'props_jugador'"
+          [class.bg-emerald-500/15]="def.category === 'especiales'"
+          [class.text-emerald-400]="def.category === 'especiales'"
+          [class.border]="def.category === 'especiales'"
+          [class.border-emerald-500/30]="def.category === 'especiales'"
+        >
+          {{ def.category === 'principales' ? 'Principal' : def.category === 'props_jugador' ? 'Prop Jugador' : 'Especial' }}
+        </span>
       }
-    </select></label
-  >
+    </div>
+
+    <!-- Dropdown Trigger Button -->
+    <button
+      type="button"
+      class="w-full min-h-[46px] px-3.5 py-2 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-left flex items-center justify-between gap-2 cursor-pointer transition-all hover:border-[var(--accent)] focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)]"
+      (click)="toggleMarketDropdown()"
+      [attr.aria-expanded]="isMarketOpen()"
+    >
+      <div class="flex flex-col min-w-0">
+        <span class="text-xs font-bold text-[var(--text)] truncate">
+          {{ currentMarketDef()?.label || value().market }}
+        </span>
+        @if (currentMarketDef()?.hint; as hint) {
+          <small class="text-[10px] text-[var(--muted)] truncate">{{ hint }}</small>
+        }
+      </div>
+      <span class="text-xs text-[var(--muted)] transition-transform duration-200 shrink-0" [class.rotate-180]="isMarketOpen()">▾</span>
+    </button>
+
+    <!-- Backdrop overlay to dismiss on outside click -->
+    @if (isMarketOpen()) {
+      <div class="fixed inset-0 z-40 bg-transparent" (click)="closeMarketDropdown()"></div>
+
+      <!-- Popover Menu -->
+      <div class="absolute left-0 right-0 top-full mt-1.5 z-50 p-2.5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_24px_rgba(41,184,245,0.15)] flex flex-col gap-2 max-h-[380px] animate-[fadeIn_0.15s_ease-out]">
+        
+        <!-- Search Field -->
+        <div class="relative">
+          <input
+            type="text"
+            [(ngModel)]="marketSearch"
+            placeholder="Buscar mercado (ej. tiros, touchdown, puntos, goles...)"
+            class="w-full h-9 pl-7 pr-3 text-xs bg-[var(--surface-high)] rounded-xl border border-[var(--border)] text-[var(--text)] outline-none focus:border-[var(--accent)]"
+            (click)="$event.stopPropagation()"
+          />
+          <span class="absolute left-2.5 top-2 text-[11px] opacity-40">🔍</span>
+        </div>
+
+        <!-- Category Tabs Filter -->
+        <div class="flex gap-1 overflow-x-auto scrollbar-none pb-1" role="tablist">
+          @for (cat of marketCategories; track cat.id) {
+            <button
+              type="button"
+              class="shrink-0 py-1 px-2.5 rounded-lg text-[10px] font-semibold cursor-pointer border transition-colors whitespace-nowrap"
+              [class.bg-[var(--accent)]]="selectedCategory() === cat.id"
+              [class.text-white]="selectedCategory() === cat.id"
+              [class.border-[var(--accent)]]="selectedCategory() === cat.id"
+              [class.bg-[var(--surface-high)]]="selectedCategory() !== cat.id"
+              [class.text-[var(--muted)]]="selectedCategory() !== cat.id"
+              [class.border-transparent]="selectedCategory() !== cat.id"
+              (click)="selectedCategory.set(cat.id); $event.stopPropagation()"
+            >
+              {{ cat.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Market Items List -->
+        <div class="flex flex-col gap-1 overflow-y-auto max-h-[240px] pr-1">
+          @for (m of filteredMarketDefs(); track m.id) {
+            <button
+              type="button"
+              class="w-full text-left p-2 rounded-xl border border-transparent hover:border-[rgba(41,184,245,0.3)] hover:bg-[var(--surface-high)] transition-all cursor-pointer flex items-center justify-between gap-2"
+              [class.!bg-[rgba(41,184,245,0.1)]]="value().market === m.id"
+              [class.!border-[var(--accent)]]="value().market === m.id"
+              (click)="selectMarket(m)"
+            >
+              <div class="flex flex-col min-w-0">
+                <span class="text-xs font-semibold text-[var(--text)] truncate">{{ m.label }}</span>
+                <span class="text-[10px] text-[var(--muted)] truncate">{{ m.hint }}</span>
+              </div>
+              <span
+                class="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider shrink-0"
+                [class.text-sky-400]="m.category === 'principales'"
+                [class.bg-sky-500/10]="m.category === 'principales'"
+                [class.text-purple-400]="m.category === 'props_jugador'"
+                [class.bg-purple-500/10]="m.category === 'props_jugador'"
+                [class.text-emerald-400]="m.category === 'especiales'"
+                [class.bg-emerald-500/10]="m.category === 'especiales'"
+              >
+                {{ m.category === 'principales' ? 'Principal' : m.category === 'props_jugador' ? 'Props' : 'Especial' }}
+              </span>
+            </button>
+          } @empty {
+            <div class="py-4 text-center text-xs text-[var(--muted)]">
+              No se encontraron mercados para "{{ marketSearch() }}".
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- PLAYER PROP INPUT (If player prop market is chosen) -->
+  @if (isPlayerProp()) {
+    <div class="p-3 rounded-xl bg-[rgba(124,58,237,0.06)] border border-[rgba(124,58,237,0.22)] flex flex-col gap-1.5">
+      <span class="text-[11px] font-bold tracking-wide uppercase text-purple-400 flex items-center gap-1">
+        <span>🏃</span>
+        <span>Jugador de la estadística</span>
+      </span>
+      <input
+        type="text"
+        [(ngModel)]="value().description"
+        [name]="'playerProp' + index()"
+        [placeholder]="currentMarketDef()?.placeholder || 'Nombre del jugador (ej. Vinícius Jr., Patrick Mahomes, Jokic)'"
+        required
+        class="w-full h-10 px-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-xs outline-none focus:border-[var(--accent)] font-medium"
+      />
+      <small class="text-[10px] text-[var(--muted)]">
+        Este mercado se registrará específicamente como <strong>{{ currentMarketDef()?.label }}</strong> para tus estadísticas.
+      </small>
+    </div>
+  }
+
+  <!-- SPECIAL / CUSTOM MARKET FREE DESCRIPTION -->
   @if (value().market === 'Otro') {
-    <label class="block mb-1 text-xs font-semibold text-text-muted"
-      >Describe el otro mercado<input
-        class="mt-1 block w-full clean-input"
+    <label class="flex flex-col gap-1">
+      <span class="text-[11px] font-semibold text-[var(--muted)]">Describe el mercado personalizado</span>
+      <input
+        class="w-full h-10 px-3 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-xs outline-none focus:border-[var(--accent)]"
         [name]="'otherDescription' + index()"
         [(ngModel)]="value().description"
         required
         minlength="3"
         maxlength="200"
-        placeholder="Ej. Jugador marca en cualquier momento" /></label
-    ><small class="text-xs text-text-muted block mb-3">Se guardará como Otro junto con esta descripción.</small>
+        placeholder="Ej. Tiempo del primer gol, tarjetas por equipo, etc."
+      />
+    </label>
   } @else {
-    <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-3 mb-3.5">
-      <label class="block text-xs font-semibold text-text-muted"
-        >{{
-          totals()
-            ? 'Más / menos'
-            : value().market === 'Ambos anotan'
-              ? '¿Ambos anotan?'
-              : 'Tu elección'
-        }}<select class="mt-1 block w-full clean-select" [name]="'selectionPick' + index()" [(ngModel)]="value().pick" required>
-          @if (totals()) {
-            <option>Más de</option>
-            <option>Menos de</option>
-          } @else if (value().market === 'Ambos anotan') {
-            <option>Sí</option>
-            <option>No</option>
-          } @else {
-            <option value="Local">{{ game()?.home || 'Local' }}</option>
-            <option value="Visitante">{{ game()?.away || 'Visitante' }}</option>
-            @if (value().market === 'ML' && value().sport === 'Fútbol') {
-              <option>Empate</option>
+    <!-- DYNAMIC PICK & LINE CONFIGURATION -->
+    <div class="grid grid-cols-1 md:grid-cols-[1.5fr_1fr] gap-3">
+      <!-- Pick Selector -->
+      <div class="flex flex-col gap-1">
+        <span class="text-[11px] font-semibold text-[var(--muted)]">
+          {{
+            totals()
+              ? 'Línea de Más / Menos'
+              : currentMarketDef()?.type === 'both_score'
+                ? '¿Ambos equipos anotan?'
+                : currentMarketDef()?.type === 'double_chance'
+                  ? 'Opción de doble oportunidad'
+                  : isPlayerProp() && currentMarketDef()?.type === 'player_anytime'
+                    ? 'Condición'
+                    : 'Tu pronóstico'
+          }}
+        </span>
+
+        <!-- Segmented Pick Pill Buttons -->
+        @if (totals()) {
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+              [class.!bg-[var(--surface)]]="value().pick === 'Más de'"
+              [class.!border-[var(--accent)]]="value().pick === 'Más de'"
+              [class.text-[var(--accent)]]="value().pick === 'Más de'"
+              [class.shadow-sm]="value().pick === 'Más de'"
+              [class.text-[var(--muted)]]="value().pick !== 'Más de'"
+              (click)="setPick('Más de')"
+            >
+              Más de (+)
+            </button>
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+              [class.!bg-[var(--surface)]]="value().pick === 'Menos de'"
+              [class.!border-[var(--accent)]]="value().pick === 'Menos de'"
+              [class.text-[var(--accent)]]="value().pick === 'Menos de'"
+              [class.shadow-sm]="value().pick === 'Menos de'"
+              [class.text-[var(--muted)]]="value().pick !== 'Menos de'"
+              (click)="setPick('Menos de')"
+            >
+              Menos de (-)
+            </button>
+          </div>
+        } @else if (currentMarketDef()?.type === 'both_score') {
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+              [class.!bg-[var(--surface)]]="value().pick === 'Sí'"
+              [class.!border-[var(--positive)]]="value().pick === 'Sí'"
+              [class.text-[var(--positive)]]="value().pick === 'Sí'"
+              [class.shadow-sm]="value().pick === 'Sí'"
+              [class.text-[var(--muted)]]="value().pick !== 'Sí'"
+              (click)="setPick('Sí')"
+            >
+              ✓ Sí marcan
+            </button>
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+              [class.!bg-[var(--surface)]]="value().pick === 'No'"
+              [class.!border-[var(--negative)]]="value().pick === 'No'"
+              [class.text-[var(--negative)]]="value().pick === 'No'"
+              [class.shadow-sm]="value().pick === 'No'"
+              [class.text-[var(--muted)]]="value().pick !== 'No'"
+              (click)="setPick('No')"
+            >
+              ✕ No
+            </button>
+          </div>
+        } @else if (currentMarketDef()?.type === 'double_chance') {
+          <div class="grid grid-cols-3 gap-1 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+            @for (opt of ['1X (Local o Empate)', '12 (Cualquiera)', 'X2 (Empate o Visita)']; track opt) {
+              <button
+                type="button"
+                class="py-1.5 px-1 rounded-lg text-[10px] font-semibold cursor-pointer border border-transparent transition-all truncate"
+                [class.!bg-[var(--surface)]]="value().pick === opt"
+                [class.!border-[var(--accent)]]="value().pick === opt"
+                [class.text-[var(--accent)]]="value().pick === opt"
+                [class.shadow-sm]="value().pick === opt"
+                [class.text-[var(--muted)]]="value().pick !== opt"
+                (click)="setPick(opt)"
+                [title]="opt"
+              >
+                {{ opt.split(' ')[0] }}
+              </button>
             }
-          }
-        </select></label
-      >
+          </div>
+        } @else if (isPlayerProp() && currentMarketDef()?.type === 'player_anytime') {
+          <div class="p-2 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex items-center gap-2">
+            <span class="text-xs font-semibold text-[var(--accent)]">✓ {{ value().pick || currentMarketDef()?.defaultPick || 'Anotará' }}</span>
+          </div>
+        } @else {
+          <!-- Moneyline or Handicap Local/Visitante/Empate -->
+          <div
+            class="grid gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]"
+            [class.grid-cols-3]="currentMarketDef()?.type === 'moneyline' && value().sport === 'Fútbol'"
+            [class.grid-cols-2]="!(currentMarketDef()?.type === 'moneyline' && value().sport === 'Fútbol')"
+          >
+            <!-- Local Team -->
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all truncate"
+              [class.!bg-[var(--surface)]]="value().pick === (game()?.home || 'Local')"
+              [class.!border-[var(--accent)]]="value().pick === (game()?.home || 'Local')"
+              [class.text-[var(--accent)]]="value().pick === (game()?.home || 'Local')"
+              [class.shadow-sm]="value().pick === (game()?.home || 'Local')"
+              [class.text-[var(--muted)]]="value().pick !== (game()?.home || 'Local')"
+              (click)="setPick(game()?.home || 'Local')"
+              [title]="game()?.home || 'Local'"
+            >
+              {{ game()?.home || 'Local' }}
+            </button>
+
+            <!-- Empate (if soccer Moneyline) -->
+            @if (currentMarketDef()?.type === 'moneyline' && value().sport === 'Fútbol') {
+              <button
+                type="button"
+                class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all"
+                [class.!bg-[var(--surface)]]="value().pick === 'Empate'"
+                [class.!border-[var(--accent)]]="value().pick === 'Empate'"
+                [class.text-[var(--accent)]]="value().pick === 'Empate'"
+                [class.shadow-sm]="value().pick === 'Empate'"
+                [class.text-[var(--muted)]]="value().pick !== 'Empate'"
+                (click)="setPick('Empate')"
+              >
+                Empate (X)
+              </button>
+            }
+
+            <!-- Away Team -->
+            <button
+              type="button"
+              class="py-1.5 px-2 rounded-lg text-xs font-semibold cursor-pointer border border-transparent transition-all truncate"
+              [class.!bg-[var(--surface)]]="value().pick === (game()?.away || 'Visitante')"
+              [class.!border-[var(--accent)]]="value().pick === (game()?.away || 'Visitante')"
+              [class.text-[var(--accent)]]="value().pick === (game()?.away || 'Visitante')"
+              [class.shadow-sm]="value().pick === (game()?.away || 'Visitante')"
+              [class.text-[var(--muted)]]="value().pick !== (game()?.away || 'Visitante')"
+              (click)="setPick(game()?.away || 'Visitante')"
+              [title]="game()?.away || 'Visitante'"
+            >
+              {{ game()?.away || 'Visitante' }}
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Line Input (if totals, player over/under, or handicap) -->
       @if (totals() || handicap()) {
-        <label class="block text-xs font-semibold text-text-muted"
-          >Línea<input
-            class="mt-1 block w-full clean-input"
+        <div class="flex flex-col gap-1">
+          <span class="text-[11px] font-semibold text-[var(--muted)]">Línea de valor</span>
+          <input
             [name]="'selectionLine' + index()"
             type="number"
             [(ngModel)]="value().line"
@@ -106,8 +379,10 @@
             max="10000"
             step="0.25"
             required
-            [placeholder]="handicap() ? '-0.5' : '2.5'"
-        /></label>
+            [placeholder]="handicap() ? '-0.5' : currentMarketDef()?.defaultLine !== undefined ? String(currentMarketDef()?.defaultLine) : '2.5'"
+            class="w-full h-10 px-3 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-xs font-mono outline-none focus:border-[var(--accent)]"
+          />
+        </div>
       }
     </div>
   }

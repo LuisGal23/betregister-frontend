@@ -592,39 +592,157 @@
           <tbody class="divide-y divide-[var(--border)]">
             @for (b of filteredBets(); track b.id) {
               <tr class="hover:bg-[var(--surface-high)]/40 transition-colors">
-                <td class="py-3 px-3 min-w-[230px]">
-                  <strong class="line-clamp-2 text-sm font-semibold text-[var(--text)] max-w-[380px] leading-relaxed" [title]="b.event">{{ b.event }} @if(b.public_record){<small class="inline-block ml-1.5 text-[10px] text-[var(--accent)] font-normal">Registro público sellado</small>}</strong
-                  ><small class="block text-[11px] text-[var(--muted)] mt-1"
-                    >{{
-                      b.bet_type === 'same_game'
-                        ? 'Mismo partido'
-                        : b.bet_type === 'parlay'
-                          ? 'Parlay'
-                          : 'Simple'
-                    }}
-                    · {{ b.house }} · {{ timestamp(b.created) | date: 'dd/MM/yyyy HH:mm' }}</small
-                  ><small class="block text-[10px] text-[var(--muted)]"
-                    >{{ b.league_tag || 'Sin clasificar' }} ·
-                    {{ b.market_tag || 'Sin clasificar' }}</small
-                  >
-                  <details class="mt-2 text-xs text-[var(--muted)]">
-                    <summary class="text-xs text-[var(--accent)] cursor-pointer font-medium select-none">Ver detalle</summary>
-                    <p class="text-xs text-[var(--muted)] my-1 whitespace-normal max-w-[380px]">{{ b.event }} @if(b.public_record){<small>Registro público sellado</small>}</p>
-                    @for (selection of b.same_game_selections ?? []; track $index) {
-                      <small class="block text-[11px] text-[var(--muted)]">↳ {{ selection }}</small>
+                <td class="py-3 px-3 min-w-[280px] sm:min-w-[340px]">
+                  <!-- Top Badges Strip: Simple / Combinada + House + Date -->
+                  <div class="flex items-center gap-1.5 flex-wrap mb-1.5">
+                    @if (b.bet_type === 'parlay') {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-500/15 border border-purple-500/35 text-purple-400">
+                        <span>⚡ Combinada</span>
+                        <span class="opacity-75">({{ b.legs?.length || b.linked_games?.length || 2 }})</span>
+                      </span>
+                    } @else if (b.bet_type === 'same_game') {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/15 border border-amber-500/35 text-amber-400">
+                        <span>🎯 Mismo partido</span>
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent/15 border border-accent/35 text-accent">
+                        <span>Simple</span>
+                      </span>
                     }
-                    @for (game of b.linked_games ?? []; track game.id) {
-                      <small class="block text-[11px] text-[var(--muted)]">{{ game.away }} vs {{ game.home }}</small>
+
+                    <span class="text-[11px] font-semibold text-[var(--text)]">· {{ b.house }}</span>
+                    <span class="text-[10px] text-[var(--muted)] font-mono">· {{ timestamp(b.created) | date: 'dd/MM/yyyy HH:mm' }}</span>
+
+                    @if (b.public_record) {
+                      <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-accent/10 text-accent border border-accent/25" title="Registro sellado públicamente">
+                        🔒 Sellado
+                      </span>
                     }
-                    <div class="flex gap-3 mt-1.5">
-                      <button class="text-button text-xs text-[var(--accent)] hover:underline" (click)="management.set({ bet: b, mode: 'tags' })">
+                  </div>
+
+                  <!-- CONTENT VIEW: PARLAY (Stacked Multiple Lines with Logos + Selection on the right) -->
+                  @if (b.bet_type === 'parlay') {
+                    <div class="flex flex-col gap-1.5 my-2">
+                      @for (line of getParlayLines(b); track $index) {
+                        <div class="flex items-center justify-between gap-2.5 p-1.5 px-2.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] text-xs hover:border-[var(--accent)]/40 transition-colors">
+                          <!-- Left: Matchup & Logos -->
+                          <div class="flex items-center gap-2 min-w-0">
+                            @if (line.game) {
+                              <div class="flex items-center gap-1 shrink-0">
+                                <div class="w-5 h-5 rounded-md bg-[var(--surface)] p-0.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="line.game.away">
+                                  @if (line.game.away_logo) {
+                                    <img [src]="line.game.away_logo" [alt]="line.game.away" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                                  } @else {
+                                    <span class="text-[8px] font-black font-mono text-[var(--accent)]">{{ shortCode(line.game.away) }}</span>
+                                  }
+                                </div>
+                                <span class="text-[9px] text-[var(--muted)] font-black">vs</span>
+                                <div class="w-5 h-5 rounded-md bg-[var(--surface)] p-0.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="line.game.home">
+                                  @if (line.game.home_logo) {
+                                    <img [src]="line.game.home_logo" [alt]="line.game.home" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                                  } @else {
+                                    <span class="text-[8px] font-black font-mono text-[var(--accent)]">{{ shortCode(line.game.home) }}</span>
+                                  }
+                                </div>
+                              </div>
+                              <span class="font-semibold text-[var(--text)] truncate max-w-[140px] sm:max-w-[190px]" [title]="line.game.away + ' vs ' + line.game.home">
+                                {{ line.game.away }} vs {{ line.game.home }}
+                              </span>
+                            } @else {
+                              <span class="font-semibold text-[var(--text)] truncate max-w-[160px] sm:max-w-[200px]" [title]="line.eventLabel">
+                                {{ line.eventLabel }}
+                              </span>
+                            }
+                          </div>
+
+                          <!-- Right: Leg Selection (a lado lo que seleccionó) -->
+                          <div class="flex items-center gap-1.5 shrink-0">
+                            <span class="px-2 py-0.5 rounded-lg bg-[rgba(41,184,245,0.1)] border border-[rgba(41,184,245,0.25)] text-[var(--accent)] font-bold text-[11px] max-w-[150px] truncate" [title]="line.selection">
+                              {{ line.selection }}
+                            </span>
+                            @if (line.odds) {
+                              <span class="text-[10px] font-mono text-[var(--muted)]">@{{ line.odds }}</span>
+                            }
+                            @if (line.status) {
+                              <span [class]="getLegStatusBadgeClass(line.status)">{{ getLegStatusIcon(line.status) }}</span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else if (b.linked_games && b.linked_games.length > 0) {
+                    <!-- CONTENT VIEW: SIMPLE OR SAME GAME WITH LINKED API GAME (Big Centered Logos + Selection Pill) -->
+                    <div class="my-2 p-2 px-3 rounded-2xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex items-center justify-between gap-3 hover:border-[var(--accent)]/40 transition-colors">
+                      <!-- Teams Matchup with Logos and Names like in Partidos del día -->
+                      <div class="flex items-center gap-2 min-w-0">
+                        <!-- Away Team -->
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="b.linked_games[0].away">
+                          @if (b.linked_games[0].away_logo) {
+                            <img [src]="b.linked_games[0].away_logo" [alt]="b.linked_games[0].away" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                          } @else {
+                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(b.linked_games[0].away) }}</span>
+                          }
+                        </div>
+                        <span class="text-xs font-bold text-[var(--text)] truncate max-w-[95px] sm:max-w-[125px]" [title]="b.linked_games[0].away">
+                          {{ b.linked_games[0].away }}
+                        </span>
+
+                        <!-- VS badge -->
+                        <span class="text-[10px] font-black text-[var(--muted)] px-1">vs</span>
+
+                        <!-- Home Team -->
+                        <span class="text-xs font-bold text-[var(--text)] truncate max-w-[95px] sm:max-w-[125px]" [title]="b.linked_games[0].home">
+                          {{ b.linked_games[0].home }}
+                        </span>
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="b.linked_games[0].home">
+                          @if (b.linked_games[0].home_logo) {
+                            <img [src]="b.linked_games[0].home_logo" [alt]="b.linked_games[0].home" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                          } @else {
+                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(b.linked_games[0].home) }}</span>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Selection Pill Right next to Matchup -->
+                      <div class="shrink-0 flex items-center gap-1.5">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.3)] text-[var(--accent)] font-bold text-xs shadow-sm max-w-[160px] truncate" [title]="getBetSelectionLabel(b)">
+                          <span>🎯</span>
+                          <span class="truncate">{{ getBetSelectionLabel(b) }}</span>
+                        </span>
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- CONTENT VIEW: MANUAL BET (Clean Event Title + Selection Pill) -->
+                    <div class="my-2 p-2 px-3 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between gap-2.5">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-xs">🏆</span>
+                        <strong class="text-xs font-bold text-[var(--text)] truncate max-w-[200px]" [title]="b.event">
+                          {{ b.event.split(' · ')[0] }}
+                        </strong>
+                      </div>
+                      <span class="px-2.5 py-0.5 rounded-lg bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.25)] text-[var(--accent)] font-bold text-xs shrink-0 max-w-[150px] truncate" [title]="getBetSelectionLabel(b)">
+                        {{ getBetSelectionLabel(b) }}
+                      </span>
+                    </div>
+                  }
+
+                  <!-- Bottom Details and Management Trigger -->
+                  <div class="flex items-center justify-between gap-2 mt-1.5 pt-1 border-t border-[var(--border)]/50">
+                    <small class="text-[10px] text-[var(--muted)] truncate">
+                      {{ b.league_tag || 'Sin clasificar' }} · {{ b.market_tag || 'Sin clasificar' }}
+                    </small>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                      <button type="button" class="text-button text-[11px] text-[var(--accent)] hover:underline cursor-pointer" (click)="management.set({ bet: b, mode: 'tags' })">
                         Editar mercados
                       </button>
                       @if (b.linked_games?.length) {
-                        <button class="text-button text-xs text-[var(--accent)] hover:underline" (click)="scoreBet.set(b)">Ver marcadores</button>
+                        <button type="button" class="text-button text-[11px] text-[var(--accent)] hover:underline cursor-pointer" (click)="scoreBet.set(b)">
+                          Marcadores
+                        </button>
                       }
                     </div>
-                  </details>
+                  </div>
                 </td>
                 <td class="py-3 px-3 text-[var(--text)] whitespace-nowrap" data-label="Apostado">
                   <span class="font-semibold">{{ vm.native(b.stake, b.currency) }}</span>

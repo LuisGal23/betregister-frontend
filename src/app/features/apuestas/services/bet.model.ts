@@ -46,6 +46,7 @@ export interface CreateBet {
   league_tag?: string;
   market_tag?: string;
   games?: string[];
+  linked_games?: GameReference[];
   legs?: BetLeg[];
   house_id: number;
   event: string;

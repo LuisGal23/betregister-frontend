@@ -297,7 +297,7 @@ export class CreateTicketModalComponent {
       league_tag: this.leagueTag,
       market_tag: this.marketTag,
       same_game_selections: this.betType === 'same_game' ? this.sameGameSelections : [],
-      games: this.selectedGames.map((g) => g.id),
+      games: this.selectedGames.map((g) => g.id), linked_games: this.selectedGames,
       legs: this.betType === 'parlay' && !this.totalOddsMode ? this.legs : [],
       house_id: Number(this.selectedHouse),
       event: this.event,

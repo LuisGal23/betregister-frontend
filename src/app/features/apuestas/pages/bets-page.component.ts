@@ -682,4 +682,154 @@ export class BetsPageComponent {
 
     return null;
   }
+
+  shortCode(name: string): string {
+    if (!name) return 'TM';
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0].slice(0, 3).toUpperCase();
+    return words.slice(0, 3).map((w) => w[0]).join('').toUpperCase();
+  }
+
+  onLogoError(event: Event): void {
+    const target = event.target as HTMLElement;
+    if (target) target.style.display = 'none';
+  }
+
+  getBetSelectionLabel(b: Bet): string {
+    if (b.selection_details && b.selection_details.length > 0) {
+      return selectionText(b.selection_details[0]);
+    }
+    if (b.legs && b.legs.length === 1 && b.legs[0].selection) {
+      return b.legs[0].selection;
+    }
+    if (b.same_game_selections && b.same_game_selections.length > 0) {
+      return b.same_game_selections.join(' · ');
+    }
+    if (b.event && b.event.includes(' · ')) {
+      const parts = b.event.split(' · ');
+      return parts.slice(1).join(' · ');
+    }
+    if (b.market_tag && b.market_tag !== 'Sin clasificar') {
+      return b.market_tag;
+    }
+    return b.event;
+  }
+
+  getParlayLines(b: Bet): Array<{
+    game?: GameReference;
+    eventLabel: string;
+    selection: string;
+    odds?: number | string;
+    status?: string;
+  }> {
+    const lines: Array<{
+      game?: GameReference;
+      eventLabel: string;
+      selection: string;
+      odds?: number | string;
+      status?: string;
+    }> = [];
+
+    const games = b.linked_games ?? [];
+
+    const details = b.selection_details;
+    if (b.legs && b.legs.length > 0) {
+      b.legs.forEach((leg, i) => {
+        let game: GameReference | undefined = games[i];
+        if (!game && details && details[i]?.game_id) {
+          game = games.find((g) => g.id === details[i].game_id);
+        }
+        if (!game && games.length === 1) {
+          game = games[0];
+        }
+
+        let eventLabel = game ? (game.away + ' vs ' + game.home) : '';
+        let selection = leg.selection;
+
+        if (!eventLabel && details && details[i]?.event_label) {
+          eventLabel = details[i].event_label;
+        }
+        if (!eventLabel) {
+          if (leg.selection.includes(' · ')) {
+            const parts = leg.selection.split(' · ');
+            eventLabel = parts[0];
+            selection = parts.slice(1).join(' · ');
+          } else {
+            eventLabel = 'Selección #' + (i + 1);
+          }
+        }
+
+        lines.push({
+          game,
+          eventLabel,
+          selection: selection || leg.selection,
+          odds: leg.odds,
+          status: leg.status,
+        });
+      });
+      return lines;
+    }
+
+    if (games.length > 0) {
+      games.forEach((game, i) => {
+        let selection = '';
+        if (details && details[i]) {
+          selection = selectionText(details[i]);
+        } else if (b.same_game_selections && b.same_game_selections[i]) {
+          selection = b.same_game_selections[i];
+        } else {
+          selection = b.market_tag || 'Selección';
+        }
+        lines.push({
+          game,
+          eventLabel: game.away + ' vs ' + game.home,
+          selection,
+        });
+      });
+      return lines;
+    }
+
+    if (b.same_game_selections && b.same_game_selections.length > 0) {
+      b.same_game_selections.forEach((sel, i) => {
+        lines.push({
+          eventLabel: b.event ? b.event.split(' · ')[0] : 'Selección #' + (i + 1),
+          selection: sel,
+        });
+      });
+      return lines;
+    }
+
+    if (b.event && b.event.includes('|')) {
+      const parts = b.event.split('|').map((p) => p.trim());
+      parts.forEach((part, i) => {
+        if (part.includes(' · ')) {
+          const sub = part.split(' · ');
+          lines.push({ eventLabel: sub[0].trim(), selection: sub.slice(1).join(' · ').trim() });
+        } else {
+          lines.push({ eventLabel: 'Partido #' + (i + 1), selection: part });
+        }
+      });
+      return lines;
+    }
+
+    lines.push({
+      eventLabel: b.event,
+      selection: this.getBetSelectionLabel(b),
+    });
+    return lines;
+  }
+
+  getLegStatusBadgeClass(status?: string): string {
+    if (status === 'won') return 'text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold';
+    if (status === 'lost') return 'text-rose-400 bg-rose-500/15 border border-rose-500/30 px-1.5 py-0.5 rounded text-[10px] font-bold';
+    if (status === 'void') return 'text-muted bg-surface-high border border-border px-1.5 py-0.5 rounded text-[10px] font-medium';
+    return 'text-accent bg-accent/15 border border-accent/30 px-1.5 py-0.5 rounded text-[10px] font-bold';
+  }
+
+  getLegStatusIcon(status?: string): string {
+    if (status === 'won') return '✓';
+    if (status === 'lost') return '✕';
+    if (status === 'void') return '–';
+    return '•';
+  }
 }
