@@ -156,8 +156,20 @@ export const ALL_SPORT_MARKET_DEFS: Record<string, MarketDef[]> = {
   'Sin clasificar': OTHER_MARKETS,
 };
 
+export function normalizeSportName(sport: string): string {
+  if (!sport) return 'Fútbol';
+  const s = sport.trim().toLowerCase();
+  if (s === 'americano' || s === 'nfl' || s === 'football' || s.includes('american')) return 'Americano';
+  if (s === 'básquetbol' || s === 'basquetbol' || s === 'nba' || s === 'basketball') return 'Básquetbol';
+  if (s === 'béisbol' || s === 'beisbol' || s === 'mlb' || s === 'kbo' || s === 'baseball') return 'Béisbol';
+  if (s === 'fútbol' || s === 'futbol' || s === 'soccer' || s.includes('soccer')) return 'Fútbol';
+  if (s === 'mixto') return 'Mixto';
+  return 'Fútbol';
+}
+
 export function getMarketDefsForSport(sport: string): MarketDef[] {
-  return ALL_SPORT_MARKET_DEFS[sport] ?? ALL_SPORT_MARKET_DEFS['Fútbol'];
+  const norm = normalizeSportName(sport);
+  return ALL_SPORT_MARKET_DEFS[norm] ?? ALL_SPORT_MARKET_DEFS['Fútbol'];
 }
 
 export function findMarketDef(sport: string, marketId: string): MarketDef | undefined {

@@ -1,3 +1,4 @@
+import { getTeamLogo, parseMatchupFromText } from '../../../shared/utils/team-logos.utils';
 import { ScreenshotImportComponent, type ScreenshotDraft } from '../components/screenshot-import/screenshot-import.component';
 import { TicketProtectionComponent } from '../components/ticket-protection/ticket-protection.component';
 import { ChallengesService } from '../../desafios/services/challenges.service';
@@ -715,6 +716,29 @@ export class BetsPageComponent {
     return b.event;
   }
 
+  getBetGame(b: Bet): { away: string; home: string; away_logo?: string; home_logo?: string } | null {
+    const sport = b.sport_tag || b.league_tag;
+
+    // 1. If bet has linked games
+    if (b.linked_games && b.linked_games.length > 0) {
+      const g = b.linked_games[0];
+      return {
+        away: g.away,
+        home: g.home,
+        away_logo: g.away_logo || getTeamLogo(g.away, g.sport || sport) || undefined,
+        home_logo: g.home_logo || getTeamLogo(g.home, g.sport || sport) || undefined,
+      };
+    }
+
+    // 2. Parse from event text (e.g. "San Francisco 49ers vs Washington Commanders · Moneyline...")
+    const parsed = parseMatchupFromText(b.event, sport);
+    if (parsed) {
+      return parsed;
+    }
+
+    return null;
+  }
+
   getParlayLines(b: Bet): Array<{
     game?: GameReference;
     eventLabel: string;
@@ -731,8 +755,9 @@ export class BetsPageComponent {
     }> = [];
 
     const games = b.linked_games ?? [];
-
     const details = b.selection_details;
+    const sport = b.sport_tag || b.league_tag;
+
     if (b.legs && b.legs.length > 0) {
       b.legs.forEach((leg, i) => {
         let game: GameReference | undefined = games[i];
@@ -741,6 +766,11 @@ export class BetsPageComponent {
         }
         if (!game && games.length === 1) {
           game = games[0];
+        }
+
+        if (game) {
+          if (!game.away_logo) game.away_logo = getTeamLogo(game.away, game.sport || sport) || undefined;
+          if (!game.home_logo) game.home_logo = getTeamLogo(game.home, game.sport || sport) || undefined;
         }
 
         let eventLabel = game ? (game.away + ' vs ' + game.home) : '';
@@ -759,6 +789,24 @@ export class BetsPageComponent {
           }
         }
 
+        if (!game && eventLabel) {
+          const parsed = parseMatchupFromText(eventLabel, sport) || parseMatchupFromText(selection, sport);
+          if (parsed) {
+            game = {
+              id: 'p_' + i,
+              away: parsed.away,
+              home: parsed.home,
+              away_logo: parsed.away_logo,
+              home_logo: parsed.home_logo,
+              sport: sport || 'Fútbol',
+              league: b.league_tag || '',
+              league_name: b.league_tag || '',
+              start: '',
+              provider: 'espn',
+            };
+          }
+        }
+
         lines.push({
           game,
           eventLabel,
@@ -772,6 +820,9 @@ export class BetsPageComponent {
 
     if (games.length > 0) {
       games.forEach((game, i) => {
+        if (!game.away_logo) game.away_logo = getTeamLogo(game.away, game.sport || sport) || undefined;
+        if (!game.home_logo) game.home_logo = getTeamLogo(game.home, game.sport || sport) || undefined;
+
         let selection = '';
         if (details && details[i]) {
           selection = selectionText(details[i]);
@@ -790,8 +841,23 @@ export class BetsPageComponent {
     }
 
     if (b.same_game_selections && b.same_game_selections.length > 0) {
+      const parsed = this.getBetGame(b);
+      const singleGame: GameReference | undefined = parsed ? {
+        id: 'sg_0',
+        away: parsed.away,
+        home: parsed.home,
+        away_logo: parsed.away_logo,
+        home_logo: parsed.home_logo,
+        sport: sport || 'Fútbol',
+        league: b.league_tag || '',
+        league_name: b.league_tag || '',
+        start: '',
+        provider: 'espn',
+      } : undefined;
+
       b.same_game_selections.forEach((sel, i) => {
         lines.push({
+          game: singleGame,
           eventLabel: b.event ? b.event.split(' · ')[0] : 'Selección #' + (i + 1),
           selection: sel,
         });
@@ -802,17 +868,48 @@ export class BetsPageComponent {
     if (b.event && b.event.includes('|')) {
       const parts = b.event.split('|').map((p) => p.trim());
       parts.forEach((part, i) => {
+        let eventLabel = 'Partido #' + (i + 1);
+        let sel = part;
         if (part.includes(' · ')) {
           const sub = part.split(' · ');
-          lines.push({ eventLabel: sub[0].trim(), selection: sub.slice(1).join(' · ').trim() });
-        } else {
-          lines.push({ eventLabel: 'Partido #' + (i + 1), selection: part });
+          eventLabel = sub[0].trim();
+          sel = sub.slice(1).join(' · ').trim();
         }
+        const parsed = parseMatchupFromText(eventLabel, sport);
+        lines.push({
+          game: parsed ? {
+            id: 'split_' + i,
+            away: parsed.away,
+            home: parsed.home,
+            away_logo: parsed.away_logo,
+            home_logo: parsed.home_logo,
+            sport: sport || 'Fútbol',
+            league: b.league_tag || '',
+            league_name: b.league_tag || '',
+            start: '',
+            provider: 'espn',
+          } : undefined,
+          eventLabel,
+          selection: sel,
+        });
       });
       return lines;
     }
 
+    const singleGame = this.getBetGame(b);
     lines.push({
+      game: singleGame ? {
+        id: 'single_0',
+        away: singleGame.away,
+        home: singleGame.home,
+        away_logo: singleGame.away_logo,
+        home_logo: singleGame.home_logo,
+        sport: sport || 'Fútbol',
+        league: b.league_tag || '',
+        league_name: b.league_tag || '',
+        start: '',
+        provider: 'espn',
+      } : undefined,
       eventLabel: b.event,
       selection: this.getBetSelectionLabel(b),
     });

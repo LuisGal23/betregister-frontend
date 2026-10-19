@@ -8,20 +8,11 @@ body {
 }
 
 :root[data-theme='dark'] body {
-  background:
-    radial-gradient(ellipse 950px 550px at 15% 5%, rgba(41, 184, 245, 0.08), transparent 70%),
-    radial-gradient(ellipse 750px 500px at 85% 65%, rgba(56, 189, 248, 0.04), transparent 70%),
-    linear-gradient(135deg, rgba(41, 184, 245, 0.015) 0%, transparent 40%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
 :root[data-theme='light'] body {
-  background:
-    radial-gradient(ellipse 850px 450px at 15% 5%, rgba(2, 132, 199, 0.05), transparent 70%),
-    radial-gradient(ellipse 650px 400px at 85% 65%, rgba(2, 132, 199, 0.03), transparent 70%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
 }
 
 /* Scroll-reveal animations for landing and marketing sections */

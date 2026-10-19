@@ -670,42 +670,42 @@
                         </div>
                       }
                     </div>
-                  } @else if (b.linked_games && b.linked_games.length > 0) {
-                    <!-- CONTENT VIEW: SIMPLE OR SAME GAME WITH LINKED API GAME (Big Centered Logos + Selection Pill) -->
-                    <div class="my-2 p-2 px-3 rounded-2xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex items-center justify-between gap-3 hover:border-[var(--accent)]/40 transition-colors">
+                  } @else if (getBetGame(b); as game) {
+                    <!-- CONTENT VIEW: SIMPLE OR SAME GAME WITH RESOLVED LOGOS (Big Centered Logos + Selection Pill) -->
+                    <div class="my-2 p-2.5 px-3.5 rounded-2xl bg-[var(--surface-high)]/70 border border-[var(--border)] flex items-center justify-between gap-3 hover:border-[var(--accent)]/50 transition-colors shadow-xs">
                       <!-- Teams Matchup with Logos and Names like in Partidos del día -->
-                      <div class="flex items-center gap-2 min-w-0">
+                      <div class="flex items-center gap-2.5 min-w-0">
                         <!-- Away Team -->
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="b.linked_games[0].away">
-                          @if (b.linked_games[0].away_logo) {
-                            <img [src]="b.linked_games[0].away_logo" [alt]="b.linked_games[0].away" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="game.away">
+                          @if (game.away_logo) {
+                            <img [src]="game.away_logo" [alt]="game.away" (error)="onLogoError($event)" class="w-full h-full object-contain" />
                           } @else {
-                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(b.linked_games[0].away) }}</span>
+                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(game.away) }}</span>
                           }
                         </div>
-                        <span class="text-xs font-bold text-[var(--text)] truncate max-w-[95px] sm:max-w-[125px]" [title]="b.linked_games[0].away">
-                          {{ b.linked_games[0].away }}
+                        <span class="text-xs sm:text-sm font-bold text-[var(--text)] truncate max-w-[100px] sm:max-w-[140px]" [title]="game.away">
+                          {{ game.away }}
                         </span>
 
                         <!-- VS badge -->
                         <span class="text-[10px] font-black text-[var(--muted)] px-1">vs</span>
 
                         <!-- Home Team -->
-                        <span class="text-xs font-bold text-[var(--text)] truncate max-w-[95px] sm:max-w-[125px]" [title]="b.linked_games[0].home">
-                          {{ b.linked_games[0].home }}
+                        <span class="text-xs sm:text-sm font-bold text-[var(--text)] truncate max-w-[100px] sm:max-w-[140px]" [title]="game.home">
+                          {{ game.home }}
                         </span>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="b.linked_games[0].home">
-                          @if (b.linked_games[0].home_logo) {
-                            <img [src]="b.linked_games[0].home_logo" [alt]="b.linked_games[0].home" (error)="onLogoError($event)" class="w-full h-full object-contain" />
+                        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm" [title]="game.home">
+                          @if (game.home_logo) {
+                            <img [src]="game.home_logo" [alt]="game.home" (error)="onLogoError($event)" class="w-full h-full object-contain" />
                           } @else {
-                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(b.linked_games[0].home) }}</span>
+                            <span class="text-[9px] sm:text-[10px] font-black font-mono text-[var(--accent)]">{{ shortCode(game.home) }}</span>
                           }
                         </div>
                       </div>
 
                       <!-- Selection Pill Right next to Matchup -->
                       <div class="shrink-0 flex items-center gap-1.5">
-                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.3)] text-[var(--accent)] font-bold text-xs shadow-sm max-w-[160px] truncate" [title]="getBetSelectionLabel(b)">
+                        <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-[rgba(41,184,245,0.14)] border border-[rgba(41,184,245,0.35)] text-[var(--accent)] font-bold text-xs shadow-sm max-w-[170px] truncate" [title]="getBetSelectionLabel(b)">
                           <span>🎯</span>
                           <span class="truncate">{{ getBetSelectionLabel(b) }}</span>
                         </span>
