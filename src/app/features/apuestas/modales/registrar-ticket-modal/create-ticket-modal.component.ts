@@ -57,6 +57,7 @@ export class CreateTicketModalComponent {
   bonus: number | null = 0;
   totalOddsMode = false;
   quickMode = signal(false);
+  showPicker = signal(false);
   importWarnings = '';
   event = '';
   sameGameSelections = ['', ''];
@@ -77,9 +78,29 @@ export class CreateTicketModalComponent {
       if (this.modal.isOpen()) {
         const initial = this.modal.initialGame();
         const option = this.modal.initialOption();
-        if (initial) {
+
+        if (option?.games && option.games.length > 0) {
+          this.selectedGames = [...option.games];
+          this.syncSelections();
+        } else if (initial) {
           this.chooseGames([initial]);
         }
+
+        if (option?.betType) {
+          this.betType = option.betType;
+          if (option.betType === 'parlay') {
+            this.totalOddsMode = true;
+          }
+        }
+
+        if (option?.selections && option.selections.length > 0) {
+          this.selections = [...option.selections];
+        }
+
+        if (option?.legs && option.legs.length > 0) {
+          this.legs = [...option.legs];
+        }
+
         if (option) {
           if (option.odds) {
             this.odds = Number(option.odds);
@@ -87,13 +108,14 @@ export class CreateTicketModalComponent {
           if (option.eventLabel) {
             this.event = option.eventLabel;
           }
-          if (this.selections.length > 0) {
+          if (this.selections.length > 0 && !option.selections) {
             if (option.market) this.selections[0].market = option.market;
             if (option.pick) this.selections[0].pick = option.pick;
             if (option.line !== undefined && option.line !== null) this.selections[0].line = option.line;
             if (option.description) this.selections[0].description = option.description;
           }
         }
+
         if (!this.selectedHouse && this.vm.data().houses.length > 0) {
           this.selectedHouse = String(this.vm.data().houses[0].id);
         }
@@ -105,8 +127,18 @@ export class CreateTicketModalComponent {
     this.vm.data().houses.find((h) => String(h.id) === this.selectedHouse),
   );
 
+  togglePicker() {
+    this.showPicker.update((v) => !v);
+  }
+
+  removeGame(gameId: string) {
+    this.selectedGames = this.selectedGames.filter((g) => g.id !== gameId);
+    this.syncSelections();
+  }
+
   close() {
     this.modal.close();
+    this.showPicker.set(false);
     this.vm.error.set('');
   }
 
@@ -290,27 +322,32 @@ export class CreateTicketModalComponent {
       return;
     }
 
-    const ok = await this.bets.create({
-      public_record: false,
-      selection_details: this.selections,
-      odds_format: this.oddsFormat,
-      league_tag: this.leagueTag,
-      market_tag: this.marketTag,
-      same_game_selections: this.betType === 'same_game' ? this.sameGameSelections : [],
-      games: this.selectedGames.map((g) => g.id), linked_games: this.selectedGames,
-      legs: this.betType === 'parlay' && !this.totalOddsMode ? this.legs : [],
-      house_id: Number(this.selectedHouse),
-      event: this.event,
-      odds: this.odds,
-      stake: this.stake,
-      bet_type: this.betType,
-      bonus: this.betType !== 'simple' ? (this.bonus ?? 0) : 0,
-    });
+    try {
+      const ok = await this.bets.create({
+        public_record: false,
+        selection_details: this.selections,
+        odds_format: this.oddsFormat,
+        league_tag: this.leagueTag,
+        market_tag: this.marketTag,
+        same_game_selections: this.betType === 'same_game' ? this.sameGameSelections : [],
+        games: this.selectedGames.map((g) => g.id),
+        linked_games: this.selectedGames,
+        legs: this.betType === 'parlay' && !this.totalOddsMode ? this.legs : [],
+        house_id: Number(this.selectedHouse),
+        event: this.event,
+        odds: this.odds,
+        stake: this.stake,
+        bet_type: this.betType,
+        bonus: this.betType !== 'simple' ? (this.bonus ?? 0) : 0,
+      });
 
-    if (ok) {
-      this.close();
-      this.vm.notice.set('¡Ticket registrado exitosamente!');
-      setTimeout(() => this.vm.notice.set(''), 4000);
+      if (ok) {
+        this.close();
+        this.vm.notice.set('¡Ticket registrado exitosamente!');
+        setTimeout(() => this.vm.notice.set(''), 4000);
+      }
+    } catch (e: any) {
+      this.vm.error.set(e?.message || 'Error al guardar el ticket. Revisa los datos.');
     }
   }
 }

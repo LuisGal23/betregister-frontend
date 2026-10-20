@@ -53,10 +53,15 @@ body {
   -webkit-backdrop-filter: blur(16px);
 }
 
-:root .main-content .page-heading h1 {
+:root .main-content h1,
+:root .main-content .page-heading h1,
+:root .public-content h1 {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -1px;
+  color: var(--text) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
 
 :root .main-content .page-heading p {

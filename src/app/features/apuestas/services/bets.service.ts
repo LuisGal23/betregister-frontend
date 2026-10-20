@@ -4,6 +4,7 @@ import { ApiService } from '../../../core/services/api.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import type { CreateBet, BetResult } from './bet.model';
 import { decimalOdds } from '../../../shared/utils/odds.utils';
+import { toDatabaseMarketTag } from './bet-tags';
 
 @Injectable({ providedIn: 'root' })
 export class BetsService {
@@ -16,7 +17,7 @@ export class BetsService {
         this.api.request(`/bets/${id}/tags`, {
           revision,
           league_tag,
-          market_tag,
+          market_tag: toDatabaseMarketTag(market_tag),
           ...(selection_details?.length ? { selection_details } : {}),
         }),
       'Etiquetas actualizadas.',
@@ -31,8 +32,30 @@ export class BetsService {
   }
 
   create(data: CreateBet) {
+    // Keep linked_games locally and strip it from the REST payload to avoid unknown column errors
+    const { linked_games, ...apiPayload } = data;
+    const cleanMarketTag = toDatabaseMarketTag(data.market_tag || 'Sin clasificar');
+    const cleanLeagueTag = data.league_tag || 'Sin clasificar';
+
+    const cleanDetails = (data.selection_details || []).map((d) => ({
+      sport: d.sport || 'Fútbol',
+      market: d.market || 'Otro',
+      pick: d.pick || '',
+      line: d.line !== undefined && d.line !== null ? Number(d.line) : null,
+      description: (d.description || '').slice(0, 200),
+      game_id: d.game_id || '',
+      event_label: (d.event_label || '').slice(0, 120),
+    }));
+
+    const finalPayload = {
+      ...apiPayload,
+      league_tag: cleanLeagueTag,
+      market_tag: cleanMarketTag,
+      selection_details: cleanDetails,
+    };
+
     return this.state.mutate(
-      () => this.api.request('/bets', data),
+      () => this.api.request('/bets', finalPayload),
       'Apuesta registrada.',
       (dashboard) => {
         const house = dashboard.houses.find((h) => h.id === data.house_id);
@@ -49,8 +72,8 @@ export class BetsService {
             stake,
             odds: String(decimalOdds(data.odds, data.odds_format ?? 'decimal')),
             american_odds: data.odds_format === 'american' ? data.odds : null,
-            league_tag: data.league_tag,
-            market_tag: data.market_tag,
+            league_tag: cleanLeagueTag,
+            market_tag: cleanMarketTag,
             bonus: Math.round((data.bonus ?? 0) * 100),
             bet_type: data.bet_type,
             status: 'pending',
@@ -58,7 +81,7 @@ export class BetsService {
             created: new Date().toISOString().slice(0, 19).replace('T', ' '),
             settled_at: null,
             legs: data.legs,
-            selection_details: data.selection_details,
+            selection_details: cleanDetails,
             same_game_selections: data.same_game_selections,
             linked_games: data.linked_games,
             remaining_stake: stake,

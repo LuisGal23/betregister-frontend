@@ -271,3 +271,22 @@ export function marketLabel(market: string) {
       ? market + ' · sin unidad registrada'
       : market;
 }
+
+export function toDatabaseMarketTag(market: string): string {
+  if (!market) return 'Sin clasificar';
+  const m = market.toLowerCase();
+  if (m === 'ml' || m.includes('moneyline') || m.includes('1x2') || m.includes('ganador')) return 'ML';
+  if (m.includes('ambos')) return 'Ambos anotan';
+  if (m.includes('córner') || m.includes('corner')) return 'Córners';
+  if (m.includes('tarjeta')) return 'Tarjetas';
+  if (m.includes('asiático') || m.includes('asiatico')) return 'Hándicap asiático';
+  if (m.includes('hándicap') || m.includes('handicap') || m.includes('spread') || m.includes('run line')) return 'Hándicap';
+  if (m.includes('gol')) return 'Goles';
+  if (m.includes('carrera')) return 'Carreras';
+  if (m.includes('punto')) return 'Puntos';
+  if (m.includes('mixto')) return 'Mixto';
+  if (m.includes('over')) return 'Over';
+  if (m.includes('under')) return 'Under';
+  if (m.includes('empate')) return 'Empate';
+  return 'Otro';
+}

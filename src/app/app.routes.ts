@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+
 export const routes: Routes = [
   ...[['terms','terms'],['privacy','privacy'],['delete-account','delete'],['support','support']].map(([path,kind])=>({path,data:{kind},loadComponent:()=>import('./features/legal/legal-page.component').then(m=>m.LegalPageComponent)})),
   {path:'p/:token',loadComponent:()=>import('./features/public-record/public-record.component').then(m=>m.PublicRecordComponent)},
@@ -36,6 +37,26 @@ export const routes: Routes = [
       import('./features/partidos/pages/matches-page/matches-page.component').then(
         (m) => m.MatchesPageComponent,
       ),
+  },
+  {
+    path: 'pronosticos',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pronosticos/pages/pronosticos-page.component').then(
+        (m) => m.PronosticosPageComponent,
+      ),
+  },
+  {
+    path: 'ia',
+    redirectTo: 'pronosticos',
+  },
+  {
+    path: 'challenges',
+    redirectTo: 'pronosticos',
+  },
+  {
+    path: 'retos',
+    redirectTo: 'pronosticos',
   },
   {
     path: 'match-analysis',
