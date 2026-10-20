@@ -716,30 +716,14 @@
                     <div class="flex items-start sm:items-center gap-4">
                       <!-- BIG PLAYER PHOTO (Left side) -->
                       <div class="relative w-28 sm:w-32 h-36 sm:h-40 rounded-2xl bg-gradient-to-b from-[var(--surface-high)] via-[var(--surface)] to-transparent border border-[var(--border)] overflow-hidden shrink-0 shadow-md flex items-end justify-center p-1 group/photo">
-                        @if (star.headshot) {
-                          <img 
-                            [src]="star.headshot" 
-                            [alt]="star.name" 
-                            loading="lazy"
-                            referrerpolicy="no-referrer"
-                            class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover/photo:scale-105" 
-                            (error)="onPlayerImgError($event, star)" 
-                          />
-                        } @else {
-                          <div class="flex flex-col items-center justify-between p-3 text-center w-full h-full relative z-1">
-                            <span class="text-[9px] font-black tracking-widest text-[var(--accent)] font-mono uppercase bg-[var(--surface)]/80 px-2 py-0.5 rounded-full border border-[var(--border)]">
-                              {{ star.role }}
-                            </span>
-                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border-2 border-[var(--accent)]/30 flex items-center justify-center my-auto shadow-[0_0_20px_rgba(41,184,245,0.2)]">
-                              <span class="text-2xl font-black text-[var(--text)] font-mono">
-                                #{{ star.priorStarts || star.jersey || getJerseyNum(star.name) }}
-                              </span>
-                            </div>
-                            <span class="text-[9px] font-bold text-[var(--muted)] uppercase truncate max-w-full">
-                              {{ star.team }}
-                            </span>
-                          </div>
-                        }
+                        <img 
+                          [src]="star.headshot || getFallbackPhoto(star.name)" 
+                          [alt]="star.name" 
+                          loading="lazy"
+                          referrerpolicy="no-referrer"
+                          class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover/photo:scale-105" 
+                          (error)="onPlayerImgError($event, star)" 
+                        />
                         <span class="absolute top-1.5 right-1.5 z-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md border border-white/10">
                           #{{ star.priorStarts || star.jersey || getJerseyNum(star.name) }}
                         </span>
@@ -818,30 +802,14 @@
                     <div class="flex items-start sm:items-center gap-4">
                       <!-- BIG PLAYER PHOTO (Left side) -->
                       <div class="relative w-28 sm:w-32 h-36 sm:h-40 rounded-2xl bg-gradient-to-b from-[var(--surface-high)] via-[var(--surface)] to-transparent border border-[var(--border)] overflow-hidden shrink-0 shadow-md flex items-end justify-center p-1 group/photo">
-                        @if (star.headshot) {
-                          <img 
-                            [src]="star.headshot" 
-                            [alt]="star.name" 
-                            loading="lazy"
-                            referrerpolicy="no-referrer"
-                            class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover/photo:scale-105" 
-                            (error)="onPlayerImgError($event, star)" 
-                          />
-                        } @else {
-                          <div class="flex flex-col items-center justify-between p-3 text-center w-full h-full relative z-1">
-                            <span class="text-[9px] font-black tracking-widest text-[var(--accent)] font-mono uppercase bg-[var(--surface)]/80 px-2 py-0.5 rounded-full border border-[var(--border)]">
-                              {{ star.role }}
-                            </span>
-                            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border-2 border-[var(--accent)]/30 flex items-center justify-center my-auto shadow-[0_0_20px_rgba(41,184,245,0.2)]">
-                              <span class="text-2xl font-black text-[var(--text)] font-mono">
-                                #{{ star.priorStarts || star.jersey || getJerseyNum(star.name) }}
-                              </span>
-                            </div>
-                            <span class="text-[9px] font-bold text-[var(--muted)] uppercase truncate max-w-full">
-                              {{ star.team }}
-                            </span>
-                          </div>
-                        }
+                        <img 
+                          [src]="star.headshot || getFallbackPhoto(star.name)" 
+                          [alt]="star.name" 
+                          loading="lazy"
+                          referrerpolicy="no-referrer"
+                          class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover/photo:scale-105" 
+                          (error)="onPlayerImgError($event, star)" 
+                        />
                         <span class="absolute top-1.5 right-1.5 z-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md border border-white/10">
                           #{{ star.priorStarts || star.jersey || getJerseyNum(star.name) }}
                         </span>
@@ -1435,22 +1403,14 @@
 
                       <!-- Center: Transparent PNG Cutout Portrait -->
                       <div class="relative w-full h-44 sm:h-52 flex items-end justify-center my-1 z-1">
-                        @if (card.photo) {
-                          <img 
-                            [src]="card.photo" 
-                            [alt]="card.name" 
-                            class="max-h-full max-w-[85%] object-contain object-bottom filter drop-shadow-[0_14px_24px_rgba(0,0,0,0.7)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover:scale-105" 
-                            loading="lazy"
-                            referrerpolicy="no-referrer"
-                            (error)="onPlayerImgError($event, card)"
-                          />
-                        } @else {
-                          <div class="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border-2 border-[var(--accent)]/30 flex items-center justify-center shadow-[0_0_24px_rgba(41,184,245,0.25)]">
-                            <span class="text-2xl font-black text-[var(--text)] font-mono">
-                              #{{ card.jersey || getJerseyNum(card.name) }}
-                            </span>
-                          </div>
-                        }
+                        <img 
+                          [src]="card.photo || getFallbackPhoto(card.name)" 
+                          [alt]="card.name" 
+                          class="max-h-full max-w-[85%] object-contain object-bottom filter drop-shadow-[0_14px_24px_rgba(0,0,0,0.7)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] transition-transform duration-300 group-hover:scale-105" 
+                          loading="lazy"
+                          referrerpolicy="no-referrer"
+                          (error)="onPlayerImgError($event, card)"
+                        />
                       </div>
 
                       <!-- Props / Lines with glowing progress bars -->
@@ -1538,30 +1498,14 @@
                     <article class="p-4 sm:p-5 rounded-2xl bg-[var(--surface-high)]/70 border border-[var(--border)] hover:border-[var(--accent)]/50 transition-all shadow-sm flex flex-col justify-between gap-3 group">
                       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 w-full">
                         <div class="relative w-28 sm:w-32 h-36 sm:h-40 rounded-2xl overflow-hidden bg-gradient-to-b from-[var(--surface-high)] via-[var(--surface)] to-transparent border border-[var(--border)] shadow-md shrink-0 flex items-end justify-center p-1 group-hover:border-[var(--accent)]/40 transition-colors">
-                          @if (p.headshot) {
-                            <img 
-                              [src]="p.headshot" 
-                              [alt]="p.name" 
-                              loading="lazy"
-                              referrerpolicy="no-referrer"
-                              class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] relative z-1 transition-transform duration-300 group-hover:scale-105" 
-                              (error)="onPlayerImgError($event, p)"
-                            />
-                          } @else {
-                            <div class="relative z-1 w-full h-full flex flex-col items-center justify-between p-2.5">
-                              <span class="text-[9px] font-black tracking-widest text-[var(--accent)] font-mono uppercase bg-[var(--surface)]/80 px-2 py-0.5 rounded-full border border-[var(--border)] mt-1">
-                                {{ p.position || 'TITULAR' }}
-                              </span>
-                              <div class="w-14 h-14 rounded-full bg-gradient-to-br from-[var(--accent)]/20 to-[var(--accent)]/5 border-2 border-[var(--accent)]/30 flex items-center justify-center my-auto shadow-[0_0_20px_rgba(41,184,245,0.2)]">
-                                <span class="text-xl sm:text-2xl font-black text-[var(--text)] font-mono">
-                                  #{{ p.jersey || getJerseyNum(p.name) }}
-                                </span>
-                              </div>
-                              <span class="text-[9px] font-bold text-[var(--muted)] uppercase truncate max-w-full text-center">
-                                {{ p.team_name }}
-                              </span>
-                            </div>
-                          }
+                          <img 
+                            [src]="p.headshot || getFallbackPhoto(p.name)" 
+                            [alt]="p.name" 
+                            loading="lazy"
+                            referrerpolicy="no-referrer"
+                            class="max-h-full max-w-full object-contain object-bottom filter drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] [mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] [-webkit-mask-image:linear-gradient(to_bottom,black_80%,transparent_100%)] relative z-1 transition-transform duration-300 group-hover:scale-105" 
+                            (error)="onPlayerImgError($event, p)"
+                          />
                           <div class="absolute top-1.5 right-1.5 z-2 bg-black/60 backdrop-blur-xs text-white text-[10px] font-mono font-black px-1.5 py-0.5 rounded-md border border-white/10">
                             #{{ p.jersey || getJerseyNum(p.name) }}
                           </div>

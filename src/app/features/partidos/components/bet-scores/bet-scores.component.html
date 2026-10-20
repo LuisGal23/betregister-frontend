@@ -380,11 +380,14 @@
               @for (player of activeDetails()?.players?.slice(0, 9); track player.name + player.category) {
                 <div class="p-3.5 rounded-2xl bg-surface border border-border flex items-center gap-3 hover:border-accent/40 transition-colors">
                   <div class="relative w-10 h-10 rounded-full bg-surface-high border border-border flex items-center justify-center overflow-hidden shrink-0">
-                    @if (player.headshot) {
-                      <img [src]="player.headshot" [alt]="player.name" class="w-full h-full object-cover" (error)="onLogoError($event)" />
-                    } @else {
-                      <span class="text-xs font-bold text-muted">{{ player.jersey || '#' }}</span>
-                    }
+                    <img 
+                      [src]="player.headshot || ('https://ui-avatars.com/api/?name=' + player.name + '&background=1e293b&color=10b981&bold=true&size=128')" 
+                      [alt]="player.name" 
+                      class="w-full h-full object-cover" 
+                      loading="lazy"
+                      referrerpolicy="no-referrer"
+                      (error)="onLogoError($event)" 
+                    />
                   </div>
                   <div class="flex flex-col min-w-0">
                     <span class="text-xs font-bold text-text truncate">{{ player.name }}</span>

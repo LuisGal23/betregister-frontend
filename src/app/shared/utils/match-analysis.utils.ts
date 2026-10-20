@@ -235,12 +235,19 @@ const VERIFIED_CLUB_SQUADS: Record<string, SquadMember[]> = {
   // Chivas Guadalajara
   'chivas': [
     { name: 'Roberto Alvarado', role: 'Extremo Ofensivo', position: 'DEL', jersey: 25, margin: '+1.8 pts' },
-    { name: 'Javier Hernández', role: 'Delantero Centro', position: 'DEL', jersey: 14, margin: '+1.6 pts' },
-    { name: 'Cade Cowell', role: 'Extremo Izquierdo', position: 'DEL', jersey: 16, margin: '+1.4 pts' },
+    { name: 'Cade Cowell', role: 'Extremo Izquierdo', position: 'DEL', jersey: 16, margin: '+1.6 pts' },
+    { name: 'Armando González', role: 'Delantero Centro', position: 'DEL', jersey: 34, margin: '+1.5 pts' },
   ],
   'guadalajara': [
     { name: 'Roberto Alvarado', role: 'Extremo Ofensivo', position: 'DEL', jersey: 25, margin: '+1.8 pts' },
-    { name: 'Javier Hernández', role: 'Delantero Centro', position: 'DEL', jersey: 14, margin: '+1.6 pts' },
+    { name: 'Cade Cowell', role: 'Extremo Izquierdo', position: 'DEL', jersey: 16, margin: '+1.6 pts' },
+    { name: 'Armando González', role: 'Delantero Centro', position: 'DEL', jersey: 34, margin: '+1.5 pts' },
+  ],
+  // Necaxa
+  'necaxa': [
+    { name: 'José Paradela', role: 'Mediapunta & Conductor', position: 'MED', jersey: 10, margin: '+1.8 pts' },
+    { name: 'Diber Cambindo', role: 'Delantero Centro', position: 'DEL', jersey: 27, margin: '+1.7 pts' },
+    { name: 'Kevin Rosero', role: 'Extremo Ofensivo', position: 'DEL', jersey: 7, margin: '+1.4 pts' },
   ],
   // Cruz Azul
   'cruz azul': [
@@ -268,6 +275,85 @@ const VERIFIED_CLUB_SQUADS: Record<string, SquadMember[]> = {
   'toluca': [
     { name: 'Alexis Vega', role: 'Extremo Ofensivo & Referente', position: 'DEL', jersey: 25, margin: '+1.9 pts' },
     { name: 'Paulinho', role: 'Delantero Centro', position: 'DEL', jersey: 26, margin: '+1.8 pts' },
+  ],
+  // Pumas UNAM
+  'pumas': [
+    { name: 'César Huerta', role: 'Extremo Izquierdo & Estrella', position: 'DEL', jersey: 12, margin: '+2.0 pts' },
+    { name: 'Guillermo Martínez', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.7 pts' },
+    { name: 'Piero Quispe', role: 'Mediapunta Creativo', position: 'MED', jersey: 27, margin: '+1.6 pts' },
+  ],
+  'unam': [
+    { name: 'César Huerta', role: 'Extremo Izquierdo & Estrella', position: 'DEL', jersey: 12, margin: '+2.0 pts' },
+    { name: 'Guillermo Martínez', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.7 pts' },
+  ],
+  // Pachuca
+  'pachuca': [
+    { name: 'Salomón Rondón', role: 'Delantero Centro & Capitán', position: 'DEL', jersey: 23, margin: '+2.1 pts' },
+    { name: 'Oussama Idrissi', role: 'Extremo Ofensivo', position: 'DEL', jersey: 11, margin: '+1.9 pts' },
+    { name: 'Nelson Deossa', role: 'Centrocampista Total', position: 'MED', jersey: 6, margin: '+1.6 pts' },
+  ],
+  // Santos Laguna
+  'santos': [
+    { name: 'Jordan Carrillo', role: 'Mediapunta Creativo', position: 'MED', jersey: 9, margin: '+1.6 pts' },
+    { name: 'Harold Preciado', role: 'Delantero Centro', position: 'DEL', jersey: 7, margin: '+1.8 pts' },
+  ],
+  // León
+  'leon': [
+    { name: 'Jhonder Cádiz', role: 'Delantero Centro', position: 'DEL', jersey: 29, margin: '+1.7 pts' },
+    { name: 'Salvador Reyes', role: 'Extremo / Lateral Izquierdo', position: 'DEF', jersey: 17, margin: '+1.5 pts' },
+  ],
+  // Atlas
+  'atlas': [
+    { name: 'Eduardo Aguirre', role: 'Delantero Centro', position: 'DEL', jersey: 19, margin: '+1.7 pts' },
+    { name: 'Raymundo Fulgencio', role: 'Extremo Ofensivo', position: 'DEL', jersey: 7, margin: '+1.5 pts' },
+    { name: 'Aldo Rocha', role: 'Centrocampista & Capitán', position: 'MED', jersey: 26, margin: '+1.5 pts' },
+  ],
+  // Tijuana / Xolos
+  'tijuana': [
+    { name: 'Kevin Castañeda', role: 'Mediapunta Creativo', position: 'MED', jersey: 10, margin: '+1.7 pts' },
+    { name: 'Efraín Álvarez', role: 'Extremo Ofensivo', position: 'DEL', jersey: 11, margin: '+1.6 pts' },
+  ],
+  'xolos': [
+    { name: 'Kevin Castañeda', role: 'Mediapunta Creativo', position: 'MED', jersey: 10, margin: '+1.7 pts' },
+    { name: 'Efraín Álvarez', role: 'Extremo Ofensivo', position: 'DEL', jersey: 11, margin: '+1.6 pts' },
+  ],
+  // Atlético San Luis
+  'san luis': [
+    { name: 'Franck Boli', role: 'Delantero Centro', position: 'DEL', jersey: 7, margin: '+1.7 pts' },
+    { name: 'Sébastien Salles-Lamonge', role: 'Centrocampista Organizador', position: 'MED', jersey: 19, margin: '+1.6 pts' },
+    { name: 'Vitinho', role: 'Extremo Derecho', position: 'DEL', jersey: 11, margin: '+1.5 pts' },
+  ],
+  // Puebla
+  'puebla': [
+    { name: 'Lucas Cavallini', role: 'Delantero Centro & Capitán', position: 'DEL', jersey: 9, margin: '+1.7 pts' },
+    { name: 'Emiliano Gómez', role: 'Extremo Ofensivo', position: 'DEL', jersey: 11, margin: '+1.5 pts' },
+  ],
+  // Juárez
+  'juarez': [
+    { name: 'Oscar Estupiñán', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.7 pts' },
+    { name: 'Avilés Hurtado', role: 'Extremo Ofensivo', position: 'DEL', jersey: 18, margin: '+1.5 pts' },
+  ],
+  'juárez': [
+    { name: 'Oscar Estupiñán', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.7 pts' },
+    { name: 'Avilés Hurtado', role: 'Extremo Ofensivo', position: 'DEL', jersey: 18, margin: '+1.5 pts' },
+  ],
+  // Mazatlán
+  'mazatlan': [
+    { name: 'Raúl Camacho', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.5 pts' },
+    { name: 'Josué Colmán', role: 'Extremo Creativo', position: 'DEL', jersey: 11, margin: '+1.5 pts' },
+  ],
+  'mazatlán': [
+    { name: 'Raúl Camacho', role: 'Delantero Centro', position: 'DEL', jersey: 9, margin: '+1.5 pts' },
+    { name: 'Josué Colmán', role: 'Extremo Creativo', position: 'DEL', jersey: 11, margin: '+1.5 pts' },
+  ],
+  // Querétaro
+  'queretaro': [
+    { name: 'Federico Lértora', role: 'Centrocampista Defensivo', position: 'MED', jersey: 5, margin: '+1.5 pts' },
+    { name: 'Pablo Barrera', role: 'Extremo Derecho & Capitán', position: 'MED', jersey: 8, margin: '+1.6 pts' },
+  ],
+  'querétaro': [
+    { name: 'Federico Lértora', role: 'Centrocampista Defensivo', position: 'MED', jersey: 5, margin: '+1.5 pts' },
+    { name: 'Pablo Barrera', role: 'Extremo Derecho & Capitán', position: 'MED', jersey: 8, margin: '+1.6 pts' },
   ],
 
   // NFL TEAMS
@@ -401,19 +487,19 @@ export function getVerifiedTeamStars(teamName: string, sport: string, side: 'hom
   const isNBA = sport === 'Baloncesto';
   return [
     {
-      name: `${teamName} Titular Ofensivo`,
+      name: `Capitán (${teamName})`,
       team: teamName,
       team_side: side,
-      role: isNFL ? 'QB Titular' : isNBA ? 'Base Titular' : 'Delantero Centro',
+      role: isNFL ? 'QB Titular' : isNBA ? 'Base Titular' : 'Delantero Referente',
       marginImpact: '+1.50 pts',
       priorStarts: 9,
       statusText: 'Titular en alineación oficial',
     },
     {
-      name: `${teamName} Capitán`,
+      name: `Referente Ofensivo (${teamName})`,
       team: teamName,
       team_side: side,
-      role: isNFL ? 'WR / RB Principal' : isNBA ? 'Alero Titular' : 'Centrocampista Ofensivo',
+      role: isNFL ? 'WR / RB Principal' : isNBA ? 'Alero Titular' : 'Centrocampista Creativo',
       marginImpact: '+1.20 pts',
       priorStarts: 10,
       statusText: 'Convocado oficial',
