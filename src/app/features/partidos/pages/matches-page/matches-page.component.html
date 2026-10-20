@@ -26,8 +26,11 @@
         <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
         <span>AUDITORÍA EN VIVO · APIS OFICIALES</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-text mb-2">Partidos del día</h1>
-      <p class="text-xs sm:text-sm text-muted max-w-[680px] leading-relaxed">Explora marcadores, probabilidades estimadas por nuestro modelo y selecciona cualquier encuentro para armar tu ticket con control de bank.</p>
+      <span class="text-xs font-mono font-bold tracking-wider text-muted uppercase block mb-1">
+        {{ currentPeriodLabel() }}
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-text mb-2">Partidos</h1>
+      <p class="text-xs sm:text-sm text-muted max-w-[720px] leading-relaxed">Horarios en tu zona horaria y estadios. Selecciona cualquier partido para consultar el pronóstico del modelo, quarterbacks, player props, estadísticas cara a cara y Sharp Club.</p>
     </div>
 
     <div class="flex items-center gap-2.5 flex-wrap">
@@ -260,130 +263,118 @@
           <!-- Animated Team Color Gradient Aura Backdrop -->
           <div class="card-ambient-aura" aria-hidden="true"></div>
 
-          <!-- Card Header / Meta -->
-          <div class="flex justify-between items-center gap-2 sm:gap-3 relative z-1">
-            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap min-w-0">
-              <span class="text-[10px] sm:text-[11px] font-bold tracking-wider uppercase text-muted truncate">
-                {{ formatMatchDate(game.start) }}
-              </span>
-              <span class="text-[10px] sm:text-[11px] text-muted pl-2 border-l border-border truncate max-w-[120px] sm:max-w-none">{{ game.league_name }}</span>
-            </div>
-            
-            <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              @if (game.state === 'live') {
-                <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide bg-red-500/15 text-red-500 border border-red-500/35">
-                  <span class="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span> EN VIVO
-                </span>
-              } @else if (game.state === 'final') {
-                <span class="inline-flex items-center px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide bg-surface-high text-muted border border-border">FINAL</span>
-              } @else {
-                <span class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide bg-accent/10 text-accent border border-accent/30">
-                  <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> POR JUGARSE
-                </span>
-              }
-
-              <button 
-                type="button" 
-                class="w-7 h-7 rounded-full bg-surface-high border border-border text-text flex items-center justify-center cursor-pointer transition-transform hover:bg-accent hover:text-white hover:border-accent hover:scale-110 shrink-0" 
-                title="Añadir al ticket de apuestas" 
-                (click)="addToTicket(game)"
-              >
-                <app-icon name="plus" />
-              </button>
-            </div>
+          <!-- Card Header / Meta (Venue & Status as in Image 1) -->
+          <div class="flex justify-between items-center gap-2 relative z-1 text-xs">
+            <span class="font-bold uppercase tracking-wider text-muted font-mono text-[10px] sm:text-[11px] truncate">
+              {{ formatCardTopMeta(game) }}
+            </span>
+            <span 
+              class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide shrink-0 font-mono"
+              [class.bg-red-500/15]="game.state === 'live'"
+              [class.text-red-500]="game.state === 'live'"
+              [class.border]="true"
+              [class.border-red-500/35]="game.state === 'live'"
+              [class.bg-surface-high]="game.state === 'final'"
+              [class.text-muted]="game.state === 'final'"
+              [class.border-border]="game.state === 'final'"
+              [class.bg-emerald-500/10]="game.state === 'scheduled'"
+              [class.text-emerald-400]="game.state === 'scheduled'"
+              [class.border-emerald-500/30]="game.state === 'scheduled'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" [class.bg-red-500]="game.state === 'live'" [class.bg-emerald-400]="game.state === 'scheduled'" [class.bg-muted]="game.state === 'final'" [class.animate-pulse]="game.state === 'live' || game.state === 'scheduled'"></span>
+              {{ game.state === 'live' ? 'EN VIVO' : game.state === 'final' ? 'FINAL' : 'POR JUGARSE' }}
+            </span>
           </div>
 
-          <!-- Teams Centerpiece with Big Centered Logos -->
-          <div class="flex items-center justify-between gap-2.5 sm:gap-5 py-2 relative z-1">
-            <!-- Home Team (Visita) -->
-            <div class="flex items-center gap-2.5 sm:gap-3.5 flex-1 min-w-0">
-              <div class="flex flex-col text-right flex-1 min-w-0">
-                <span class="text-[10px] sm:text-[11px] font-mono font-bold text-accent truncate">{{ shortCode(game.home) }}</span>
-                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.home }}</strong>
-                <small class="text-[10px] sm:text-[11px] text-muted">visita</small>
-              </div>
-              <div class="relative w-14 h-14 sm:w-18 sm:h-18 shrink-0 flex items-center justify-center p-1.5 rounded-2xl bg-surface-high/60 border border-border/80 shadow-md">
-                @if (game.home_logo) {
-                  <img [src]="game.home_logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+          <!-- Teams Centerpiece with Big Centered Logos & Records (Image 1) -->
+          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2.5 sm:gap-4 py-2 relative z-1">
+            <!-- Away Team (Visita - Left side as in Image 1) -->
+            <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div class="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface-high/70 border border-border/80 shadow-md">
+                @if (getLogo(game.away, game.sport, game.away_logo); as logo) {
+                  <img [src]="logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
                 } @else {
-                  <span class="text-lg sm:text-xl font-black text-text font-mono">{{ shortCode(game.home) }}</span>
+                  <span class="text-base sm:text-lg font-black text-accent font-mono">{{ shortCode(game.away) }}</span>
                 }
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-[11px] sm:text-xs font-black tracking-wider text-accent font-mono truncate">{{ shortCode(game.away) }}</span>
+                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.away }}</strong>
+                <small class="text-[10px] sm:text-[11px] text-muted">{{ getTeamRecord(game, false) }}</small>
               </div>
             </div>
 
             <!-- Score / Versus Center -->
-            <div class="flex flex-col items-center justify-center shrink-0 min-w-[65px] sm:min-w-[85px] px-1 sm:px-2">
+            <div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] sm:min-w-[65px] px-1">
               @if (game.state === 'live' || game.state === 'final') {
-                <div class="flex items-center gap-1.5 sm:gap-2 text-xl sm:text-3xl font-black font-mono tracking-tight text-text">
-                  <span>{{ game.home_score ?? 0 }}</span>
-                  <span class="text-muted font-light">–</span>
+                <div class="flex items-center gap-1 text-lg sm:text-2xl font-black font-mono tracking-tight text-text">
                   <span>{{ game.away_score ?? 0 }}</span>
+                  <span class="text-muted font-light">–</span>
+                  <span>{{ game.home_score ?? 0 }}</span>
                 </div>
                 @if (game.detail) {
-                  <small class="text-[10px] sm:text-[11px] text-accent font-semibold mt-1 text-center truncate max-w-[85px] sm:max-w-none">{{ game.detail }}</small>
+                  <small class="text-[9px] sm:text-[10px] text-accent font-semibold mt-0.5 text-center truncate max-w-[70px]">{{ game.detail }}</small>
                 }
               } @else {
-                <span class="text-xs font-black tracking-widest text-muted">VS</span>
-                <span class="text-xs font-bold text-text mt-0.5 font-mono">{{ game.start | date:'HH:mm' }}</span>
+                <span class="text-xs font-black tracking-widest text-muted bg-surface-high px-2 py-0.5 rounded-md border border-border font-mono">VS</span>
               }
             </div>
 
-            <!-- Away Team (Local) -->
-            <div class="flex items-center gap-2.5 sm:gap-3.5 flex-1 min-w-0 flex-row-reverse">
-              <div class="flex flex-col text-left flex-1 min-w-0">
-                <span class="text-[10px] sm:text-[11px] font-mono font-bold text-accent truncate">{{ shortCode(game.away) }}</span>
-                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.away }}</strong>
-                <small class="text-[10px] sm:text-[11px] text-muted">local</small>
+            <!-- Home Team (Local - Right side as in Image 1) -->
+            <div class="flex items-center justify-end gap-2.5 sm:gap-3.5 min-w-0 text-right">
+              <div class="flex flex-col min-w-0">
+                <span class="text-[11px] sm:text-xs font-black tracking-wider text-accent font-mono truncate">{{ shortCode(game.home) }}</span>
+                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.home }}</strong>
+                <small class="text-[10px] sm:text-[11px] text-muted">{{ getTeamRecord(game, true) }}</small>
               </div>
-              <div class="relative w-14 h-14 sm:w-18 sm:h-18 shrink-0 flex items-center justify-center p-1.5 rounded-2xl bg-surface-high/60 border border-border/80 shadow-md">
-                @if (game.away_logo) {
-                  <img [src]="game.away_logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+              <div class="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface-high/70 border border-border/80 shadow-md">
+                @if (getLogo(game.home, game.sport, game.home_logo); as logo) {
+                  <img [src]="logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
                 } @else {
-                  <span class="text-lg sm:text-xl font-black text-text font-mono">{{ shortCode(game.away) }}</span>
+                  <span class="text-base sm:text-lg font-black text-accent font-mono">{{ shortCode(game.home) }}</span>
                 }
               </div>
             </div>
           </div>
 
-          <!-- Win Probabilities Bar with Draw for Soccer -->
-          <div class="flex flex-col gap-2 pt-2.5 border-t border-border/50 relative z-1">
+          <!-- Win Probabilities Bar (Away vs Home - Image 1) -->
+          <div class="flex flex-col gap-1.5 pt-2 border-t border-border/50 relative z-1">
             <div class="flex justify-between items-center text-xs font-semibold">
-              <span class="text-accent font-bold">{{ analysis.homeProb }}% {{ shortCode(game.home) }}</span>
+              <span class="text-[#f43f5e] font-bold font-mono">{{ analysis.awayProb }}% {{ shortCode(game.away) }}</span>
               @if (analysis.drawProb) {
-                <span class="text-amber-400 font-bold">{{ analysis.drawProb }}% Empate</span>
+                <span class="text-amber-400 font-bold font-mono">{{ analysis.drawProb }}% Empate</span>
               }
-              <span class="text-emerald-400 font-bold">{{ shortCode(game.away) }} {{ analysis.awayProb }}%</span>
+              <span class="text-[#38bdf8] font-bold font-mono">{{ shortCode(game.home) }} {{ analysis.homeProb }}%</span>
             </div>
 
             <div class="flex h-2.5 w-full rounded-full overflow-hidden bg-surface-high gap-0.5 p-0.5 border border-border/60">
-              <div class="bg-gradient-to-r from-sky-400 to-accent rounded-l-full transition-all duration-300" [style.width.%]="analysis.homeProb"></div>
+              <div class="bg-gradient-to-r from-rose-500 to-[#f43f5e] rounded-l-full transition-all duration-300" [style.width.%]="analysis.awayProb"></div>
               @if (analysis.drawProb) {
                 <div class="bg-amber-400 transition-all duration-300" [style.width.%]="analysis.drawProb"></div>
               }
-              <div class="bg-emerald-400 rounded-r-full transition-all duration-300" [style.width.%]="analysis.awayProb"></div>
+              <div class="bg-gradient-to-r from-sky-400 to-[#38bdf8] rounded-r-full transition-all duration-300" [style.width.%]="analysis.homeProb"></div>
             </div>
           </div>
 
-          <!-- Bottom Action Buttons: Ver Cuotas Modal + Añadir al ticket -->
+          <!-- Bottom Action Buttons: White pill "Ver análisis completo e IA →" + quick "+ Ticket" (Image 1) -->
           <div class="pt-2 flex items-center gap-2.5 relative z-1">
             <button 
               type="button" 
-              class="action-pill-btn primary flex-1 py-2.5 px-4 text-xs font-bold inline-flex items-center justify-center gap-2 shadow-md hover:scale-[1.02] active:scale-98 transition-all"
+              class="flex-1 py-3 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer"
               (click)="openModal(game)"
             >
-              <app-icon name="trend" />
-              <span>Ver Cuotas y Estadísticas</span>
-              <span class="text-xs">→</span>
+              <span>Ver análisis completo e IA</span>
+              <span class="text-sm font-black">→</span>
             </button>
 
             <button 
               type="button" 
-              class="action-pill-btn py-2.5 px-3.5 text-xs inline-flex items-center justify-center gap-1.5 shrink-0"
+              class="py-3 px-3.5 rounded-full bg-surface-high border border-border hover:border-accent hover:text-accent text-text text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95"
               title="Añadir a mi ticket de apuestas"
               (click)="addToTicket(game)"
             >
               <app-icon name="plus" />
-              <span class="hidden sm:inline">Ticket</span>
+              <span class="hidden sm:inline font-mono">Ticket</span>
             </button>
           </div>
 
@@ -401,10 +392,4 @@
     </div>
   }
 
-  <!-- MODAL ANIMADO DE CUOTAS Y ESTADÍSTICAS (Con carrusel de cambio de partidos) -->
-  <app-cuotas-stats-modal 
-    [(isOpen)]="isModalOpen" 
-    [(game)]="modalGame" 
-    [allGames]="filteredGames()" 
-  />
 </div>

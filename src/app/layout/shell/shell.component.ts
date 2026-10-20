@@ -1,5 +1,6 @@
 import { TutorialComponent } from '../../shared/components/tutorial/tutorial.component';
 import { ThemeService } from '../../core/services/theme.service';
+import { SidebarStateService } from '../../core/services/sidebar-state.service';
 import { Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -9,6 +10,7 @@ import { AuthService } from '../../features/auth/services/auth.service';
 import { BankService } from '../../features/banco/services/bank.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
 import { CreateTicketModalComponent } from '../../features/apuestas/modales/registrar-ticket-modal/create-ticket-modal.component';
+import { CuotasStatsModalComponent } from '../../features/partidos/modales/cuotas-stats-modal/cuotas-stats-modal.component';
 import { TicketModalService } from '../../features/apuestas/services/ticket-modal.service';
 import { TranslationService } from '../../core/services/translation.service';
 
@@ -22,12 +24,14 @@ import { TranslationService } from '../../core/services/translation.service';
     FormsModule,
     IconComponent,
     CreateTicketModalComponent,
+    CuotasStatsModalComponent,
   ],
   templateUrl: './shell.component.html',
 })
 export class ShellComponent implements OnInit {
   vm = inject(LedgerState);
   theme = inject(ThemeService);
+  sidebarState = inject(SidebarStateService);
   i18n = inject(TranslationService);
   auth = inject(AuthService);
   bank = inject(BankService);

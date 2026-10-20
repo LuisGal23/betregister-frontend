@@ -5,10 +5,12 @@ import { Router } from '@angular/router';
 import { SportsService } from '../../services/sports.service';
 import { LedgerState } from '../../../../core/services/ledger-state.service';
 import { TicketModalService } from '../../../apuestas/services/ticket-modal.service';
+import { CuotasStatsModalService } from '../../services/cuotas-stats-modal.service';
 import { zoneDay } from '../../../../shared/utils/zone.utils';
 import type { SportsGame, MatchDetails, PlayerStat } from '../../services/sports.model';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
-import { CuotasStatsModalComponent } from '../../modales/cuotas-stats-modal/cuotas-stats-modal.component';
+import { getStadium, getRecord } from '../../../../shared/utils/match-analysis.utils';
+import { getTeamLogo } from '../../../../shared/utils/team-logos.utils';
 
 export interface MatchAnalysis {
   homeProb: number;
@@ -21,7 +23,7 @@ export interface MatchAnalysis {
 @Component({
   selector: 'app-matches-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, DatePipe, IconComponent, CuotasStatsModalComponent],
+  imports: [CommonModule, FormsModule, DatePipe, IconComponent],
   templateUrl: './matches-page.component.html',
   host: { class: 'block w-full' },
 })
@@ -29,6 +31,7 @@ export class MatchesPageComponent implements OnInit {
   private sports = inject(SportsService);
   private router = inject(Router);
   private ticketModal = inject(TicketModalService);
+  private cuotasModalService = inject(CuotasStatsModalService);
   vm = inject(LedgerState);
 
   // Cuotas y Estadísticas Modal state
@@ -117,6 +120,7 @@ export class MatchesPageComponent implements OnInit {
   openModal(game: SportsGame) {
     this.modalGame.set(game);
     this.isModalOpen.set(true);
+    this.cuotasModalService.open(game, this.filteredGames());
   }
 
   stats = computed(() => {
@@ -130,6 +134,54 @@ export class MatchesPageComponent implements OnInit {
   });
 
   todayStr = computed(() => zoneDay(new Date().toISOString(), this.vm.data().profile.timezone));
+
+  currentPeriodLabel = computed(() => {
+    const d = this.selectedDate() ? new Date(this.selectedDate() + 'T12:00:00Z') : new Date();
+    const dayName = d.toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '').toUpperCase();
+    const dayNum = d.getUTCDate();
+    const month = d.toLocaleDateString('es-MX', { month: 'short' }).replace('.', '').toUpperCase();
+    return `— ${dayName} ${dayNum} ${month}`;
+  });
+
+  getLogo(teamName: string, sport?: string, existing?: string | null): string {
+    if (existing) return existing;
+    return getTeamLogo(teamName, sport) || '';
+  }
+
+  getVenue(game: SportsGame): string {
+    return game.venue || getStadium(game.home);
+  }
+
+  private getHash(str: string): number {
+    let hash = 0;
+    for (let i = 0; i < (str || '').length; i++) {
+      hash = ((hash << 5) - hash) + str.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  getTeamRecord(game: SportsGame, isHome: boolean): string {
+    const seed = this.getHash(game.id || game.home + game.away);
+    if (isHome) {
+      return game.home_record || getRecord(game.home, true, seed);
+    }
+    return game.away_record || getRecord(game.away, false, seed);
+  }
+
+  formatCardTopMeta(game: SportsGame): string {
+    const venue = this.getVenue(game);
+    if (!game.start) return venue;
+    try {
+      const d = new Date(game.start);
+      const dayName = d.toLocaleDateString('es-MX', { weekday: 'short' }).replace('.', '').toUpperCase();
+      const dayNum = d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' }).replace('.', '').toUpperCase();
+      const time = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+      return `${dayName} ${dayNum} · ${time} EN TU ZONA · ${venue}`;
+    } catch {
+      return venue;
+    }
+  }
   yesterdayStr = computed(() => {
     const t = this.todayStr();
     const d = new Date(t + 'T12:00:00Z');
@@ -287,7 +339,7 @@ export class MatchesPageComponent implements OnInit {
     if (!this.matchDetails()[game.id]) {
       this.loadingDetails.update((m) => ({ ...m, [game.id]: true }));
       try {
-        const details = await this.sports.details(game.league, game.id);
+        const details = await this.sports.details(game.league, game.id, game);
         this.matchDetails.update((m) => ({ ...m, [game.id]: details }));
       } catch (e) {
         console.error('Error loading match details', e);

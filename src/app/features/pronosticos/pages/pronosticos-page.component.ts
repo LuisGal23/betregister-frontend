@@ -5,11 +5,13 @@ import { SportsService } from '../../partidos/services/sports.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import { TicketModalService } from '../../apuestas/services/ticket-modal.service';
 import { zoneDay } from '../../../shared/utils/zone.utils';
-import type { SportsGame, GameReference } from '../../partidos/services/sports.model';
+import type { SportsGame, GameReference, ValueBetAnalysis } from '../../partidos/services/sports.model';
 import type { SelectionDetail } from '../../apuestas/services/selection-detail';
 import type { BetLeg } from '../../apuestas/services/bet.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { getTeamLogo } from '../../../shared/utils/team-logos.utils';
+import { CuotasStatsModalService } from '../../partidos/services/cuotas-stats-modal.service';
+import { generateDeepAnalysis, buildSuperContextAndValueBet } from '../../../shared/utils/match-analysis.utils';
 
 export interface AIPrediction {
   game: SportsGame;
@@ -30,6 +32,7 @@ export interface AIPrediction {
     isEV: boolean;
     reasoning: string;
   };
+  valueBet: ValueBetAnalysis;
 }
 
 export interface AIParlay {
@@ -62,7 +65,18 @@ export interface AIParlay {
 export class PronosticosPageComponent implements OnInit {
   private sports = inject(SportsService);
   private ticketModal = inject(TicketModalService);
+  private cuotasModalService = inject(CuotasStatsModalService);
   vm = inject(LedgerState);
+
+  // Deep Analysis Modal
+  isModalOpen = signal(false);
+  modalGame = signal<SportsGame | null>(null);
+
+  openMatchModal(game: SportsGame) {
+    this.modalGame.set(game);
+    this.isModalOpen.set(true);
+    this.cuotasModalService.open(game, this.games());
+  }
 
   // Filter signals
   selectedSport = signal<'all' | 'futbol' | 'nfl' | 'nba' | 'mlb'>('all');
@@ -397,9 +411,22 @@ export class PronosticosPageComponent implements OnInit {
       reasoning = `Ligera inclinación hacia ${favoriteTeam} con valor ante la cuota de mercado.`;
     }
 
+    const fullAnalysis = generateDeepAnalysis(g);
+    const valueBet = fullAnalysis.value_bet || buildSuperContextAndValueBet(
+      g,
+      homeWinProb,
+      awayWinProb,
+      drawProb,
+      fullAnalysis.injuries || [],
+      fullAnalysis.recent_form_home || [],
+      fullAnalysis.recent_form_away || [],
+      fullAnalysis.h2h || [],
+      fullAnalysis.bookmakers_odds || []
+    );
+
     const confidence: 'Muy Alta' | 'Alta' | 'Media' =
-      pickProb >= 72 ? 'Muy Alta' : pickProb >= 63 ? 'Alta' : 'Media';
-    const isEV = pickOdds >= 1.65 && pickProb >= 58;
+      valueBet.nivel_confianza >= 4 ? 'Muy Alta' : valueBet.nivel_confianza === 3 ? 'Alta' : 'Media';
+    const isEV = valueBet.is_value_bet;
 
     return {
       game: g,
@@ -414,12 +441,13 @@ export class PronosticosPageComponent implements OnInit {
         market: pickMarket,
         pick: pickVal,
         line: pickLine,
-        odds: pickOdds,
-        prob: pickProb,
+        odds: valueBet.cuota_objetivo || pickOdds,
+        prob: valueBet.probabilidad_estimada_ia || pickProb,
         confidence,
         isEV,
-        reasoning,
+        reasoning: valueBet.justificacion_tactica || reasoning,
       },
+      valueBet,
     };
   }
 

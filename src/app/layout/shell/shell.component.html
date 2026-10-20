@@ -42,7 +42,13 @@
       </nav>
     </header>
   } @else {
-    <a class="fixed -top-20 left-[230px] z-[150] bg-[var(--surface)] p-4 rounded-xl shadow-lg focus:top-2.5 transition-all text-xs font-semibold text-[var(--accent)] max-[760px]:left-4.5" href="#main-content" (click)="focusMain($event)">Saltar al contenido</a>
+    <a 
+      class="fixed -top-20 z-[150] bg-[var(--surface)] p-4 rounded-xl shadow-lg focus:top-2.5 transition-all text-xs font-semibold text-[var(--accent)] max-[760px]:left-4.5"
+      [class.left-[230px]]="!sidebarState.collapsed()" 
+      [class.left-[80px]]="sidebarState.collapsed()" 
+      href="#main-content" 
+      (click)="focusMain($event)"
+    >Saltar al contenido</a>
     @if (sidebarOpen()) {
       <button class="fixed inset-0 rounded-none bg-[#06142666] backdrop-blur-sm z-40 block cursor-pointer border-none" aria-label="Cerrar menú" (click)="closeMenu()"></button>
     }
@@ -50,15 +56,36 @@
       id="workspace-menu"
       #sidebar
       (keydown)="trapMenu($event)"
-      class="w-[216px] fixed inset-y-0 left-0 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 pt-7 pb-4.5 px-4 overflow-y-auto overscroll-contain max-[1050px]:w-[192px] max-[1050px]:px-3 max-[760px]:w-[280px] max-[760px]:-translate-x-full max-[760px]:transition-transform max-[760px]:duration-300 max-[760px]:ease-out max-[760px]:invisible max-[760px]:max-h-[100dvh] max-[760px]:pt-5 max-[760px]:pb-[calc(20px+env(safe-area-inset-bottom))] shadow-2xl"
+      class="fixed inset-y-0 left-0 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col z-50 pt-7 pb-4.5 overflow-y-auto overscroll-contain max-[760px]:w-[280px] max-[760px]:px-4 max-[760px]:-translate-x-full max-[760px]:transition-transform max-[760px]:duration-300 max-[760px]:ease-out max-[760px]:invisible max-[760px]:max-h-[100dvh] max-[760px]:pt-5 max-[760px]:pb-[calc(20px+env(safe-area-inset-bottom))] shadow-2xl transition-[width,padding] duration-300"
+      [class.w-[216px]]="!sidebarState.collapsed()"
+      [class.px-4]="!sidebarState.collapsed()"
+      [class.max-[1050px]:w-[192px]]="!sidebarState.collapsed()"
+      [class.max-[1050px]:px-3]="!sidebarState.collapsed()"
+      [class.w-[68px]]="sidebarState.collapsed()"
+      [class.px-2]="sidebarState.collapsed()"
       [class.!translate-x-0]="sidebarOpen()"
       [class.!visible]="sidebarOpen()"
       (keydown.escape)="closeMenu()"
     >
-      <div class="px-2 pb-6 flex items-center justify-between max-[760px]:pb-4">
-        <a class="block" routerLink="/overview"
-          ><img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[124px]" /></a
-        ><button class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 ml-auto cursor-pointer border-none" aria-label="Cerrar menú lateral" (click)="closeMenu()">
+      <div class="px-1 pb-6 flex items-center justify-between max-[760px]:pb-4">
+        @if (!sidebarState.collapsed()) {
+          <a class="block" routerLink="/overview">
+            <img [src]="theme.dark() ? 'logo-dark.svg' : 'logo.svg'" alt="BetRegister" class="w-[142px] h-auto block max-[1050px]:w-[133px] max-[760px]:w-[124px]" />
+          </a>
+        } @else {
+          <a class="block mx-auto" routerLink="/overview" title="BetRegister">
+            <img src="favicon.svg" alt="BetRegister" class="w-8 h-8 block" />
+          </a>
+        }
+        <button
+          type="button"
+          class="hidden sm:inline-flex p-1.5 rounded-lg text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] cursor-pointer border-none transition-colors"
+          (click)="sidebarState.toggleCollapse()"
+          [title]="sidebarState.collapsed() ? 'Expandir barra lateral' : 'Colapsar barra lateral'"
+        >
+          <span class="text-xs font-bold">{{ sidebarState.collapsed() ? '»' : '«' }}</span>
+        </button>
+        <button class="hidden max-[760px]:inline-flex bg-transparent text-[var(--text)] p-1 ml-auto cursor-pointer border-none" aria-label="Cerrar menú lateral" (click)="closeMenu()">
           <app-icon name="close" class="w-4 h-4" />
         </button>
       </div>
@@ -68,6 +95,8 @@
         routerLink="/profile"
         (click)="closeMenu()"
         class="flex items-center gap-2.5 p-2 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] mb-4 hover:border-[var(--accent)] transition-all no-underline group cursor-pointer"
+        [class.justify-center]="sidebarState.collapsed()"
+        [class.p-1.5]="sidebarState.collapsed()"
         title="Gestionar mi perfil de usuario"
       >
         <div class="relative w-8 h-8 rounded-full bg-[var(--surface)] border border-[var(--border)] group-hover:border-[var(--accent)] overflow-hidden shrink-0 flex items-center justify-center transition-colors shadow-sm">
@@ -77,24 +106,34 @@
             <span class="text-[10px] font-black text-[var(--accent)] uppercase font-mono">{{ userInitial() }}</span>
           }
         </div>
-        <div class="min-w-0 flex-1">
-          <strong class="block text-xs font-bold text-[var(--text)] group-hover:text-[var(--accent)] truncate transition-colors">
-            {{ displayName() }}
-          </strong>
-          <small class="block text-[10px] text-[var(--muted)] font-mono truncate">@{{ username() }}</small>
-        </div>
+        @if (!sidebarState.collapsed()) {
+          <div class="min-w-0 flex-1">
+            <strong class="block text-xs font-bold text-[var(--text)] group-hover:text-[var(--accent)] truncate transition-colors">
+              {{ displayName() }}
+            </strong>
+            <small class="block text-[10px] text-[var(--muted)] font-mono truncate">@{{ username() }}</small>
+          </div>
+        }
       </a>
 
-      <span class="text-[10px] tracking-widest text-[var(--muted)] px-2 mb-2.5 uppercase font-semibold">{{ i18n.t().mySpace }}</span>
+      @if (!sidebarState.collapsed()) {
+        <span class="text-[10px] tracking-widest text-[var(--muted)] px-2 mb-2.5 uppercase font-semibold">{{ i18n.t().mySpace }}</span>
+      }
       <nav aria-label="Navegación principal" class="flex flex-col gap-1">
         @for (link of links(); track link.path) {
           @if (link.path === 'tickets') {
             <button
               type="button"
               class="flex gap-3 items-center px-3 py-2 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-xs min-h-[42px] rounded-xl relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium"
+              [class.justify-center]="sidebarState.collapsed()"
+              [class.px-0]="sidebarState.collapsed()"
+              [title]="link.label"
               (click)="ticketModal.open(); closeMenu()"
             >
-              <app-icon [name]="link.icon" class="w-4 h-4 shrink-0 text-[var(--accent)]" /><span>{{ link.label }}</span>
+              <app-icon [name]="link.icon" class="w-4 h-4 shrink-0 text-[var(--accent)]" />
+              @if (!sidebarState.collapsed()) {
+                <span>{{ link.label }}</span>
+              }
             </button>
           } @else {
             <a
@@ -102,9 +141,15 @@
               routerLinkActive="active"
               ariaCurrentWhenActive="page"
               class="flex gap-3 items-center px-3 py-2 text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] hover:translate-x-0.5 no-underline text-xs min-h-[42px] rounded-xl relative bg-transparent border-none w-full text-left cursor-pointer transition-all font-medium [&.active]:bg-[var(--surface-high)] [&.active]:text-[var(--accent)] [&.active]:font-semibold [&.active]:before:content-[''] [&.active]:before:absolute [&.active]:before:-left-4 max-[1050px]:[&.active]:before:-left-3 [&.active]:before:w-[3px] [&.active]:before:h-5 [&.active]:before:bg-[var(--accent)] [&.active]:before:rounded-r"
+              [class.justify-center]="sidebarState.collapsed()"
+              [class.px-0]="sidebarState.collapsed()"
+              [title]="link.label"
               (click)="closeMenu()"
-              ><app-icon [name]="link.icon" class="w-4 h-4 shrink-0" /><span>{{ link.label }}</span></a
-            >
+              ><app-icon [name]="link.icon" class="w-4 h-4 shrink-0" />
+              @if (!sidebarState.collapsed()) {
+                <span>{{ link.label }}</span>
+              }
+            </a>
           }
         }
       </nav>
@@ -138,19 +183,32 @@
           </div>
         </div>
 
-        <button #tutorialButton class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" (click)="tutorial.set(true); closeMenu()">
-          <app-icon name="chat" class="w-4 h-4" />{{ i18n.t().tutorial }}
+        <button #tutorialButton class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" [class.justify-center]="sidebarState.collapsed()" [class.px-0]="sidebarState.collapsed()" [title]="i18n.t().tutorial" (click)="tutorial.set(true); closeMenu()">
+          <app-icon name="chat" class="w-4 h-4" />
+          @if (!sidebarState.collapsed()) {
+            <span>{{ i18n.t().tutorial }}</span>
+          }
         </button>
 
-        <button class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" [disabled]="vm.busy()" (click)="auth.logout()">
-          <app-icon name="logout" class="w-4 h-4" />{{ i18n.t().logout }}
+        <button class="w-full flex items-center gap-3 justify-start px-3 py-2 text-xs bg-transparent text-[var(--muted)] hover:bg-[var(--surface-high)] hover:text-[var(--accent)] rounded-lg cursor-pointer transition-colors border-none text-left" [class.justify-center]="sidebarState.collapsed()" [class.px-0]="sidebarState.collapsed()" [title]="i18n.t().logout" [disabled]="vm.busy()" (click)="auth.logout()">
+          <app-icon name="logout" class="w-4 h-4" />
+          @if (!sidebarState.collapsed()) {
+            <span>{{ i18n.t().logout }}</span>
+          }
         </button>
-        <small class="block text-[9px] text-[var(--muted)] px-3 pt-1">{{ i18n.t().responsibleBadge }}</small>
+        @if (!sidebarState.collapsed()) {
+          <small class="block text-[9px] text-[var(--muted)] px-3 pt-1">{{ i18n.t().responsibleBadge }}</small>
+        }
       </div>
     </aside>
 
     <!-- Top Header -->
-    <header class="relative z-20 ml-[216px] h-[72px] flex justify-between items-center px-9 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_86%,var(--bg))] max-[1050px]:ml-[192px] max-[1050px]:px-5.5 max-[760px]:ml-0 max-[760px]:h-[58px] max-[760px]:px-3.5">
+    <header 
+      class="relative z-20 h-[72px] flex justify-between items-center px-9 border-b border-[var(--border)] bg-[color-mix(in_srgb,var(--surface)_86%,var(--bg))] max-[760px]:ml-0 max-[760px]:h-[58px] max-[760px]:px-3.5 transition-[margin] duration-300"
+      [class.ml-[216px]]="!sidebarState.collapsed()"
+      [class.max-[1050px]:ml-[192px]]="!sidebarState.collapsed()"
+      [class.ml-[68px]]="sidebarState.collapsed()"
+    >
       <div class="flex items-center text-xs text-[var(--muted)] min-w-0">
         <button
           #menuButton
@@ -160,6 +218,14 @@
           (click)="openMenu()"
         >
           <app-icon name="menu" class="w-5 h-5" />
+        </button>
+        <button
+          type="button"
+          class="hidden sm:inline-flex items-center justify-center w-8 h-8 mr-3 rounded-lg text-[var(--muted)] hover:text-[var(--accent)] hover:bg-[var(--surface-high)] cursor-pointer border border-[var(--border)] transition-all shrink-0"
+          (click)="sidebarState.toggleCollapse()"
+          [title]="sidebarState.collapsed() ? 'Expandir barra lateral' : 'Colapsar barra lateral'"
+        >
+          <span class="text-xs font-bold">{{ sidebarState.collapsed() ? '»' : '«' }}</span>
         </button>
         <span class="text-xs truncate flex items-center">
           <span class="max-[760px]:hidden">{{ i18n.t().mySpace }} <b class="font-normal mx-2 opacity-40">/</b> </span>
@@ -294,14 +360,14 @@
     [attr.inert]="sidebarOpen() ? '' : null"
     id="main-content"
     tabindex="-1"
-    class="outline-none relative z-10"
+    class="outline-none transition-[margin] duration-300"
     [class.main-content]="!publicPage()"
     [class.public-content]="publicPage()"
     [class.w-full]="publicPage()"
     [class.min-h-[calc(100vh-150px)]]="publicPage()"
-    [class.max-w-[1600px]]="!publicPage()"
-    [class.ml-[216px]]="!publicPage()"
-    [class.max-[1050px]:ml-[192px]]="!publicPage()"
+    [class.ml-[216px]]="!publicPage() && !sidebarState.collapsed()"
+    [class.max-[1050px]:ml-[192px]]="!publicPage() && !sidebarState.collapsed()"
+    [class.ml-[68px]]="!publicPage() && sidebarState.collapsed()"
     [class.max-[760px]:ml-0]="!publicPage()"
     [class.p-8]="!publicPage()"
     [class.max-[1050px]:p-5.5]="!publicPage()"
@@ -331,10 +397,12 @@
     <app-tutorial (dismiss)="closeTutorial()" />
   }
   <app-create-ticket-modal />
+  <app-cuotas-stats-modal />
   <footer 
-    class="py-5 px-7 text-[var(--muted)] text-[10px] flex justify-center gap-5 border-t border-[var(--border)]"
-    [class.ml-[216px]]="!publicPage()"
-    [class.max-[1050px]:ml-[192px]]="!publicPage()"
+    class="py-5 px-7 text-[var(--muted)] text-[10px] flex justify-center gap-5 border-t border-[var(--border)] transition-[margin] duration-300"
+    [class.ml-[216px]]="!publicPage() && !sidebarState.collapsed()"
+    [class.max-[1050px]:ml-[192px]]="!publicPage() && !sidebarState.collapsed()"
+    [class.ml-[68px]]="!publicPage() && sidebarState.collapsed()"
     [class.max-[760px]:ml-0]="!publicPage()"
     [class.max-[760px]:pb-[calc(90px+env(safe-area-inset-bottom))]]="!publicPage()"
   >

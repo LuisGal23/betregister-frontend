@@ -275,7 +275,7 @@
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
                   @if (getLogo(pred.game.away, pred.game.sport, pred.game.away_logo); as logo) {
-                    <img [src]="logo" [alt]="pred.game.away" class="w-full h-full object-contain" />
+                    <img [src]="logo" [alt]="pred.game.away" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
                   } @else {
                     <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.away.slice(0, 3).toUpperCase() }}</span>
                   }
@@ -315,7 +315,7 @@
                 </div>
                 <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
                   @if (getLogo(pred.game.home, pred.game.sport, pred.game.home_logo); as logo) {
-                    <img [src]="logo" [alt]="pred.game.home" class="w-full h-full object-contain" />
+                    <img [src]="logo" [alt]="pred.game.home" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
                   } @else {
                     <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.home.slice(0, 3).toUpperCase() }}</span>
                   }
@@ -341,41 +341,75 @@
               </div>
             </div>
 
-            <!-- Recommendation Box -->
-            <div class="p-3 rounded-xl bg-[var(--surface-high)]/70 border border-[var(--border)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono">
-                    MEJOR OPCIÓN IA
-                  </span>
-                  @if (pred.bestPick.isEV) {
-                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono">
-                      +EV VALOR
+            <!-- Recommendation Box with Context Grounding & Value Bet Data -->
+            <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/80 border border-[var(--border)] flex flex-col gap-2.5">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono">
+                      MEJOR OPCIÓN IA
                     </span>
-                  }
-                  <span class="text-[10px] text-[var(--muted)] font-medium">
-                    Certeza: <b class="text-[var(--text)]">{{ pred.bestPick.confidence }}</b>
-                  </span>
+                    @if (pred.valueBet.is_value_bet) {
+                      <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                        +EV EDGE +{{ pred.valueBet.edge_ev }}%
+                      </span>
+                    }
+                    <span class="text-[10px] text-[var(--muted)] font-medium font-mono">
+                      Certeza: <b class="text-[var(--text)]">{{ pred.bestPick.confidence }}</b>
+                    </span>
+                    @if (pred.valueBet.stake_sugerido_porcentaje) {
+                      <span class="text-[10px] text-[var(--muted)] font-mono">
+                        Kelly: <b class="text-emerald-400">{{ pred.valueBet.stake_sugerido_porcentaje }}% stake</b>
+                      </span>
+                    }
+                  </div>
+                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] mt-1 truncate">
+                    {{ pred.valueBet.seleccion || pred.bestPick.label }}
+                  </strong>
                 </div>
-                <strong class="block text-xs font-bold text-[var(--text)] mt-1 truncate">
-                  {{ pred.bestPick.label }}
-                </strong>
-                <p class="text-[10px] text-[var(--muted)] mt-0.5 mb-0 leading-tight">
-                  {{ pred.bestPick.reasoning }}
-                </p>
+
+                <!-- Add to Ticket Button -->
+                <button
+                  type="button"
+                  class="w-full sm:w-auto py-2 px-3.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] text-[var(--text)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                  (click)="addSinglePredictionToTicket(pred)"
+                  title="Añadir esta selección a mi ticket de apuestas"
+                >
+                  <span>+ Añadir al Ticket</span>
+                  <span class="font-mono text-[10px] text-[var(--accent)] group-hover:text-white">@{{ (pred.valueBet.cuota_objetivo || pred.bestPick.odds).toFixed(2) }}</span>
+                </button>
               </div>
 
-              <!-- Add to Ticket Button -->
-              <button
-                type="button"
-                class="w-full sm:w-auto py-2 px-3.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] text-[var(--text)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-                (click)="addSinglePredictionToTicket(pred)"
-                title="Añadir esta selección a mi ticket de apuestas"
-              >
-                <span>+ Añadir al Ticket</span>
-                <span class="font-mono text-[10px] text-[var(--accent)] group-hover:text-white">@{{ pred.bestPick.odds.toFixed(2) }}</span>
-              </button>
+              <!-- Quantitative Context Comparison Bar: Casino Implied vs IA Model -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] font-mono">
+                <div>
+                  <span class="text-[var(--muted)] block">Prob. Mercado:</span>
+                  <b class="text-[var(--text)]">{{ pred.valueBet.probabilidad_implicita_casino }}%</b>
+                </div>
+                <div>
+                  <span class="text-[var(--muted)] block">Prob. Modelo IA:</span>
+                  <b class="text-emerald-400">{{ pred.valueBet.probabilidad_estimada_ia }}%</b>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                  <span class="text-[var(--muted)] block">Línea de cuota:</span>
+                  <b class="text-[var(--accent)] truncate block">{{ pred.valueBet.bookmaker_cuota }}</b>
+                </div>
+              </div>
+
+              <p class="text-[10px] sm:text-[11px] text-[var(--muted)] m-0 leading-relaxed">
+                {{ pred.valueBet.justificacion_tactica || pred.bestPick.reasoning }}
+              </p>
             </div>
+
+            <!-- Deep Analysis Modal Trigger Button (Matching Image 1) -->
+            <button
+              type="button"
+              class="w-full py-2.5 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer mt-1"
+              (click)="openMatchModal(pred.game)"
+            >
+              <span>Ver análisis completo e IA</span>
+              <span class="text-sm font-black">→</span>
+            </button>
 
           </article>
         }
