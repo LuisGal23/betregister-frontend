@@ -1,0 +1,395 @@
+<div class="flex flex-col gap-6 max-w-[1320px] mx-auto text-text">
+  <!-- Top Ticker Bar inspired by reference design -->
+  @if (tickerMatches().length) {
+    <div class="overflow-x-auto scrollbar-none py-1" aria-label="Partidos destacados">
+      <div class="flex gap-2 min-w-max">
+        @for (item of tickerMatches(); track item.id) {
+          <button type="button" class="flex items-center gap-2.5 py-1.5 px-3.5 rounded-full bg-surface border border-border text-text text-xs cursor-pointer hover:bg-surface-high hover:border-accent/40 hover:-translate-y-0.5 transition-all shadow-sm" (click)="addToTicket(item)">
+            <span class="flex items-center gap-1.5">
+              <strong class="font-bold text-xs">{{ shortCode(item.home) }}</strong>
+              <small class="text-muted text-[11px]">{{ item.state === 'live' || item.state === 'final' ? (item.home_score ?? 0) + '-' + (item.away_score ?? 0) : 'vs' }}</small>
+              <strong class="font-bold text-xs">{{ shortCode(item.away) }}</strong>
+            </span>
+            <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-surface-high text-muted" [class.bg-red-500/15]="item.state === 'live'" [class.text-red-500]="item.state === 'live'" [class.border]="item.state === 'live'" [class.border-red-500/30]="item.state === 'live'">
+              {{ item.state === 'live' ? 'VIVO' : item.state === 'final' ? 'FIN' : (item.start | date:'HH:mm') }}
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Header & Filters -->
+  <header class="flex justify-between items-end gap-5 flex-wrap pb-1">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/25 text-accent text-[11px] font-bold tracking-wider mb-2.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
+        <span>AUDITORÍA EN VIVO · APIS OFICIALES</span>
+      </div>
+      <span class="text-xs font-mono font-bold tracking-wider text-muted uppercase block mb-1">
+        {{ currentPeriodLabel() }}
+      </span>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-text mb-2">Partidos</h1>
+      <p class="text-xs sm:text-sm text-muted max-w-[720px] leading-relaxed">Horarios en tu zona horaria y estadios. Selecciona cualquier partido para consultar el pronóstico del modelo, quarterbacks, player props, estadísticas cara a cara y Sharp Club.</p>
+    </div>
+
+    <div class="flex items-center gap-2.5 flex-wrap">
+      <!-- Quick Date Switcher with clear selection -->
+      <div class="inline-flex items-center bg-surface border border-border rounded-full p-1 gap-1" role="group" aria-label="Fecha de partidos">
+        <button 
+          type="button" 
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
+          [class.bg-accent]="selectedDate() === yesterdayStr()" 
+          [class.text-white]="selectedDate() === yesterdayStr()"
+          [class.shadow-md]="selectedDate() === yesterdayStr()"
+          [class.scale-105]="selectedDate() === yesterdayStr()"
+          [class.text-muted]="selectedDate() !== yesterdayStr()"
+          [class.hover:text-accent]="selectedDate() !== yesterdayStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== yesterdayStr()"
+          (click)="selectNamedDay('yesterday')"
+        >
+          Ayer
+        </button>
+        <button 
+          type="button" 
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
+          [class.bg-accent]="selectedDate() === todayStr()" 
+          [class.text-white]="selectedDate() === todayStr()"
+          [class.shadow-md]="selectedDate() === todayStr()"
+          [class.scale-105]="selectedDate() === todayStr()"
+          [class.text-muted]="selectedDate() !== todayStr()"
+          [class.hover:text-accent]="selectedDate() !== todayStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== todayStr()"
+          (click)="selectNamedDay('today')"
+        >
+          Hoy
+        </button>
+        <button 
+          type="button" 
+          class="py-1.5 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
+          [class.bg-accent]="selectedDate() === tomorrowStr()" 
+          [class.text-white]="selectedDate() === tomorrowStr()"
+          [class.shadow-md]="selectedDate() === tomorrowStr()"
+          [class.scale-105]="selectedDate() === tomorrowStr()"
+          [class.text-muted]="selectedDate() !== tomorrowStr()"
+          [class.hover:text-accent]="selectedDate() !== tomorrowStr()"
+          [class.hover:bg-surface-high]="selectedDate() !== tomorrowStr()"
+          (click)="selectNamedDay('tomorrow')"
+        >
+          Mañana
+        </button>
+        <input 
+          type="date" 
+          class="bg-transparent border-0 text-text text-xs py-1 px-2 cursor-pointer outline-none" 
+          [ngModel]="selectedDate()" 
+          (ngModelChange)="selectedDate.set($event); loadMatches()" 
+          aria-label="Seleccionar fecha"
+        />
+      </div>
+
+      <!-- Live Toggle -->
+      <button 
+        type="button" 
+        class="inline-flex items-center gap-2 py-2 px-3.5 rounded-full bg-surface border border-border text-xs font-medium cursor-pointer transition-all duration-200 hover:text-red-500 hover:border-red-500/50 hover:bg-red-500/5 active:scale-95"
+        [class.bg-red-500/10]="onlyLive()"
+        [class.border-red-500/40]="onlyLive()"
+        [class.text-red-500]="onlyLive()"
+        [class.font-semibold]="onlyLive()"
+        (click)="onlyLive.set(!onlyLive())"
+      >
+        <span class="w-2 h-2 rounded-full" [class.bg-slate-500]="!onlyLive()" [class.bg-red-500]="onlyLive()" [class.animate-pulse]="onlyLive()"></span>
+        <span>Solo en vivo</span>
+        @if (stats().live > 0) {
+          <span class="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">{{ stats().live }}</span>
+        }
+      </button>
+
+      <!-- Refresh -->
+      <button type="button" class="w-9 h-9 rounded-full bg-surface border border-border text-muted flex items-center justify-center cursor-pointer transition-all duration-200 hover:text-accent hover:border-accent hover:scale-105 active:scale-95 disabled:opacity-50" [disabled]="loading()" (click)="loadMatches()" aria-label="Actualizar partidos">
+        <app-icon name="arrow" />
+      </button>
+    </div>
+  </header>
+
+  <!-- League Categories Tabs (Full width & animated as requested) -->
+  <div class="flex flex-col gap-2.5 p-2 sm:p-4 rounded-2xl bg-surface border border-border shadow-sm">
+    <nav class="flex w-full gap-1.5 sm:gap-2 p-1 bg-surface-high rounded-xl sm:rounded-full border border-border overflow-x-auto scrollbar-none" aria-label="Categorías deportivas">
+      @for (cat of categories; track cat.id) {
+        <button 
+          type="button" 
+          class="shrink-0 flex-1 min-w-fit py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-full text-xs sm:text-sm font-semibold transition-all duration-300 text-center whitespace-nowrap cursor-pointer border border-transparent hover:-translate-y-0.5 active:scale-95"
+          [class.!bg-accent]="selectedCategory() === cat.id"
+          [class.!text-white]="selectedCategory() === cat.id"
+          [class.shadow-[0_4px_18px_rgba(41,184,245,0.38)]]="selectedCategory() === cat.id"
+          [class.scale-[1.02]]="selectedCategory() === cat.id"
+          [class.!border-accent]="selectedCategory() === cat.id"
+          [class.text-muted]="selectedCategory() !== cat.id"
+          [class.hover:text-accent]="selectedCategory() !== cat.id"
+          [class.hover:bg-surface/70]="selectedCategory() !== cat.id"
+          (click)="setCategory(cat.id)"
+        >
+          <span>{{ cat.label }}</span>
+        </button>
+      }
+    </nav>
+
+    <!-- Sub-leagues Pills (When Ligas Europeas is selected, full width scrollable) -->
+    @if (selectedCategory() === 'europe') {
+      <div class="flex w-full gap-1.5 overflow-x-auto scrollbar-thin pt-2 border-t border-border" role="tablist" aria-label="Ligas europeas específicas">
+        @for (sub of europeanLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="flex-1 min-w-fit py-1.5 px-3.5 rounded-full text-xs font-medium cursor-pointer whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 hover:text-accent hover:border-accent/40 hover:bg-surface"
+            [class.bg-accent/15]="selectedSubLeague() === sub.id"
+            [class.text-accent]="selectedSubLeague() === sub.id"
+            [class.border]="selectedSubLeague() === sub.id"
+            [class.border-accent]="selectedSubLeague() === sub.id"
+            [class.font-bold]="selectedSubLeague() === sub.id"
+            [class.shadow-sm]="selectedSubLeague() === sub.id"
+            [class.bg-surface-high]="selectedSubLeague() !== sub.id"
+            [class.border-border]="selectedSubLeague() !== sub.id"
+            [class.text-muted]="selectedSubLeague() !== sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Sub-leagues Pills (When Selecciones / Amistosos is selected) -->
+    @if (selectedCategory() === 'intl') {
+      <div class="sub-leagues-bar full-width-subtabs" role="tablist" aria-label="Torneos internacionales específicos">
+        @for (sub of intlLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="sub-pill" 
+            [class.active]="selectedSubLeague() === sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Sub-leagues Pills (When Béisbol is selected) -->
+    @if (selectedCategory() === 'baseball') {
+      <div class="sub-leagues-bar full-width-subtabs" role="tablist" aria-label="Ligas de béisbol">
+        @for (sub of baseballLeagues; track sub.id) {
+          <button 
+            type="button" 
+            class="sub-pill" 
+            [class.active]="selectedSubLeague() === sub.id"
+            (click)="setSubLeague(sub.id)"
+          >
+            {{ sub.label }}
+          </button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Search / Counter Bar -->
+  <div class="flex items-center justify-between gap-4 flex-wrap">
+    <input 
+      type="search" 
+      placeholder="Buscar equipo o torneo…" 
+      [ngModel]="searchQuery()" 
+      (ngModelChange)="searchQuery.set($event)"
+      class="max-w-[340px] w-full h-10 px-3.5 rounded-xl bg-surface border border-border text-text text-xs outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+    />
+    <span class="text-xs text-muted font-medium">{{ filteredGames().length }} partidos encontrados</span>
+  </div>
+
+  <!-- SKELETON LOADING STATE (Forma idéntica de las tarjetas) -->
+  @if (loading()) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6" aria-label="Cargando partidos...">
+      @for (i of [1,2,3,4,5,6]; track i) {
+        <div class="flex flex-col gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xl animate-pulse">
+          <!-- Skeleton Top Meta -->
+          <div class="flex justify-between items-center">
+            <div class="h-3 w-32 bg-surface-high rounded-full"></div>
+            <div class="h-5 w-16 bg-surface-high rounded-full"></div>
+          </div>
+          <!-- Skeleton Matchup with centered logos -->
+          <div class="flex items-center justify-between gap-3 sm:gap-6 py-2">
+            <div class="flex items-center gap-3 flex-1 justify-end">
+              <div class="flex flex-col gap-1.5 items-end">
+                <div class="h-3 w-8 bg-surface-high rounded"></div>
+                <div class="h-4 w-20 bg-surface-high rounded"></div>
+              </div>
+              <div class="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-surface-high shrink-0"></div>
+            </div>
+            <div class="w-12 h-6 bg-surface-high rounded-lg shrink-0"></div>
+            <div class="flex items-center gap-3 flex-1">
+              <div class="w-14 h-14 sm:w-18 sm:h-18 rounded-2xl bg-surface-high shrink-0"></div>
+              <div class="flex flex-col gap-1.5">
+                <div class="h-3 w-8 bg-surface-high rounded"></div>
+                <div class="h-4 w-20 bg-surface-high rounded"></div>
+              </div>
+            </div>
+          </div>
+          <!-- Skeleton Probability bar -->
+          <div class="flex flex-col gap-2 pt-2 border-t border-border/50">
+            <div class="flex justify-between">
+              <div class="h-3 w-16 bg-surface-high rounded"></div>
+              <div class="h-3 w-16 bg-surface-high rounded"></div>
+              <div class="h-3 w-16 bg-surface-high rounded"></div>
+            </div>
+            <div class="h-2.5 w-full bg-surface-high rounded-full"></div>
+          </div>
+          <!-- Skeleton Button -->
+          <div class="h-10 w-full bg-surface-high rounded-xl mt-1"></div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Error Alert -->
+  @if (error()) {
+    <div class="alert flex justify-between items-center" role="alert">
+      <span>{{ error() }}</span>
+      <button type="button" class="text-button" (click)="loadMatches()">Reintentar</button>
+    </div>
+  }
+
+  <!-- Games Grid -->
+  @if (!loading() && filteredGames().length) {
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      @for (game of filteredGames(); track game.id) {
+        @let analysis = analyzeGame(game);
+        <article class="relative flex flex-col gap-3.5 sm:gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl" [ngStyle]="cardAuraStyle(game)">
+          <!-- Animated Team Color Gradient Aura Backdrop -->
+          <div class="card-ambient-aura" aria-hidden="true"></div>
+
+          <!-- Card Header / Meta (Venue & Status as in Image 1) -->
+          <div class="flex justify-between items-center gap-2 relative z-1 text-xs">
+            <span class="font-bold uppercase tracking-wider text-muted font-mono text-[10px] sm:text-[11px] truncate">
+              {{ formatCardTopMeta(game) }}
+            </span>
+            <span 
+              class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide shrink-0 font-mono"
+              [class.bg-red-500/15]="game.state === 'live'"
+              [class.text-red-500]="game.state === 'live'"
+              [class.border]="true"
+              [class.border-red-500/35]="game.state === 'live'"
+              [class.bg-surface-high]="game.state === 'final'"
+              [class.text-muted]="game.state === 'final'"
+              [class.border-border]="game.state === 'final'"
+              [class.bg-emerald-500/10]="game.state === 'scheduled'"
+              [class.text-emerald-400]="game.state === 'scheduled'"
+              [class.border-emerald-500/30]="game.state === 'scheduled'"
+            >
+              <span class="w-1.5 h-1.5 rounded-full" [class.bg-red-500]="game.state === 'live'" [class.bg-emerald-400]="game.state === 'scheduled'" [class.bg-muted]="game.state === 'final'" [class.animate-pulse]="game.state === 'live' || game.state === 'scheduled'"></span>
+              {{ game.state === 'live' ? 'EN VIVO' : game.state === 'final' ? 'FINAL' : 'POR JUGARSE' }}
+            </span>
+          </div>
+
+          <!-- Teams Centerpiece with Big Centered Logos & Records (Image 1) -->
+          <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2.5 sm:gap-4 py-2 relative z-1">
+            <!-- Away Team (Visita - Left side as in Image 1) -->
+            <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+              <div class="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface-high/70 border border-border/80 shadow-md">
+                @if (getLogo(game.away, game.sport, game.away_logo); as logo) {
+                  <img [src]="logo" [alt]="game.away" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+                } @else {
+                  <span class="text-base sm:text-lg font-black text-accent font-mono">{{ shortCode(game.away) }}</span>
+                }
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="text-[11px] sm:text-xs font-black tracking-wider text-accent font-mono truncate">{{ shortCode(game.away) }}</span>
+                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.away }}</strong>
+                <small class="text-[10px] sm:text-[11px] text-muted">{{ getTeamRecord(game, false) }}</small>
+              </div>
+            </div>
+
+            <!-- Score / Versus Center -->
+            <div class="flex flex-col items-center justify-center shrink-0 min-w-[50px] sm:min-w-[65px] px-1">
+              @if (game.state === 'live' || game.state === 'final') {
+                <div class="flex items-center gap-1 text-lg sm:text-2xl font-black font-mono tracking-tight text-text">
+                  <span>{{ game.away_score ?? 0 }}</span>
+                  <span class="text-muted font-light">–</span>
+                  <span>{{ game.home_score ?? 0 }}</span>
+                </div>
+                @if (game.detail) {
+                  <small class="text-[9px] sm:text-[10px] text-accent font-semibold mt-0.5 text-center truncate max-w-[70px]">{{ game.detail }}</small>
+                }
+              } @else {
+                <span class="text-xs font-black tracking-widest text-muted bg-surface-high px-2 py-0.5 rounded-md border border-border font-mono">VS</span>
+              }
+            </div>
+
+            <!-- Home Team (Local - Right side as in Image 1) -->
+            <div class="flex items-center justify-end gap-2.5 sm:gap-3.5 min-w-0 text-right">
+              <div class="flex flex-col min-w-0">
+                <span class="text-[11px] sm:text-xs font-black tracking-wider text-accent font-mono truncate">{{ shortCode(game.home) }}</span>
+                <strong class="text-xs sm:text-base font-bold text-text leading-tight truncate">{{ game.home }}</strong>
+                <small class="text-[10px] sm:text-[11px] text-muted">{{ getTeamRecord(game, true) }}</small>
+              </div>
+              <div class="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-surface-high/70 border border-border/80 shadow-md">
+                @if (getLogo(game.home, game.sport, game.home_logo); as logo) {
+                  <img [src]="logo" [alt]="game.home" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+                } @else {
+                  <span class="text-base sm:text-lg font-black text-accent font-mono">{{ shortCode(game.home) }}</span>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Win Probabilities Bar (Away vs Home - Image 1) -->
+          <div class="flex flex-col gap-1.5 pt-2 border-t border-border/50 relative z-1">
+            <div class="flex justify-between items-center text-xs font-semibold">
+              <span class="text-[#f43f5e] font-bold font-mono">{{ analysis.awayProb }}% {{ shortCode(game.away) }}</span>
+              @if (analysis.drawProb) {
+                <span class="text-amber-400 font-bold font-mono">{{ analysis.drawProb }}% Empate</span>
+              }
+              <span class="text-[#38bdf8] font-bold font-mono">{{ shortCode(game.home) }} {{ analysis.homeProb }}%</span>
+            </div>
+
+            <div class="flex h-2.5 w-full rounded-full overflow-hidden bg-surface-high gap-0.5 p-0.5 border border-border/60">
+              <div class="bg-gradient-to-r from-rose-500 to-[#f43f5e] rounded-l-full transition-all duration-300" [style.width.%]="analysis.awayProb"></div>
+              @if (analysis.drawProb) {
+                <div class="bg-amber-400 transition-all duration-300" [style.width.%]="analysis.drawProb"></div>
+              }
+              <div class="bg-gradient-to-r from-sky-400 to-[#38bdf8] rounded-r-full transition-all duration-300" [style.width.%]="analysis.homeProb"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons: White pill "Ver análisis completo e IA →" + quick "+ Ticket" (Image 1) -->
+          <div class="pt-2 flex items-center gap-2.5 relative z-1">
+            <button 
+              type="button" 
+              class="flex-1 py-3 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer"
+              (click)="openModal(game)"
+            >
+              <span>Ver análisis completo e IA</span>
+              <span class="text-sm font-black">→</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="py-3 px-3.5 rounded-full bg-surface-high border border-border hover:border-accent hover:text-accent text-text text-xs font-bold inline-flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95"
+              title="Añadir a mi ticket de apuestas"
+              (click)="addToTicket(game)"
+            >
+              <app-icon name="plus" />
+              <span class="hidden sm:inline font-mono">Ticket</span>
+            </button>
+          </div>
+
+        </article>
+      }
+    </div>
+  } @else if (!loading() && !filteredGames().length) {
+    <div class="flex flex-col items-center justify-center py-16 px-5 text-center bg-surface border border-border rounded-2xl gap-3">
+      <div class="text-4xl mb-1">⚽</div>
+      <h3 class="text-base sm:text-lg font-semibold text-text">No hay partidos en esta categoría para la fecha seleccionada</h3>
+      <p class="text-xs text-muted max-w-[420px]">Prueba cambiando de fecha (Hoy / Mañana) o seleccionando otra liga deportiva.</p>
+      <button type="button" class="secondary mt-2 text-xs py-2 px-4 rounded-full" (click)="setCategory('all')">
+        Ver todas las ligas
+      </button>
+    </div>
+  }
+
+</div>

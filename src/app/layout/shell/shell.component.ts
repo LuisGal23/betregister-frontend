@@ -1,15 +1,17 @@
 import { TutorialComponent } from '../../shared/components/tutorial/tutorial.component';
 import { ThemeService } from '../../core/services/theme.service';
+import { SidebarStateService } from '../../core/services/sidebar-state.service';
 import { Component, computed, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LedgerState } from '../../core/services/ledger-state.service';
 import { AuthService } from '../../features/auth/services/auth.service';
-import { BankService } from '../../features/bank/services/bank.service';
+import { BankService } from '../../features/banco/services/bank.service';
 import { IconComponent } from '../../shared/components/icon/icon.component';
-import { CreateTicketModalComponent } from '../../features/bets/components/create-ticket-modal/create-ticket-modal.component';
-import { TicketModalService } from '../../features/bets/services/ticket-modal.service';
+import { CreateTicketModalComponent } from '../../features/apuestas/modales/registrar-ticket-modal/create-ticket-modal.component';
+import { CuotasStatsModalComponent } from '../../features/partidos/modales/cuotas-stats-modal/cuotas-stats-modal.component';
+import { TicketModalService } from '../../features/apuestas/services/ticket-modal.service';
 import { TranslationService } from '../../core/services/translation.service';
 
 @Component({
@@ -22,12 +24,14 @@ import { TranslationService } from '../../core/services/translation.service';
     FormsModule,
     IconComponent,
     CreateTicketModalComponent,
+    CuotasStatsModalComponent,
   ],
   templateUrl: './shell.component.html',
 })
 export class ShellComponent implements OnInit {
   vm = inject(LedgerState);
   theme = inject(ThemeService);
+  sidebarState = inject(SidebarStateService);
   i18n = inject(TranslationService);
   auth = inject(AuthService);
   bank = inject(BankService);
@@ -49,17 +53,17 @@ export class ShellComponent implements OnInit {
   links = computed(() => [
     { path: 'overview', label: this.i18n.t().myOverview, icon: 'overview' },
     { path: 'matches', label: this.i18n.t().matches, icon: 'calendar' },
-    { path: 'match-analysis', label: this.i18n.t().oddsAndStats, icon: 'trend' },
+    { path: 'pronosticos', label: 'Pronósticos IA', icon: 'trend' },
     { path: 'community', label: this.i18n.t().community, icon: 'chat' },
     { path: 'tickets', label: this.i18n.t().registerTicket, icon: 'plus' },
     { path: 'bank', label: this.i18n.t().myBank, icon: 'bank' },
     { path: 'history', label: this.i18n.t().myBets, icon: 'bets' },
     { path: 'insights', label: this.i18n.t().profitability, icon: 'trend' },
-    { path: 'challenges', label: this.i18n.t().challenges, icon: 'flag' },
   ]);
   mobileLinks = computed(() => [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
     { path: 'matches', label: 'Partidos', icon: 'calendar' },
+    { path: 'pronosticos', label: 'IA Picks', icon: 'trend' },
     { path: 'tickets', label: 'Registrar', icon: 'plus' },
     { path: 'history', label: 'Apuestas', icon: 'bets' },
   ]);
@@ -89,6 +93,7 @@ export class ShellComponent implements OnInit {
   }
   currentTitle = computed(() => {
     if (this.path() === '/settings') return this.i18n.t().settingsAndHouses;
+    if (this.path() === '/pronosticos') return 'Pronósticos IA & Parlays';
     return this.links().find((l) => '/' + l.path === this.path())?.label ?? this.i18n.t().mySpace;
   });
   constructor() {

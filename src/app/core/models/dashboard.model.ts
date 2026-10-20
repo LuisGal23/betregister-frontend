@@ -1,7 +1,7 @@
-import type { House } from '../../features/bank/models/house.model';
-import type { Bet } from '../../features/bets/models/bet.model';
-import type { Movement } from '../../features/confirmations/models/movement.model';
-import type { Profile } from '../../features/auth/models/auth.model';
+import type { House } from '../../features/banco/services/house.model';
+import type { Bet } from '../../features/apuestas/services/bet.model';
+import type { Movement } from '../../features/confirmations/services/movement.model';
+import type { Profile } from '../../features/auth/services/auth.model';
 import type { LedgerEntry } from '../../shared/models/ledger-entry.model';
 export interface Dashboard {
   ledger?: LedgerEntry[];

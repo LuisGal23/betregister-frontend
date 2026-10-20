@@ -8,7 +8,7 @@ import { IconComponent } from '../../../shared/components/icon/icon.component';
 
 import { computed, signal } from '@angular/core';
 import { TransactionsService } from '../services/transactions.service';
-import type { TransactionFilter } from '../models/transaction-filter.model';
+import type { TransactionFilter } from '../services/transaction-filter.model';
 import { timestamp } from '../../../shared/utils/date.utils';
 @Component({
   selector: 'app-transactions-page',

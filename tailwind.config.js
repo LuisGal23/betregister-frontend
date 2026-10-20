@@ -26,6 +26,7 @@ module.exports = {
           DEFAULT: 'var(--border)',
           hover: 'rgba(255, 255, 255, 0.15)',
         },
+        muted: 'var(--muted)',
         text: {
           DEFAULT: 'var(--text)',
           muted: 'var(--muted)',

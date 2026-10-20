@@ -1,0 +1,433 @@
+<div class="flex flex-col gap-7 max-w-[1400px] mx-auto text-[var(--text)]">
+
+  <!-- TOP HERO HEADER -->
+  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-[var(--border)]">
+    <div>
+      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.3)] text-[var(--accent)] text-[11px] font-bold tracking-wider mb-2">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
+        <span>MOTOR DE ANÁLISIS IA & MODELOS PROBABILÍSTICOS EN VIVO</span>
+      </div>
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text)] m-0">
+        Pronósticos IA & Parlays del Día
+      </h1>
+      <p class="text-xs sm:text-sm text-[var(--muted)] mt-1.5 max-w-2xl leading-relaxed">
+        Algoritmos matemáticos y modelos de Poisson que analizan todos los partidos de hoy para identificar las mejores probabilidades de victoria, goles y las combinadas con mayor rentabilidad esperada (+EV).
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+      <button 
+        type="button" 
+        class="action-pill-btn primary flex-1 sm:flex-initial py-2.5 px-5 text-xs inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        (click)="loadDailyPredictions()"
+        [disabled]="loading()"
+      >
+        <app-icon name="trend" [class.animate-spin]="loading()" class="w-4 h-4" />
+        <span>{{ loading() ? 'Recalculando…' : 'Actualizar Probabilidades' }}</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- SECTION 1: AI PARLAYS DEL DÍA (RECOMMENDED ACCUMULATORS) -->
+  <section class="flex flex-col gap-4">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-lg">🎯</span>
+        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)] m-0">
+          Parlays Inteligentes Generados por IA
+        </h2>
+      </div>
+      <span class="text-xs text-[var(--muted)] hidden sm:inline">
+        Actualizados con las cuotas y marcadores oficiales de hoy
+      </span>
+    </div>
+
+    @if (loading() && !curatedParlays().length) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        @for (item of [1, 2, 3]; track item) {
+          <div class="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] animate-pulse flex flex-col gap-4 h-[320px]">
+            <div class="h-6 bg-[var(--surface-high)] rounded-full w-2/3"></div>
+            <div class="h-10 bg-[var(--surface-high)] rounded-xl w-full"></div>
+            <div class="h-24 bg-[var(--surface-high)] rounded-xl w-full"></div>
+            <div class="mt-auto h-11 bg-[var(--surface-high)] rounded-full w-full"></div>
+          </div>
+        }
+      </div>
+    } @else if (curatedParlays().length) {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        @for (parlay of curatedParlays(); track parlay.id) {
+          <article class="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[0_8px_24px_rgba(0,0,0,0.2)] flex flex-col justify-between gap-5 relative overflow-hidden transition-all duration-200 hover:border-[var(--accent)]/60 hover:shadow-[0_12px_32px_rgba(41,184,245,0.18)] group">
+            <!-- Accent glow in background -->
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent)]/10 rounded-full blur-2xl group-hover:bg-[var(--accent)]/20 transition-colors pointer-events-none"></div>
+
+            <div class="flex flex-col gap-3 relative z-10">
+              <!-- Header with badge and odds -->
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ parlay.badgeClass }} tracking-wider font-mono">
+                  {{ parlay.badge }}
+                </span>
+                <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] shadow-xs">
+                  <span class="text-[10px] text-[var(--muted)] font-medium">Cuota</span>
+                  <strong class="text-sm font-extrabold text-[var(--accent)] font-mono">{{ parlay.combinedOdds.toFixed(2) }}</strong>
+                </div>
+              </div>
+
+              <!-- Title & description -->
+              <div>
+                <h3 class="text-base font-bold text-[var(--text)] m-0 leading-snug">
+                  {{ parlay.title }}
+                </h3>
+                <p class="text-[11px] text-[var(--muted)] mt-1 mb-0 leading-relaxed">
+                  {{ parlay.description }}
+                </p>
+              </div>
+
+              <!-- Probability Bar -->
+              <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/70 border border-[var(--border)] flex flex-col gap-1.5">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-[11px] font-semibold text-[var(--muted)]">Probabilidad estimada:</span>
+                  <strong class="text-xs font-bold text-emerald-400 font-mono">{{ parlay.combinedProb }}%</strong>
+                </div>
+                <div class="w-full h-2 rounded-full bg-[var(--surface)] overflow-hidden border border-[var(--border)]">
+                  <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent)] transition-all duration-500" [style.width.%]="parlay.combinedProb"></div>
+                </div>
+              </div>
+
+              <!-- Legs list -->
+              <div class="flex flex-col gap-2 my-1">
+                <span class="text-[10px] font-bold tracking-wider uppercase text-[var(--muted)]">
+                  {{ parlay.legs.length }} Selecciones incluidas:
+                </span>
+                @for (leg of parlay.legs; track $index; let legIdx = $index) {
+                  <div class="p-2 px-3 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="w-4 h-4 rounded bg-[var(--surface)] text-[9px] font-bold text-[var(--accent)] grid place-items-center shrink-0 border border-[var(--border)] font-mono">
+                        {{ legIdx + 1 }}
+                      </span>
+                      <div class="flex items-center gap-1.5 truncate">
+                        <strong class="text-xs text-[var(--text)] truncate">{{ leg.game.away }} vs {{ leg.game.home }}</strong>
+                        <span class="text-[10px] text-[var(--muted)] hidden sm:inline">· {{ leg.market }}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="text-[11px] font-bold text-emerald-400 font-mono">{{ leg.prob }}%</span>
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--accent)] font-mono border border-[var(--border)]">
+                        @{{ leg.odds.toFixed(2) }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button
+              type="button"
+              class="w-full py-3 px-4 rounded-xl bg-[var(--accent)] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(41,184,245,0.35)] hover:shadow-[0_6px_22px_rgba(41,184,245,0.48)] active:scale-95 transition-all cursor-pointer relative z-10"
+              (click)="loadParlayIntoTicket(parlay)"
+              title="Cargar todas las selecciones directamente a tu ticket"
+            >
+              <span>⚡ Apostar este Parlay</span>
+              <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-[11px]">@{{ parlay.combinedOdds.toFixed(2) }}</span>
+            </button>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center flex flex-col items-center justify-center gap-2">
+        <span class="text-2xl">⏳</span>
+        <h3 class="text-sm font-bold text-[var(--text)] m-0">Cargando catálogo de partidos del día</h3>
+        <p class="text-xs text-[var(--muted)] max-w-md m-0">Sincronizando los eventos deportivos de hoy para calcular las combinaciones de parlay con mayor ventaja matemática.</p>
+      </div>
+    }
+  </section>
+
+  <!-- SECTION 2: FILTERS & INDIVIDUAL MATCH PREDICTIONS -->
+  <section class="flex flex-col gap-4 mt-2">
+    <!-- Section Title & Filters -->
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-lg">📊</span>
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)] m-0">
+            Predicciones Partido a Partido
+          </h2>
+          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[var(--surface-high)] text-[var(--accent)] border border-[var(--border)]">
+            {{ filteredPredictions().length }} partidos analizados
+          </span>
+        </div>
+
+        <!-- Date switcher (Hoy / Mañana) -->
+        <div class="inline-flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-full p-1 gap-1">
+          <button 
+            type="button" 
+            class="py-1 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
+            [class.bg-[var(--accent)]]="selectedDate() === todayStr()" 
+            [class.text-white]="selectedDate() === todayStr()"
+            [class.shadow-md]="selectedDate() === todayStr()"
+            [class.text-[var(--muted)]]="selectedDate() !== todayStr()"
+            (click)="selectedDate.set(todayStr()); loadDailyPredictions()"
+          >
+            Hoy
+          </button>
+          <button 
+            type="button" 
+            class="py-1 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
+            [class.bg-[var(--accent)]]="selectedDate() === tomorrowStr()" 
+            [class.text-white]="selectedDate() === tomorrowStr()"
+            [class.shadow-md]="selectedDate() === tomorrowStr()"
+            [class.text-[var(--muted)]]="selectedDate() !== tomorrowStr()"
+            (click)="selectedDate.set(tomorrowStr()); loadDailyPredictions()"
+          >
+            Mañana
+          </button>
+        </div>
+      </div>
+
+      <!-- Sports selector pills (Single horizontal bar) -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        @for (sport of sportsList; track sport.id) {
+          <button
+            type="button"
+            class="py-2 px-4 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border"
+            [class.bg-[var(--accent)]]="selectedSport() === sport.id"
+            [class.text-white]="selectedSport() === sport.id"
+            [class.border-[var(--accent)]]="selectedSport() === sport.id"
+            [class.shadow-sm]="selectedSport() === sport.id"
+            [class.bg-[var(--surface)]]="selectedSport() !== sport.id"
+            [class.text-[var(--muted)]]="selectedSport() !== sport.id"
+            [class.border-[var(--border)]]="selectedSport() !== sport.id"
+            [class.hover:text-[var(--text)]]="selectedSport() !== sport.id"
+            (click)="selectedSport.set(sport.id)"
+          >
+            <span>{{ sport.icon }}</span>
+            <span>{{ sport.label }}</span>
+          </button>
+        }
+      </div>
+
+      <!-- Quick Toggles & Search -->
+      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-1">
+        <div class="flex items-center gap-3 flex-wrap">
+          <label class="flex items-center gap-2 text-xs text-[var(--text)] font-semibold cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              class="w-4 h-4 rounded text-[var(--accent)] cursor-pointer"
+              [ngModel]="onlyHighConfidence()" 
+              (ngModelChange)="onlyHighConfidence.set($event)" 
+            />
+            <span>Solo Alta Confianza (&gt;65%)</span>
+          </label>
+
+          <label class="flex items-center gap-2 text-xs text-[var(--text)] font-semibold cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              class="w-4 h-4 rounded text-[var(--accent)] cursor-pointer"
+              [ngModel]="onlyEV()" 
+              (ngModelChange)="onlyEV.set($event)" 
+            />
+            <span class="text-cyan-400 font-bold">Solo Opciones con Valor (+EV)</span>
+          </label>
+        </div>
+
+        <div class="relative w-full sm:w-64">
+          <input 
+            type="text" 
+            placeholder="Buscar equipo o liga…"
+            class="w-full h-9 pl-8 pr-3 rounded-full bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)] outline-none focus:border-[var(--accent)] transition-colors"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+          <span class="absolute left-2.5 top-2.5 text-xs text-[var(--muted)]">🔍</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Match Predictions Cards Grid -->
+    @if (loading() && !filteredPredictions().length) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (item of [1, 2, 3, 4]; track item) {
+          <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] animate-pulse h-48 flex flex-col justify-between">
+            <div class="h-4 bg-[var(--surface-high)] rounded w-1/3"></div>
+            <div class="h-10 bg-[var(--surface-high)] rounded-xl w-full"></div>
+            <div class="h-12 bg-[var(--surface-high)] rounded-xl w-full"></div>
+          </div>
+        }
+      </div>
+    } @else if (filteredPredictions().length) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        @for (pred of filteredPredictions(); track pred.game.id) {
+          <article class="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-[var(--accent)]/50 hover:shadow-md transition-all flex flex-col justify-between gap-4">
+            
+            <!-- Card Header: League & Status -->
+            <div class="flex items-center justify-between text-xs text-[var(--muted)]">
+              <span class="font-bold text-[11px] text-[var(--accent)] uppercase tracking-wider font-mono">
+                {{ pred.game.league_name || pred.game.league }} · {{ pred.game.sport }}
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--surface-high)] text-[var(--text)] font-mono border border-[var(--border)]">
+                {{ pred.game.state === 'live' ? 'EN VIVO' : pred.game.state === 'final' ? 'FINALIZADO' : (pred.game.start | date:'HH:mm') + ' hrs' }}
+              </span>
+            </div>
+
+            <!-- Teams Matchup with Big Logos -->
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-1">
+              <!-- Away Team -->
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
+                  @if (getLogo(pred.game.away, pred.game.sport, pred.game.away_logo); as logo) {
+                    <img [src]="logo" [alt]="pred.game.away" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
+                  } @else {
+                    <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.away.slice(0, 3).toUpperCase() }}</span>
+                  }
+                </div>
+                <div class="min-w-0">
+                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] truncate" [title]="pred.game.away">
+                    {{ pred.game.away }}
+                  </strong>
+                  <span class="text-[11px] font-mono font-bold text-emerald-400">
+                    {{ pred.awayWinProb }}% prob
+                  </span>
+                </div>
+              </div>
+
+              <!-- VS Badge / Score -->
+              <div class="text-center px-2">
+                @if (pred.game.state === 'live' || pred.game.state === 'final') {
+                  <span class="text-base sm:text-lg font-black font-mono text-[var(--text)]">
+                    {{ pred.game.away_score ?? 0 }} - {{ pred.game.home_score ?? 0 }}
+                  </span>
+                } @else {
+                  <span class="text-xs font-black text-[var(--muted)] font-mono uppercase bg-[var(--surface-high)] px-2 py-1 rounded-md border border-[var(--border)]">
+                    VS
+                  </span>
+                }
+              </div>
+
+              <!-- Home Team -->
+              <div class="flex items-center justify-end gap-3 min-w-0 text-right">
+                <div class="min-w-0">
+                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] truncate" [title]="pred.game.home">
+                    {{ pred.game.home }}
+                  </strong>
+                  <span class="text-[11px] font-mono font-bold text-emerald-400">
+                    {{ pred.homeWinProb }}% prob
+                  </span>
+                </div>
+                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
+                  @if (getLogo(pred.game.home, pred.game.sport, pred.game.home_logo); as logo) {
+                    <img [src]="logo" [alt]="pred.game.home" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
+                  } @else {
+                    <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.home.slice(0, 3).toUpperCase() }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <!-- Probability Distribution Bar (Away % | Draw % | Home %) -->
+            <div class="flex flex-col gap-1">
+              <div class="w-full h-2.5 rounded-full bg-[var(--surface-high)] overflow-hidden flex border border-[var(--border)]">
+                <div class="h-full bg-[var(--accent)]" [style.width.%]="pred.awayWinProb" [title]="pred.game.away + ': ' + pred.awayWinProb + '%'"></div>
+                @if (pred.drawProb) {
+                  <div class="h-full bg-[var(--muted)]/40" [style.width.%]="pred.drawProb" [title]="'Empate: ' + pred.drawProb + '%'"></div>
+                }
+                <div class="h-full bg-emerald-500" [style.width.%]="pred.homeWinProb" [title]="pred.game.home + ': ' + pred.homeWinProb + '%'"></div>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-[var(--muted)] font-mono px-0.5">
+                <span>{{ pred.game.away }}: <b>{{ pred.awayWinProb }}%</b></span>
+                @if (pred.drawProb) {
+                  <span>Empate: <b>{{ pred.drawProb }}%</b></span>
+                }
+                <span>{{ pred.game.home }}: <b>{{ pred.homeWinProb }}%</b></span>
+              </div>
+            </div>
+
+            <!-- Recommendation Box with Context Grounding & Value Bet Data -->
+            <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/80 border border-[var(--border)] flex flex-col gap-2.5">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono">
+                      MEJOR OPCIÓN IA
+                    </span>
+                    @if (pred.valueBet.is_value_bet) {
+                      <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                        +EV EDGE +{{ pred.valueBet.edge_ev }}%
+                      </span>
+                    }
+                    <span class="text-[10px] text-[var(--muted)] font-medium font-mono">
+                      Certeza: <b class="text-[var(--text)]">{{ pred.bestPick.confidence }}</b>
+                    </span>
+                    @if (pred.valueBet.stake_sugerido_porcentaje) {
+                      <span class="text-[10px] text-[var(--muted)] font-mono">
+                        Kelly: <b class="text-emerald-400">{{ pred.valueBet.stake_sugerido_porcentaje }}% stake</b>
+                      </span>
+                    }
+                  </div>
+                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] mt-1 truncate">
+                    {{ pred.valueBet.seleccion || pred.bestPick.label }}
+                  </strong>
+                </div>
+
+                <!-- Add to Ticket Button -->
+                <button
+                  type="button"
+                  class="w-full sm:w-auto py-2 px-3.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] text-[var(--text)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
+                  (click)="addSinglePredictionToTicket(pred)"
+                  title="Añadir esta selección a mi ticket de apuestas"
+                >
+                  <span>+ Añadir al Ticket</span>
+                  <span class="font-mono text-[10px] text-[var(--accent)] group-hover:text-white">@{{ (pred.valueBet.cuota_objetivo || pred.bestPick.odds).toFixed(2) }}</span>
+                </button>
+              </div>
+
+              <!-- Quantitative Context Comparison Bar: Casino Implied vs IA Model -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] font-mono">
+                <div>
+                  <span class="text-[var(--muted)] block">Prob. Mercado:</span>
+                  <b class="text-[var(--text)]">{{ pred.valueBet.probabilidad_implicita_casino }}%</b>
+                </div>
+                <div>
+                  <span class="text-[var(--muted)] block">Prob. Modelo IA:</span>
+                  <b class="text-emerald-400">{{ pred.valueBet.probabilidad_estimada_ia }}%</b>
+                </div>
+                <div class="col-span-2 sm:col-span-1">
+                  <span class="text-[var(--muted)] block">Línea de cuota:</span>
+                  <b class="text-[var(--accent)] truncate block">{{ pred.valueBet.bookmaker_cuota }}</b>
+                </div>
+              </div>
+
+              <p class="text-[10px] sm:text-[11px] text-[var(--muted)] m-0 leading-relaxed">
+                {{ pred.valueBet.justificacion_tactica || pred.bestPick.reasoning }}
+              </p>
+            </div>
+
+            <!-- Deep Analysis Modal Trigger Button (Matching Image 1) -->
+            <button
+              type="button"
+              class="w-full py-2.5 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer mt-1"
+              (click)="openMatchModal(pred.game)"
+            >
+              <span>Ver análisis completo e IA</span>
+              <span class="text-sm font-black">→</span>
+            </button>
+
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="p-10 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center flex flex-col items-center justify-center gap-3">
+        <span class="text-3xl">🔎</span>
+        <h3 class="text-base font-bold text-[var(--text)] m-0">No se encontraron partidos con los filtros seleccionados</h3>
+        <p class="text-xs text-[var(--muted)] max-w-md m-0">Prueba cambiando de deporte, desactivando los filtros de alta certeza o seleccionando otra fecha.</p>
+        <button 
+          type="button" 
+          class="action-pill-btn text-xs py-2 px-4 cursor-pointer mt-2"
+          (click)="selectedSport.set('all'); onlyHighConfidence.set(false); onlyEV.set(false); searchQuery.set('')"
+        >
+          Limpiar filtros
+        </button>
+      </div>
+    }
+  </section>
+
+</div>

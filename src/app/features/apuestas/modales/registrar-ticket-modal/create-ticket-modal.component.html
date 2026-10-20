@@ -1,0 +1,325 @@
+@if (modal.isOpen()) {
+  <div 
+    class="fixed inset-0 z-[9999] bg-[rgba(6,8,18,0.78)] backdrop-blur-md flex items-center justify-center p-3 sm:p-4 animate-[fadeIn_0.2s_ease-out]" 
+    (click)="close()" 
+    (keydown.escape)="close()" 
+    tabindex="0" 
+    role="dialog" 
+    aria-modal="true" 
+    aria-labelledby="modal-title"
+  >
+    <div 
+      class="w-full max-w-[740px] max-h-[92vh] flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-[24px] shadow-[0_24px_64px_rgba(0,0,0,0.45),0_0_32px_rgba(41,184,245,0.12)] overflow-hidden animate-[scaleIn_0.25s_cubic-bezier(0.16,1,0.3,1)]" 
+      (click)="$event.stopPropagation()"
+    >
+      <!-- Modal Header -->
+      <div class="flex justify-between items-start px-5 sm:px-7 pt-5 sm:pt-6 pb-4 border-b border-[var(--border)]">
+        <div>
+          <div class="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wider text-[var(--accent)] bg-[rgba(41,184,245,0.08)] border border-[rgba(41,184,245,0.2)] px-2.5 py-0.5 rounded-full mb-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent)] shadow-[0_0_6px_var(--accent)]"></span>
+            <span>CONTROL DE BANKROLL</span>
+          </div>
+          <h2 id="modal-title" class="text-[20px] sm:text-[22px] font-bold tracking-tight text-[var(--text)] m-0">Registrar ticket</h2>
+        </div>
+        <button 
+          type="button" 
+          class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:rotate-90 w-8 h-8 rounded-full grid place-items-center cursor-pointer transition-all duration-200 text-sm active:scale-95 shadow-sm" 
+          (click)="close()" 
+          aria-label="Cerrar modal"
+        >
+          ✕
+        </button>
+      </div>
+
+      <!-- Segmented Bet Type Switcher -->
+      <div class="grid grid-cols-3 gap-1.5 px-4 sm:px-7 py-2.5 sm:py-3 bg-[var(--surface-high)] border-b border-[var(--border)]" role="tablist">
+        @for (t of types; track t.id) {
+          <button 
+            type="button" 
+            role="tab"
+            class="py-2 px-2 sm:px-3 rounded-xl border border-transparent bg-transparent flex flex-col items-center gap-0.5 cursor-pointer transition-all duration-200 hover:bg-surface/50 hover:text-text hover:scale-[1.02] active:scale-[0.98]" 
+            [class.!bg-[var(--surface)]]="betType === t.id"
+            [class.!border-[rgba(41,184,245,0.35)]]="betType === t.id"
+            [class.shadow-sm]="betType === t.id"
+            (click)="setType(t.id)"
+          >
+            <strong class="text-[12px] sm:text-[13px] font-semibold transition-colors duration-200" [class.text-[var(--accent)]]="betType === t.id" [class.text-[var(--muted)]]="betType !== t.id">{{ t.label }}</strong>
+            <small class="text-[9px] sm:text-[10px] text-[var(--muted)]">{{ t.detail }}</small>
+          </button>
+        }
+      </div>
+
+      <div class="overflow-y-auto px-5 sm:px-7 py-5 sm:py-6 flex flex-col gap-4 sm:gap-5 max-h-[calc(92vh-190px)]">
+        
+        <!-- MATCH PICKING SECTION: PARLAY VS SINGLE/SAME_GAME -->
+        @if (betType === 'parlay') {
+          <!-- Parlay Matches Section -->
+          <div class="flex flex-col gap-2.5 p-3.5 rounded-2xl bg-[var(--surface-high)]/60 border border-[var(--border)]">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-[var(--text)] flex items-center gap-1.5">
+                <span>Partidos del Parlay</span>
+                <span class="text-[10px] px-2 py-0.5 rounded-full bg-[var(--surface)] text-[var(--accent)] font-mono font-bold border border-[var(--border)]">
+                  {{ selectedGames.length }}/12
+                </span>
+              </span>
+              <button
+                type="button"
+                class="text-xs font-bold text-[var(--accent)] hover:underline bg-transparent border-none cursor-pointer flex items-center gap-1"
+                (click)="togglePicker()"
+              >
+                <app-icon name="plus" class="w-3.5 h-3.5" />
+                <span>{{ showPicker() ? 'Ocultar catálogo' : '+ Agregar más partidos' }}</span>
+              </button>
+            </div>
+
+            <!-- List of selected games in Parlay -->
+            @if (selectedGames.length) {
+              <div class="flex flex-col gap-1.5">
+                @for (game of selectedGames; track game.id; let gIdx = $index) {
+                  <div class="flex items-center justify-between gap-3 p-2 px-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] shadow-xs">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="w-5 h-5 rounded-md bg-[var(--surface-high)] text-[10px] font-bold text-[var(--accent)] grid place-items-center shrink-0 border border-[var(--border)] font-mono">
+                        {{ gIdx + 1 }}
+                      </span>
+                      <div class="flex items-center gap-1.5 truncate">
+                        @if (game.away_logo) {
+                          <img [src]="game.away_logo" alt="" class="w-4 h-4 object-contain shrink-0" />
+                        }
+                        <span class="text-xs font-bold text-[var(--text)] truncate">{{ game.away }}</span>
+                        <span class="text-[10px] font-semibold text-[var(--muted)] px-0.5">vs</span>
+                        <span class="text-xs font-bold text-[var(--text)] truncate">{{ game.home }}</span>
+                        @if (game.home_logo) {
+                          <img [src]="game.home_logo" alt="" class="w-4 h-4 object-contain shrink-0" />
+                        }
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="text-[10px] text-[var(--muted)] font-mono hidden sm:inline">{{ game.league_name || game.sport }}</span>
+                      <button
+                        type="button"
+                        class="text-xs text-[var(--muted)] hover:text-[var(--negative)] bg-transparent border-none cursor-pointer p-1"
+                        (click)="removeGame(game.id)"
+                        title="Quitar este partido del parlay"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Match Picker visible if none selected OR toggled open -->
+            @if (!selectedGames.length || showPicker()) {
+              <div class="mt-2 pt-2 border-t border-[var(--border)]">
+                <app-match-picker 
+                  [selected]="selectedGames"
+                  [limit]="12"
+                  (selection)="chooseGames($event)"
+                />
+              </div>
+            }
+          </div>
+        } @else {
+          <!-- Simple or Same Game Match Banner -->
+          @if (selectedGames.length) {
+            <div class="flex justify-between items-center py-3.5 px-4.5 rounded-2xl bg-[rgba(41,184,245,0.06)] border border-[rgba(41,184,245,0.28)]">
+              <div class="flex flex-col gap-0.5">
+                <span class="text-[9px] font-bold tracking-wider text-[var(--accent)]">PARTIDO SELECCIONADO</span>
+                <strong class="text-sm font-semibold text-[var(--text)]">
+                  {{ selectedGames[0].away }} vs {{ selectedGames[0].home }}
+                </strong>
+                <small class="text-[11px] text-[var(--muted)]">{{ selectedGames[0].league_name }} · {{ selectedGames[0].sport }}</small>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] hover:border-[var(--accent)] hover:text-[var(--accent)] text-[11px] py-1 px-3 rounded-full cursor-pointer transition-colors" (click)="showPicker.set(!showPicker())">
+                  {{ showPicker() ? 'Cerrar' : 'Cambiar' }}
+                </button>
+                <button type="button" class="bg-[var(--surface-high)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--negative)] hover:border-[var(--negative)] text-[11px] py-1 px-3 rounded-full cursor-pointer transition-colors" (click)="chooseGames([])" title="Quitar partido">
+                  Quitar
+                </button>
+              </div>
+            </div>
+            @if (showPicker()) {
+              <div class="p-3 rounded-2xl bg-[var(--surface)]/80 border border-[var(--border)]">
+                <app-match-picker 
+                  [selected]="selectedGames"
+                  [limit]="1"
+                  (selection)="chooseGames($event); showPicker.set(false)"
+                />
+              </div>
+            }
+          } @else {
+            <!-- Match Picker Collapsible -->
+            <app-match-picker 
+              [selected]="selectedGames"
+              [limit]="1"
+              (selection)="chooseGames($event)"
+            />
+          }
+        }
+
+        <!-- Selections Section -->
+        <div class="flex flex-col gap-3">
+          <div class="flex justify-between items-center">
+            <h3 class="text-sm font-semibold m-0 text-[var(--text)]">Selecciones</h3>
+            @if (betType !== 'simple') {
+              <button 
+                type="button" 
+                class="bg-transparent border-none text-[var(--accent)] text-xs font-semibold cursor-pointer hover:underline"
+                [disabled]="selections.length >= 20"
+                (click)="addSelection()"
+              >
+                + Añadir selección
+              </button>
+            }
+          </div>
+
+          @for (selection of selections; track $index; let i = $index) {
+            <div class="p-4 rounded-2xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-3">
+              <div class="flex justify-between items-center">
+                <span class="text-xs font-semibold text-[var(--muted)]">{{ betType === 'simple' ? 'Selección única' : 'Selección #' + (i + 1) }}</span>
+                @if (selections.length > 1 && betType !== 'simple') {
+                  <button type="button" class="bg-transparent border-none text-[var(--negative)] text-[11px] cursor-pointer hover:underline" (click)="removeSelection(i)">Quitar</button>
+                }
+              </div>
+
+              <app-selection-editor 
+                [value]="selection" 
+                [index]="i" 
+                [games]="selectedGames"
+                [showManual]="betType !== 'same_game' || i === 0"
+                [showSport]="!selectedGames.length && betType === 'parlay' && leagueTag === 'Mixto'"
+              />
+
+              @if (betType === 'parlay' && !totalOddsMode) {
+                <label class="flex flex-col gap-1 text-[11px] text-[var(--muted)]">
+                  <span>Cuota decimal de esta selección</span>
+                  <input 
+                    [name]="'modalLegOdds' + i" 
+                    type="number" 
+                    [(ngModel)]="legs[i].odds"
+                    (ngModelChange)="updateOdds()"
+                    min="1.0001" 
+                    max="10000" 
+                    step="0.0001" 
+                    required 
+                    class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border"
+                  />
+                </label>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- AI Screenshot Importer Quick Assistant -->
+        <app-screenshot-import (draft)="applyScreenshot($event)" />
+
+        @if (importWarnings) {
+          <div class="p-3 rounded-xl bg-[rgba(245,158,11,0.12)] border border-[rgba(245,158,11,0.25)] text-amber-500 text-xs">
+            {{ importWarnings }}
+          </div>
+        }
+
+        <!-- Ticket Configuration & Protection -->
+        <app-ticket-protection [betType]="betType" [league]="leagueTag" />
+
+        <!-- House & Odds Setup -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 p-4 rounded-2xl bg-[var(--surface-high)]/60 border border-[var(--border)]">
+          <label class="flex flex-col gap-1 text-xs text-[var(--muted)] m-0">
+            <span class="font-semibold text-[var(--text)]">Casa de apuestas</span>
+            <select 
+              name="modalHouse" 
+              [(ngModel)]="selectedHouse" 
+              required
+              class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] cursor-pointer box-border"
+            >
+              @for (h of vm.data().houses; track h.id) {
+                <option [value]="h.id">{{ h.name }} ({{ h.currency }})</option>
+              }
+            </select>
+          </label>
+
+          <div class="flex flex-col gap-1">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-semibold text-[var(--text)]">Cuota {{ betType === 'parlay' ? 'total' : '' }}</span>
+              <div class="inline-flex rounded-full bg-[var(--surface-high)] p-0.5 border border-[var(--border)]">
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'decimal'" [class.text-[var(--text)]]="oddsFormat === 'decimal'" [class.font-semibold]="oddsFormat === 'decimal'" [class.shadow-sm]="oddsFormat === 'decimal'" [class.text-[var(--muted)]]="oddsFormat !== 'decimal'" (click)="oddsFormat = 'decimal'">Dec</button>
+                <button type="button" class="py-0.5 px-2.5 rounded-full border-none text-[10px] cursor-pointer font-medium transition-all duration-200 hover:text-[var(--accent)] active:scale-95" [class.bg-[var(--surface)]]="oddsFormat === 'american'" [class.text-[var(--text)]]="oddsFormat === 'american'" [class.font-semibold]="oddsFormat === 'american'" [class.shadow-sm]="oddsFormat === 'american'" [class.text-[var(--muted)]]="oddsFormat !== 'american'" (click)="oddsFormat = 'american'">Am</button>
+              </div>
+            </div>
+            <input 
+              name="modalOdds" 
+              type="number" 
+              [(ngModel)]="odds" 
+              [readonly]="betType === 'parlay' && !totalOddsMode"
+              [step]="oddsFormat === 'decimal' ? '0.0001' : '1'" 
+              required 
+              placeholder="Ej. 1.95" 
+              class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border"
+            />
+          </div>
+
+          <label class="flex flex-col gap-1 text-xs text-[var(--muted)] m-0">
+            <span class="font-semibold text-[var(--text)]">Importe apostado</span>
+            <input 
+              name="modalStake" 
+              type="number" 
+              [(ngModel)]="stake" 
+              min="0.01" 
+              step="any" 
+              required 
+              placeholder="0.00" 
+              class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border font-mono"
+            />
+          </label>
+
+          @if (betType !== 'simple') {
+            <label class="flex flex-col gap-1 text-xs text-[var(--muted)] m-0">
+              <span class="font-semibold text-[var(--text)]">Bono de combinada</span>
+              <input 
+                name="modalBonus" 
+                type="number" 
+                [(ngModel)]="bonus" 
+                min="0" 
+                step="any" 
+                placeholder="0.00" 
+                class="w-full h-11 px-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] text-sm outline-none transition-all focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent-soft)] box-border font-mono"
+              />
+            </label>
+          }
+        </div>
+
+        <!-- Bankroll Assistant -->
+        <app-bank-assistant [houseId]="selectedHouse" [odds]="odds" [stake]="stake" />
+
+        <!-- Payout Calculation Preview -->
+        <div class="flex justify-between items-center p-3.5 sm:p-4 rounded-2xl bg-[var(--surface-high)]/60 border border-[var(--border)]">
+          <span class="text-xs text-[var(--muted)]">Retorno potencial estimado:</span>
+          <strong class="text-base sm:text-lg font-bold text-emerald-400 font-mono">
+            {{ vm.format(payout(), houseSelected()?.currency) }}
+          </strong>
+        </div>
+      </div>
+
+      <!-- Modal Footer Action Buttons -->
+      <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-3 px-5 sm:px-7 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
+        <button 
+          type="button" 
+          class="flex-1 sm:flex-initial py-2.5 px-5 rounded-full bg-transparent border border-[var(--border)] text-[var(--muted)] hover:text-[var(--accent)] hover:border-[var(--accent)] hover:bg-[var(--surface-high)] text-[13px] font-medium cursor-pointer transition-all duration-200 active:scale-95 text-center" 
+          (click)="close()"
+        >
+          Cancelar
+        </button>
+        <button 
+          type="button" 
+          class="w-full sm:w-auto py-2.5 px-8 rounded-full bg-[var(--accent)] hover:bg-[#0284c7] text-white text-[13px] font-bold cursor-pointer transition-all duration-200 shadow-[0_4px_16px_rgba(41,184,245,0.35)] hover:shadow-[0_6px_22px_rgba(41,184,245,0.48)] active:scale-95 text-center disabled:opacity-50 disabled:cursor-not-allowed" 
+          [disabled]="vm.busy() || !stake || !odds"
+          (click)="saveTicket()"
+        >
+          {{ vm.busy() ? 'Guardando ticket…' : 'Registrar ticket' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

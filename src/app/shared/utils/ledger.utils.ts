@@ -1,4 +1,4 @@
-import type { Bet } from '../../features/bets/models/bet.model';
+import type { Bet } from '../../features/apuestas/services/bet.model';
 import type { Currency } from '../models/currency.model';
 
 /** Decimal odds multiply integer cents with the same half-up rounding as the API. */
