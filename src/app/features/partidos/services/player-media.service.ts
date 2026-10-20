@@ -304,7 +304,7 @@ export class PlayerMediaService {
       }
 
       // Check existing URL fallback
-      if (existingUrl && !existingUrl.includes('/headshots/soccer/players/full/')) {
+      if (existingUrl && (existingUrl.startsWith('http://') || existingUrl.startsWith('https://'))) {
         this.cache.set(key, existingUrl);
         return existingUrl;
       }

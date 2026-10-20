@@ -142,8 +142,9 @@ export class EspnLiveService {
   async fetchLiveSummary(game: SportsGame): Promise<MatchDetails | null> {
     if (!game || !game.id) return null;
 
+    const rawId = game.id.includes(':') ? game.id.split(':').pop()! : game.id;
     const conf = this.getEspnConfig(game.league);
-    const url = `${this.baseUrl}/${conf.sport}/${conf.league}/summary?event=${encodeURIComponent(game.id)}`;
+    const url = `${this.baseUrl}/${conf.sport}/${conf.league}/summary?event=${encodeURIComponent(rawId)}`;
 
     try {
       const response = await fetch(url, {
@@ -214,7 +215,13 @@ export class EspnLiveService {
     // A) Parse Official Match Rosters (present in soccer and live sports)
     if (Array.isArray(data.rosters) && data.rosters.length >= 2) {
       for (const rGroup of data.rosters) {
-        const isAway = rGroup.homeAway === 'away';
+        const teamObj = rGroup.team || {};
+        const teamDisplayName = (teamObj.displayName || teamObj.name || '').toLowerCase();
+        const awayLower = (game.away || '').toLowerCase();
+        const isAway =
+          rGroup.homeAway === 'away' ||
+          (teamDisplayName && teamDisplayName.includes(awayLower)) ||
+          (awayLower && awayLower.includes(teamDisplayName));
         const teamSide: 'away' | 'home' = isAway ? 'away' : 'home';
         const teamName = isAway ? game.away : game.home;
         const rosterList: any[] = rGroup.roster || [];
@@ -222,6 +229,15 @@ export class EspnLiveService {
         // Distinguish starters and reserves
         const starters = rosterList.filter((p: any) => p.starter);
         const playerPool = starters.length ? starters : rosterList;
+
+        const sportFolder =
+          game.sport === 'Americano'
+            ? 'nfl'
+            : game.sport === 'Baloncesto'
+            ? 'nba'
+            : game.sport === 'Béisbol'
+            ? 'mlb'
+            : 'soccer';
 
         // Pick top offensive stars (forwards, attacking midfielders) for Star Players
         const offensive = playerPool.filter((p: any) => {
@@ -235,7 +251,11 @@ export class EspnLiveService {
           if (!athlete.displayName) continue;
           const jerseyNum = Number(item.jersey || athlete.jersey) || 10;
           const role = item.position?.displayName || 'Titular';
-          const jerseyImg = athlete.jerseyImages?.[0]?.href || athlete.jerseyImage?.[0]?.href;
+          const headshot =
+            athlete.headshot?.href ||
+            (athlete.id
+              ? `https://a.espncdn.com/combiner/i?img=/i/headshots/${sportFolder}/players/full/${athlete.id}.png&w=350&h=254`
+              : undefined);
 
           star_players.push({
             name: athlete.displayName,
@@ -244,7 +264,7 @@ export class EspnLiveService {
             team: teamName,
             team_side: teamSide,
             role,
-            headshot: jerseyImg || undefined,
+            headshot,
             marginImpact: `+${(1.2 + (jerseyNum % 7) * 0.25).toFixed(2)} pts`,
             priorStarts: jerseyNum,
             statusText: item.starter ? 'Titular confirmado en alineación' : 'Convocado oficial',
@@ -257,7 +277,11 @@ export class EspnLiveService {
           if (!athlete.displayName) continue;
           const pos = pItem.position?.abbreviation || pItem.position?.displayName || 'TIT';
           const posLower = (pItem.position?.displayName || '').toLowerCase();
-          const jerseyImg = athlete.jerseyImages?.[0]?.href || athlete.jerseyImage?.[0]?.href;
+          const headshot =
+            athlete.headshot?.href ||
+            (athlete.id
+              ? `https://a.espncdn.com/combiner/i?img=/i/headshots/${sportFolder}/players/full/${athlete.id}.png&w=350&h=254`
+              : undefined);
 
           let cat = 'goles';
           let catLabel = 'Tiros a puerta';
@@ -286,7 +310,7 @@ export class EspnLiveService {
             team_name: teamName,
             team_side: teamSide,
             position: pos,
-            headshot: jerseyImg || undefined,
+            headshot,
             category: cat,
             category_label: catLabel,
             display_stat: displayStat,
@@ -352,11 +376,28 @@ export class EspnLiveService {
 
     // C) Live ESPN Team Roster: query real official squads for both teams
     if (!star_players.length) {
-      const compCompetitors = data.header?.competitions?.[0]?.competitors || [];
+      const boxTeams: any[] = data.boxscore?.teams || [];
+      const compCompetitors: any[] = data.header?.competitions?.[0]?.competitors || data.competitions?.[0]?.competitors || [];
+      const lastFiveTeams: any[] = data.lastFiveGames || [];
+
+      const awayBox = boxTeams.find((t: any) => t.homeAway === 'away') || boxTeams[1];
+      const homeBox = boxTeams.find((t: any) => t.homeAway === 'home') || boxTeams[0];
+
       const awayComp = compCompetitors.find((c: any) => c.homeAway === 'away');
       const homeComp = compCompetitors.find((c: any) => c.homeAway === 'home');
-      const awayTeamId = awayComp?.team?.id || awayComp?.id || game.away_id;
-      const homeTeamId = homeComp?.team?.id || homeComp?.id || game.home_id;
+
+      const awayTeamId =
+        awayBox?.team?.id ||
+        awayComp?.team?.id ||
+        awayComp?.id ||
+        lastFiveTeams[1]?.team?.id ||
+        game.away_id;
+      const homeTeamId =
+        homeBox?.team?.id ||
+        homeComp?.team?.id ||
+        homeComp?.id ||
+        lastFiveTeams[0]?.team?.id ||
+        game.home_id;
       const conf = this.getEspnConfig(game.league);
 
       if (awayTeamId || homeTeamId) {
@@ -858,16 +899,22 @@ export class EspnLiveService {
         );
       });
 
+      const sportFolder =
+        sport === 'football' || sport === 'Americano'
+          ? 'nfl'
+          : sport === 'basketball' || sport === 'Baloncesto'
+          ? 'nba'
+          : sport === 'baseball' || sport === 'Béisbol'
+          ? 'mlb'
+          : 'soccer';
+
       const chosenStars = offensive.slice(0, 2).concat(athletes.slice(0, Math.max(0, 2 - offensive.length)));
       const stars: StarPlayerAnalysis[] = chosenStars.map((a: any) => {
         const jerseyNum = Number(a.jersey) || 10;
         const pName = a.displayName || a.fullName;
         const fallbackHeadshot =
-          sport === 'football' || sport === 'Americano'
-            ? `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${a.id}.png&w=350&h=254`
-            : sport === 'basketball' || sport === 'Baloncesto'
-            ? `https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/${a.id}.png&w=350&h=254`
-            : (a.headshot?.href || undefined);
+          a.headshot?.href ||
+          (a.id ? `https://a.espncdn.com/combiner/i?img=/i/headshots/${sportFolder}/players/full/${a.id}.png&w=350&h=254` : undefined);
         return {
           name: pName,
           athlete_id: a.id ? String(a.id) : undefined,
@@ -882,15 +929,12 @@ export class EspnLiveService {
         };
       });
 
-      const props: PlayerStat[] = athletes.slice(0, 6).map((a: any) => {
+      const props: PlayerStat[] = athletes.slice(0, 8).map((a: any) => {
         const pos = a.position?.abbreviation || a.position?.displayName || 'TIT';
         const posLower = (a.position?.displayName || '').toLowerCase();
         const fallbackHeadshot =
-          sport === 'football' || sport === 'Americano'
-            ? `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${a.id}.png&w=350&h=254`
-            : sport === 'basketball' || sport === 'Baloncesto'
-            ? `https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/${a.id}.png&w=350&h=254`
-            : (a.headshot?.href || undefined);
+          a.headshot?.href ||
+          (a.id ? `https://a.espncdn.com/combiner/i?img=/i/headshots/${sportFolder}/players/full/${a.id}.png&w=350&h=254` : undefined);
         let cat = 'goles';
         let catLabel = 'Tiros a puerta';
         let line = 1.5;
