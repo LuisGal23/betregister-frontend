@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
-import type { CreateMovement } from '../models/movement.model';
+import type { CreateMovement } from './movement.model';
 @Injectable({ providedIn: 'root' })
 export class MovementsService {
   private api = inject(ApiService);

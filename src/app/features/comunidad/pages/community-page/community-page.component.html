@@ -1,0 +1,357 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Top Hero Header -->
+  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-border/60">
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="eyebrow !text-accent font-mono font-bold">RED SOCIAL & COMUNIDAD DE TIPSTERS</span>
+        <span class="text-xs text-muted">·</span>
+        <span class="text-xs text-emerald-400 font-bold flex items-center gap-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Bankrolls Verificados
+        </span>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-text mt-1">
+        Comunidad de Tipsters & Pronósticos
+      </h1>
+      <p class="text-xs sm:text-sm text-muted mt-1 max-w-2xl">
+        Descubre los pronósticos más rentables con análisis argumentado, sigue cómo gestionan su bankroll los mejores apostadores y comparte tus apuestas públicas.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+      <button 
+        type="button" 
+        class="action-pill-btn primary flex-1 sm:flex-initial py-2 px-4 text-xs inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all"
+        (click)="openCreateModal()"
+      >
+        <app-icon name="plus" />
+        <span>Publicar Pronóstico</span>
+      </button>
+
+      <a 
+        routerLink="/profile" 
+        class="action-pill-btn py-2 px-3.5 text-xs inline-flex items-center justify-center gap-1.5 shrink-0"
+        title="Gestionar mi perfil de tipster"
+      >
+        <span>Mi Perfil</span>
+        <span class="w-2 h-2 rounded-full bg-accent"></span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Feed Navigation / Category Pills -->
+  <div class="flex items-center gap-2 overflow-x-auto w-full pb-2 border-b border-border/60 scrollbar-none">
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'trending'"
+      (click)="activeFilter.set('trending')"
+    >
+      🔥 En Tendencia (Top Picks)
+    </button>
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'recent'"
+      (click)="activeFilter.set('recent')"
+    >
+      ⏱️ Más Recientes
+    </button>
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'futbol'"
+      (click)="activeFilter.set('futbol')"
+    >
+      ⚽ Fútbol
+    </button>
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'nfl'"
+      (click)="activeFilter.set('nfl')"
+    >
+      🏈 NFL
+    </button>
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'baseball'"
+      (click)="activeFilter.set('baseball')"
+    >
+      ⚾ Béisbol
+    </button>
+    <button
+      type="button"
+      class="pill-filter-btn shrink-0 whitespace-nowrap text-xs py-1.5 px-3.5"
+      [class.active]="activeFilter() === 'my_posts'"
+      (click)="activeFilter.set('my_posts')"
+    >
+      👤 Mis Publicaciones
+    </button>
+  </div>
+
+
+  <!-- Main Grid: Feed + Right Sidebar -->
+  <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-8">
+
+    <!-- FEED OF TIPSTER POSTS -->
+    <main class="flex flex-col gap-6">
+
+      @if (loading() && posts().length === 0) {
+        <div class="flex flex-col items-center justify-center py-20 bg-surface rounded-3xl border border-border gap-3">
+          <div class="w-8 h-8 rounded-full border-3 border-accent/20 border-t-accent animate-spin"></div>
+          <p class="text-xs text-muted">Cargando pronósticos de la comunidad…</p>
+        </div>
+      }
+
+      @for (post of filteredPosts(); track post.id) {
+        <article class="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface border border-border shadow-xl flex flex-col gap-3.5 sm:gap-4 relative overflow-hidden transition-all hover:border-accent/40">
+
+          <!-- Tipster Author Header -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-surface-high border-2 border-accent/40 overflow-hidden shrink-0 flex items-center justify-center shadow-md">
+                @if (post.author.avatar_url) {
+                  <img [src]="post.author.avatar_url" [alt]="post.author.display_name" class="w-full h-full object-cover" />
+                } @else {
+                  <span class="text-sm sm:text-base font-black text-accent uppercase font-mono">
+                    {{ post.author.username.slice(0, 2) }}
+                  </span>
+                }
+              </div>
+
+              <div class="flex flex-col min-w-0">
+                <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <span class="text-xs sm:text-sm font-black text-text truncate max-w-[120px] sm:max-w-none">{{ post.author.display_name }}</span>
+                  <span class="text-[11px] sm:text-xs font-mono font-bold text-accent">@{{ post.author.username }}</span>
+                  <span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-accent/15 text-accent border border-accent/25">
+                    {{ post.author.badge }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[11px] text-muted mt-0.5 flex-wrap">
+                  <span>{{ post.created_at }}</span>
+                  <span>·</span>
+                  <span class="text-accent font-semibold">{{ post.sport }}</span>
+                  @if (post.league) {
+                    <span>·</span>
+                    <span class="truncate max-w-[100px] sm:max-w-[140px]">{{ post.league }}</span>
+                  }
+                  <span class="sm:hidden text-emerald-400 font-bold font-mono">· Yield {{ post.author.stats.yield }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tipster Bankroll Performance Chip (Desktop) -->
+            <div class="hidden sm:flex items-center gap-2 p-2 px-3 rounded-2xl bg-surface-high/60 border border-border text-xs shrink-0">
+              <div class="flex flex-col text-right">
+                <span class="text-[9px] font-bold text-muted uppercase">YIELD VERIFICADO</span>
+                <strong class="font-mono font-bold text-emerald-400">{{ post.author.stats.yield }}</strong>
+              </div>
+              <div class="w-[1px] h-6 bg-border"></div>
+              <div class="flex flex-col text-right">
+                <span class="text-[9px] font-bold text-muted uppercase">BANCO</span>
+                <strong class="font-mono font-bold text-accent">{{ post.author.stats.units }}</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Match Banner Preview (if teams exist) -->
+          @if (post.event) {
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-3 px-3.5 sm:px-4 rounded-2xl bg-surface-high/50 border border-border/80 gap-2">
+              <div class="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                @if (post.home_logo) {
+                  <img [src]="post.home_logo" class="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" alt="" />
+                }
+                <span class="text-xs sm:text-sm font-bold text-text truncate">{{ post.event }}</span>
+                @if (post.away_logo) {
+                  <img [src]="post.away_logo" class="w-5 h-5 sm:w-6 sm:h-6 object-contain shrink-0" alt="" />
+                }
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                @if (post.bet_id) {
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 flex items-center gap-1">
+                    <span>🎟️</span>
+                    <span>Ticket #{{ post.bet_id }}</span>
+                  </span>
+                }
+
+                @if (post.status === 'won') {
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                    ✓ VERDE
+                  </span>
+                } @else if (post.status === 'lost') {
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-red-500/15 text-red-400 border border-red-500/30">
+                    ✕ ROJA
+                  </span>
+                } @else {
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider bg-accent/15 text-accent border border-accent/30">
+                    EN JUEGO
+                  </span>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Pick Box Centerpiece -->
+          <div class="p-3.5 sm:p-4 rounded-2xl bg-surface-high/80 border border-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div class="flex flex-col min-w-0">
+              <span class="text-[10px] font-black uppercase tracking-wider text-muted">{{ post.market }}</span>
+              <h3 class="text-sm sm:text-base font-black text-text mt-0.5">{{ post.pick }}</h3>
+            </div>
+
+            <div class="flex items-center gap-3 shrink-0 self-end sm:self-center">
+              <div class="flex flex-col items-end">
+                <span class="text-[9px] sm:text-[10px] font-bold text-muted uppercase">CUOTA</span>
+                <strong class="text-base sm:text-lg font-black font-mono text-accent">{{ post.odds }}</strong>
+              </div>
+
+              <div class="w-[1px] h-7 sm:h-8 bg-border"></div>
+
+              <div class="flex flex-col items-end">
+                <span class="text-[9px] sm:text-[10px] font-bold text-muted uppercase">STAKE</span>
+                <strong class="text-base sm:text-lg font-black font-mono text-emerald-400">{{ post.units }}u</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rationale / Analysis -->
+          @if (post.rationale) {
+            <p class="text-xs sm:text-sm text-muted leading-relaxed">
+              {{ post.rationale }}
+            </p>
+          }
+
+          <!-- Social Actions Bar -->
+          <div class="flex items-center justify-between flex-wrap gap-2.5 pt-3 border-t border-border/60">
+            <div class="flex items-center gap-2">
+              <!-- Fire Reaction -->
+              <button
+                type="button"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer"
+                [class.bg-amber-500/15]="post.userReactedFire"
+                [class.text-amber-400]="post.userReactedFire"
+                [class.border-amber-500/40]="post.userReactedFire"
+                [class.bg-surface-high]="!post.userReactedFire"
+                [class.border-border]="!post.userReactedFire"
+                [class.text-muted]="!post.userReactedFire"
+                (click)="reactPost(post, 'fire')"
+              >
+                <span>🔥</span>
+                <span>{{ post.reactions.fire }}</span>
+              </button>
+
+              <!-- Like Reaction -->
+              <button
+                type="button"
+                class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer"
+                [class.bg-accent/15]="post.userReactedLike"
+                [class.text-accent]="post.userReactedLike"
+                [class.border-accent/40]="post.userReactedLike"
+                [class.bg-surface-high]="!post.userReactedLike"
+                [class.border-border]="!post.userReactedLike"
+                [class.text-muted]="!post.userReactedLike"
+                (click)="reactPost(post, 'like')"
+              >
+                <span>👍</span>
+                <span>{{ post.reactions.like }}</span>
+              </button>
+            </div>
+
+            <!-- Copy to My Tickets Action -->
+            <button
+              type="button"
+              class="action-pill-btn primary flex-1 sm:flex-initial py-1.5 px-3 sm:px-4 text-xs inline-flex items-center justify-center gap-1.5 shadow-md hover:scale-105 active:scale-95 transition-all"
+              (click)="copyToMyTicket(post)"
+            >
+              <span>📋</span>
+              <span>Apostar / Copiar</span>
+            </button>
+          </div>
+
+        </article>
+      } @empty {
+        <div class="flex flex-col items-center justify-center py-20 px-4 text-center bg-surface border border-border rounded-3xl gap-3">
+          <span class="text-4xl">👥</span>
+          <h3 class="text-base font-bold text-text">No hay pronósticos en esta sección</h3>
+          <p class="text-xs text-muted max-w-sm">Sé el primero en compartir tu pronóstico con la comunidad o prueba con otro filtro.</p>
+          <button type="button" class="action-pill-btn primary mt-2 text-xs py-2 px-5" (click)="openCreateModal()">
+            Publicar Pronóstico
+          </button>
+        </div>
+      }
+
+    </main>
+
+    <!-- RIGHT SIDEBAR: LEADERBOARD & TRANSPARENCY -->
+    <aside class="flex flex-col gap-6">
+
+      <!-- TOP TIPSTERS LEADERBOARD -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-xl flex flex-col gap-4">
+        <div class="flex items-center justify-between border-b border-border/50 pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <h2 class="text-base font-bold text-text">Top Tipsters del Mes</h2>
+          </div>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-muted">RANKING</span>
+        </div>
+
+        <div class="flex flex-col gap-3">
+          @for (tipster of topTipsters; track tipster.username) {
+            <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-surface-high/60 border border-border/70 hover:border-accent/40 transition-colors">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-xs font-black font-mono w-4 text-center text-muted">
+                  {{ tipster.rank === 1 ? '🥇' : tipster.rank === 2 ? '🥈' : tipster.rank === 3 ? '🥉' : tipster.rank }}
+                </span>
+
+                <img [src]="tipster.avatar" [alt]="tipster.name" class="w-9 h-9 rounded-xl object-cover shrink-0 shadow-sm" />
+
+                <div class="flex flex-col min-w-0">
+                  <span class="text-xs font-black text-text truncate">{{ tipster.name }}</span>
+                  <span class="text-[10px] text-muted truncate">@{{ tipster.username }} · {{ tipster.specialty }}</span>
+                  <span class="text-[10px] font-mono font-bold text-emerald-400 mt-0.5">
+                    Yield {{ tipster.yield }} ({{ tipster.units }})
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                class="action-pill-btn py-1 px-3 text-[11px] shrink-0"
+                [class.primary]="!tipster.following"
+                (click)="toggleFollow(tipster)"
+              >
+                {{ tipster.following ? 'Siguiendo' : 'Seguir' }}
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- TRANSPARENCY & BANKROLL CODE OF CONDUCT -->
+      <section class="p-6 rounded-3xl bg-surface border border-border shadow-lg flex flex-col gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-base">🛡️</span>
+          <h3 class="text-sm font-bold text-text">Transparencia en BetRegister</h3>
+        </div>
+        <p class="text-xs text-muted leading-relaxed">
+          En BetRegister los pronósticos de la comunidad se publican antes del inicio de los encuentros y quedan sellados con fecha/hora certificada para garantizar veracidad en las estadísticas de bankroll.
+        </p>
+        <div class="pt-2 border-t border-border/40 text-[11px] text-accent font-semibold">
+          💡 La gestión responsable de bankroll es la clave del largo plazo.
+        </div>
+      </section>
+
+    </aside>
+
+  </div>
+
+  <!-- CREATE POST MODAL (Componente independiente en comunidad/modales) -->
+  <app-publicar-pronostico-modal 
+    [(isOpen)]="showCreateModal" 
+    (postCreated)="onPostCreated($event)" 
+  />
+
+
+</div>

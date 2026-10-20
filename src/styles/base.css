@@ -8,6 +8,11 @@ body {
   font-family: 'Segoe UI', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
+app-shell {
+  display: block;
+  position: relative;
+  z-index: 1;
+}
 button,
 input,
 select,
@@ -41,8 +46,22 @@ p {
 h1,
 h2,
 h3,
+h4,
+h5,
+h6 {
+  color: var(--text) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  overflow-wrap: anywhere;
+}
 p {
   overflow-wrap: anywhere;
+}
+.text-text {
+  color: var(--text) !important;
+}
+.text-muted {
+  color: var(--muted) !important;
 }
 label {
   display: block;
