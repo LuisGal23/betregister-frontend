@@ -211,6 +211,12 @@ export class CuotasStatsModalComponent {
     return (Math.abs(h) % 35) + 1;
   }
 
+  getFallbackPhoto(name?: string): string {
+    const pName = name || 'Jugador';
+    const clean = pName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(clean)}&background=1e293b&color=10b981&bold=true&size=256`;
+  }
+
   onPlayerImageError(event: Event, playerName?: string) {
     const imgElement = event.target as HTMLImageElement;
     if (!imgElement || imgElement.src.includes('ui-avatars.com')) return; // Previene bucles infinitos
@@ -391,56 +397,139 @@ export class CuotasStatsModalComponent {
           value_bet: remote.value_bet || fullAnalysis.value_bet,
         };
 
-        // Resolve portraits only for star figures and primary prop cards (fast & lightweight)
+        // Pre-fill fallback portraits synchronously so player cards are never blank
         if (merged.player_prop_cards) {
-          await Promise.allSettled(
-            merged.player_prop_cards.slice(0, 6).map(async (card) => {
+          merged.player_prop_cards.forEach((c) => {
+            if (!c.photo) c.photo = this.getFallbackPhoto(c.name);
+          });
+        }
+        if (merged.star_players) {
+          merged.star_players.forEach((s) => {
+            if (!s.headshot) s.headshot = this.getFallbackPhoto(s.name);
+          });
+        }
+        if (merged.players) {
+          merged.players.forEach((p) => {
+            if (!p.headshot) p.headshot = this.getFallbackPhoto(p.name);
+          });
+        }
+
+        this.details.set(merged);
+        this.loadingDetails.set(false);
+
+        // Concurrently resolve authentic cutouts/headshots for all players
+        const promises: Promise<any>[] = [];
+
+        if (merged.player_prop_cards?.length) {
+          promises.push(
+            ...merged.player_prop_cards.map(async (card) => {
               const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id);
-              if (photo) card.photo = photo;
+              if (photo && photo !== card.photo) card.photo = photo;
             })
           );
         }
 
-        if (merged.star_players) {
-          await Promise.allSettled(
-            merged.star_players.slice(0, 4).map(async (star) => {
+        if (merged.star_players?.length) {
+          promises.push(
+            ...merged.star_players.map(async (star) => {
               const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id);
-              if (photo) star.headshot = photo;
+              if (photo && photo !== star.headshot) star.headshot = photo;
+            })
+          );
+        }
+
+        if (merged.players?.length) {
+          promises.push(
+            ...merged.players.map(async (p) => {
+              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id);
+              if (photo && photo !== p.headshot) p.headshot = photo;
             })
           );
         }
 
         if (merged.manager_duel) {
           if (!merged.manager_duel.home_photo && merged.manager_duel.home_manager) {
-            merged.manager_duel.home_photo = await this.playerMedia.getPlayerPhoto(merged.manager_duel.home_manager);
+            promises.push(
+              this.playerMedia.getPlayerPhoto(merged.manager_duel.home_manager).then((photo) => {
+                if (photo && merged.manager_duel) merged.manager_duel.home_photo = photo;
+              })
+            );
           }
           if (!merged.manager_duel.away_photo && merged.manager_duel.away_manager) {
-            merged.manager_duel.away_photo = await this.playerMedia.getPlayerPhoto(merged.manager_duel.away_manager);
+            promises.push(
+              this.playerMedia.getPlayerPhoto(merged.manager_duel.away_manager).then((photo) => {
+                if (photo && merged.manager_duel) merged.manager_duel.away_photo = photo;
+              })
+            );
           }
         }
 
-        this.details.set(merged);
-        this.loadingDetails.set(false);
+        await Promise.allSettled(promises);
+        this.details.set({ ...merged });
       })
       .catch(async () => {
+        if (fullAnalysis.player_prop_cards) {
+          fullAnalysis.player_prop_cards.forEach((c) => {
+            if (!c.photo) c.photo = this.getFallbackPhoto(c.name);
+          });
+        }
         if (fullAnalysis.star_players) {
-          await Promise.allSettled(
-            fullAnalysis.star_players.slice(0, 4).map(async (star) => {
+          fullAnalysis.star_players.forEach((s) => {
+            if (!s.headshot) s.headshot = this.getFallbackPhoto(s.name);
+          });
+        }
+        if (fullAnalysis.players) {
+          fullAnalysis.players.forEach((p) => {
+            if (!p.headshot) p.headshot = this.getFallbackPhoto(p.name);
+          });
+        }
+
+        this.details.set(fullAnalysis);
+        this.loadingDetails.set(false);
+
+        const promises: Promise<any>[] = [];
+        if (fullAnalysis.player_prop_cards?.length) {
+          promises.push(
+            ...fullAnalysis.player_prop_cards.map(async (card) => {
+              const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id);
+              if (photo && photo !== card.photo) card.photo = photo;
+            })
+          );
+        }
+        if (fullAnalysis.star_players?.length) {
+          promises.push(
+            ...fullAnalysis.star_players.map(async (star) => {
               const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id);
-              if (photo) star.headshot = photo;
+              if (photo && photo !== star.headshot) star.headshot = photo;
+            })
+          );
+        }
+        if (fullAnalysis.players?.length) {
+          promises.push(
+            ...fullAnalysis.players.map(async (p) => {
+              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id);
+              if (photo && photo !== p.headshot) p.headshot = photo;
             })
           );
         }
         if (fullAnalysis.manager_duel) {
           if (!fullAnalysis.manager_duel.home_photo && fullAnalysis.manager_duel.home_manager) {
-            fullAnalysis.manager_duel.home_photo = await this.playerMedia.getPlayerPhoto(fullAnalysis.manager_duel.home_manager);
+            promises.push(
+              this.playerMedia.getPlayerPhoto(fullAnalysis.manager_duel.home_manager).then((photo) => {
+                if (photo && fullAnalysis.manager_duel) fullAnalysis.manager_duel.home_photo = photo;
+              })
+            );
           }
           if (!fullAnalysis.manager_duel.away_photo && fullAnalysis.manager_duel.away_manager) {
-            fullAnalysis.manager_duel.away_photo = await this.playerMedia.getPlayerPhoto(fullAnalysis.manager_duel.away_manager);
+            promises.push(
+              this.playerMedia.getPlayerPhoto(fullAnalysis.manager_duel.away_manager).then((photo) => {
+                if (photo && fullAnalysis.manager_duel) fullAnalysis.manager_duel.away_photo = photo;
+              })
+            );
           }
         }
-        this.details.set(fullAnalysis);
-        this.loadingDetails.set(false);
+        await Promise.allSettled(promises);
+        this.details.set({ ...fullAnalysis });
       });
   }
 
