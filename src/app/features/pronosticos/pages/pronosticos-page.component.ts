@@ -1,17 +1,30 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { SportsService } from '../../partidos/services/sports.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import { TicketModalService } from '../../apuestas/services/ticket-modal.service';
 import { zoneDay } from '../../../shared/utils/zone.utils';
-import type { SportsGame, GameReference, ValueBetAnalysis } from '../../partidos/services/sports.model';
+import type {
+  SportsGame,
+  GameReference,
+  ValueBetAnalysis,
+  AIValueBetResponse,
+  AlternativeMarketOption,
+  PredictionEvaluation,
+} from '../../partidos/services/sports.model';
 import type { SelectionDetail } from '../../apuestas/services/selection-detail';
 import type { BetLeg } from '../../apuestas/services/bet.model';
 import { IconComponent } from '../../../shared/components/icon/icon.component';
 import { getTeamLogo } from '../../../shared/utils/team-logos.utils';
 import { CuotasStatsModalService } from '../../partidos/services/cuotas-stats-modal.service';
-import { generateDeepAnalysis, buildSuperContextAndValueBet } from '../../../shared/utils/match-analysis.utils';
+import {
+  generateDeepAnalysis,
+  getUnifiedMatchPrediction,
+  evaluatePrediction,
+  calculateUnifiedGameProbabilities,
+} from '../../../shared/utils/match-analysis.utils';
 
 export interface AIPrediction {
   game: SportsGame;
@@ -32,6 +45,7 @@ export interface AIPrediction {
     isEV: boolean;
     reasoning: string;
   };
+  alternatives: AlternativeMarketOption[];
   valueBet: ValueBetAnalysis;
 }
 
@@ -63,19 +77,22 @@ export interface AIParlay {
   host: { class: 'block w-full' },
 })
 export class PronosticosPageComponent implements OnInit {
+  private router = inject(Router);
   private sports = inject(SportsService);
   private ticketModal = inject(TicketModalService);
   private cuotasModalService = inject(CuotasStatsModalService);
   vm = inject(LedgerState);
 
-  // Deep Analysis Modal
+  // Deep Analysis Navigation & Modal
   isModalOpen = signal(false);
   modalGame = signal<SportsGame | null>(null);
 
   openMatchModal(game: SportsGame) {
-    this.modalGame.set(game);
-    this.isModalOpen.set(true);
-    this.cuotasModalService.open(game, this.games());
+    this.goToMatchDetail(game);
+  }
+
+  goToMatchDetail(game: SportsGame) {
+    void this.router.navigate(['/partidos', game.league, game.id]);
   }
 
   // Filter signals
@@ -83,9 +100,19 @@ export class PronosticosPageComponent implements OnInit {
   selectedDate = signal<string>('');
   onlyHighConfidence = signal(false);
   onlyEV = signal(false);
+  includeFinished = signal(false); // Default false: oculta partidos finalizados para no saturar la vista
   searchQuery = signal('');
   loading = signal(false);
+  isRefreshingAi = signal(false);
   error = signal('');
+
+  // Performance & Virtualization
+  displayLimit = signal<number>(24);
+  showAuditDetails = signal<boolean>(false);
+
+  // Auditoría IA Filters & Predictions Cache
+  auditFilter = signal<'all' | 'won' | 'lost' | 'pending'>('all');
+  aiPredictions = signal<Record<string, AIValueBetResponse>>({});
 
   games = signal<SportsGame[]>([]);
 
@@ -95,6 +122,131 @@ export class PronosticosPageComponent implements OnInit {
     const d = new Date(t + 'T12:00:00Z');
     d.setUTCDate(d.getUTCDate() + 1);
     return d.toISOString().slice(0, 10);
+  });
+
+  // Explicit, unambiguous market formatter
+  formatRecommendedMarket(market?: string, game?: SportsGame | null, vb?: AIValueBetResponse | null): string {
+    if (!game) return market || 'Selección de Valor';
+    const raw = (market || '').trim();
+    const home = game.home;
+    const away = game.away;
+
+    if (raw.toLowerCase().includes(home.toLowerCase()) || raw.toLowerCase().includes(away.toLowerCase())) {
+      return raw;
+    }
+    if (
+      raw.toLowerCase().includes('más de') ||
+      raw.toLowerCase().includes('over') ||
+      raw.toLowerCase().includes('menos de') ||
+      raw.toLowerCase().includes('under') ||
+      raw.toLowerCase().includes('spread')
+    ) {
+      return raw;
+    }
+
+    const mType = (vb?.market_type || '').toLowerCase();
+    const reasoning = (vb?.tactical_reasoning || '').toLowerCase();
+
+    if (mType === 'away_win' || reasoning.includes(away.toLowerCase())) {
+      return `Victoria de ${away} (Moneyline)`;
+    }
+    if (mType === 'draw' || raw.toLowerCase().includes('empate')) {
+      return 'Empate (Draw)';
+    }
+    if (mType === 'over_2_5') {
+      return 'Más de 2.5 Goles (Over 2.5)';
+    }
+    if (mType === 'under_2_5') {
+      return 'Menos de 2.5 Goles (Under 2.5)';
+    }
+
+    const p = calculateUnifiedGameProbabilities(game);
+    const chosenTeam = p.favorite === 'away' ? away : home;
+    return `Victoria de ${chosenTeam} (Moneyline)`;
+  }
+
+  getGamePrediction(g: SportsGame): AIValueBetResponse {
+    return this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+  }
+
+  getPredictionEvaluation(g: SportsGame): PredictionEvaluation {
+    const pred = this.getGamePrediction(g);
+    return evaluatePrediction(pred, g);
+  }
+
+  // Dashboard KPI de Efectividad IA del Día
+  auditSummary = computed(() => {
+    const list = this.games();
+    let won = 0;
+    let lost = 0;
+    let pending = 0;
+    let live = 0;
+    let netUnits = 0;
+
+    for (const g of list) {
+      const pred = this.getGamePrediction(g);
+      const ev = evaluatePrediction(pred, g);
+      if (ev.status === 'WON') {
+        won++;
+        netUnits += ev.profitUnits || 0;
+      } else if (ev.status === 'LOST') {
+        lost++;
+        netUnits -= 1.0;
+      } else {
+        if (g.state === 'live') live++;
+        else pending++;
+      }
+    }
+
+    const totalResolved = won + lost;
+    const winRate = totalResolved > 0 ? Number(((won / totalResolved) * 100).toFixed(1)) : 0;
+    const roi = totalResolved > 0 ? Number(((netUnits / totalResolved) * 100).toFixed(1)) : 0;
+
+    return {
+      totalGames: list.length,
+      totalResolved,
+      won,
+      lost,
+      pending,
+      live,
+      winRate,
+      netUnits: Number(netUnits.toFixed(2)),
+      roi,
+      hasEvaluations: totalResolved > 0,
+    };
+  });
+
+  // Lista detallada con resumen de aciertos y fallos para la vista
+  auditedMatches = computed(() => {
+    const filter = this.auditFilter();
+    const list = this.games();
+    const evaluated = list.map((g) => {
+      const pred = this.getGamePrediction(g);
+      const ev = evaluatePrediction(pred, g);
+      const marketFormatted = this.formatRecommendedMarket(pred.recommended_market, g, pred);
+
+      let reasoningSummary = '';
+      if (ev.status === 'WON') {
+        reasoningSummary = `Acierto: ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : ''}. El modelo proyectó una probabilidad de ${pred.ai_estimated_probability_pct}% vs ${pred.implicit_probability_pct}% del casino (+${pred.expected_value_pct}% EV) en favor de ${marketFormatted}, generando +${ev.profitUnits}u de ganancia.`;
+      } else if (ev.status === 'LOST') {
+        reasoningSummary = `Fallo: El partido finalizó ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : 'con marcador adverso'}. La selección ${marketFormatted} (@${pred.target_odd}) no se cumplió ante la resistencia táctica rival (-1.00u).`;
+      } else {
+        reasoningSummary = `En juego / Próximo: Partido ${g.state === 'live' ? 'en vivo en este momento' : 'programado'}. Recomendación del modelo Sharp: ${marketFormatted} con ${pred.ai_estimated_probability_pct}% de probabilidad estimada (+${pred.expected_value_pct}% EV).`;
+      }
+
+      return {
+        game: g,
+        prediction: pred,
+        evaluation: ev,
+        marketFormatted,
+        reasoningSummary,
+      };
+    });
+
+    if (filter === 'won') return evaluated.filter((m) => m.evaluation.status === 'WON');
+    if (filter === 'lost') return evaluated.filter((m) => m.evaluation.status === 'LOST');
+    if (filter === 'pending') return evaluated.filter((m) => m.evaluation.status === 'PENDING');
+    return evaluated;
   });
 
   // Sports definition
@@ -111,8 +263,13 @@ export class PronosticosPageComponent implements OnInit {
     void this.loadDailyPredictions();
   }
 
-  async loadDailyPredictions() {
-    this.loading.set(true);
+  async loadDailyPredictions(forceRefresh = false) {
+    if (forceRefresh) {
+      this.isRefreshingAi.set(true);
+      this.aiPredictions.set({});
+    } else {
+      this.loading.set(true);
+    }
     this.error.set('');
     const day = this.selectedDate();
 
@@ -162,18 +319,49 @@ export class PronosticosPageComponent implements OnInit {
       // Sort by start date
       unique.sort((a, b) => (a.start > b.start ? 1 : -1));
       this.games.set(unique);
+
+      // 1. Fetch all pre-warmed AI predictions from database in a single fast call (<30ms)
+      const prewarmed = await this.sports.cachedPredictions();
+      const initialPreds: Record<string, AIValueBetResponse> = { ...prewarmed, ...this.aiPredictions() };
+      for (const g of unique) {
+        if (!initialPreds[g.id]) {
+          initialPreds[g.id] = getUnifiedMatchPrediction(g);
+        }
+      }
+      this.aiPredictions.set(initialPreds);
+
+      // 2. Async query backend value bets for top visible games with forceRefresh support in ONE batched update
+      const targetGames = unique.slice(0, 16);
+      const batchUpdates: Record<string, AIValueBetResponse> = {};
+      await Promise.allSettled(
+        targetGames.map(async (g) => {
+          try {
+            const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start, forceRefresh);
+            if (vb) {
+              batchUpdates[g.id] = vb;
+            }
+          } catch {
+            // Keep unified baseline prediction
+          }
+        })
+      );
+      if (Object.keys(batchUpdates).length) {
+        this.aiPredictions.update((m) => ({ ...m, ...batchUpdates }));
+      }
     } catch (err) {
       this.error.set(
         err instanceof Error ? err.message : 'No se pudieron sincronizar los partidos para el análisis IA.',
       );
     } finally {
       this.loading.set(false);
+      this.isRefreshingAi.set(false);
     }
   }
 
-  // Pre-calculate full AI prediction per game
+  // Pre-calculate full AI prediction per game, reacting immediately to aiPredictions updates
   predictions = computed<AIPrediction[]>(() => {
-    return this.games().map((g) => this.calculatePrediction(g));
+    const aiMap = this.aiPredictions();
+    return this.games().map((g) => this.calculatePrediction(g, aiMap[g.id]));
   });
 
   filteredPredictions = computed(() => {
@@ -181,9 +369,13 @@ export class PronosticosPageComponent implements OnInit {
     const sport = this.selectedSport();
     const highConf = this.onlyHighConfidence();
     const ev = this.onlyEV();
+    const showFinal = this.includeFinished();
 
     return this.predictions().filter((p) => {
       const g = p.game;
+      // Default: exclude already played matches from betting analysis to avoid clutter
+      if (!showFinal && g.state === 'final') return false;
+
       if (highConf && p.bestPick.prob < 65) return false;
       if (ev && !p.bestPick.isEV) return false;
 
@@ -198,9 +390,18 @@ export class PronosticosPageComponent implements OnInit {
     });
   });
 
-  // Parlays Engine: automatically constructs the 3 best parlays from current predictions
+  visiblePredictions = computed(() => {
+    return this.filteredPredictions().slice(0, this.displayLimit());
+  });
+
+  loadMore() {
+    this.displayLimit.update((c) => c + 24);
+  }
+
+  // Parlays Engine: automatically constructs the 3 best parlays from upcoming/live matches
   curatedParlays = computed<AIParlay[]>(() => {
-    const all = this.predictions();
+    // Only construct parlays from games not yet concluded
+    const all = this.predictions().filter((p) => p.game.state !== 'final');
     if (all.length < 2) return [];
 
     const parlays: AIParlay[] = [];
@@ -321,7 +522,7 @@ export class PronosticosPageComponent implements OnInit {
   });
 
   // Calculate deterministic mathematical & machine-learning probabilities
-  private calculatePrediction(g: SportsGame): AIPrediction {
+  private calculatePrediction(g: SportsGame, aiResp?: AIValueBetResponse): AIPrediction {
     let hash = 0;
     for (let i = 0; i < g.id.length; i++) {
       hash = (hash << 5) - hash + g.id.charCodeAt(i);
@@ -367,66 +568,62 @@ export class PronosticosPageComponent implements OnInit {
       bttsProb = null;
     }
 
-    // Determine Top Pick
-    const favoriteTeam = homeWinProb >= awayWinProb ? g.home : g.away;
-    const favoriteSide = homeWinProb >= awayWinProb ? 'Local' : 'Visitante';
-    const favoriteProb = Math.max(homeWinProb, awayWinProb);
+    // Unified AI source of truth: prioritize server Gemini analysis, fallback to unified local model
+    const ai = aiResp || this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
 
-    let pickLabel = '';
     let pickMarket = 'Moneyline';
-    let pickVal = favoriteSide;
+    let pickVal = 'Local';
     let pickLine: number | null = null;
-    let pickProb = favoriteProb;
-    let pickOdds = Number((1 / (favoriteProb / 100) * 0.94).toFixed(2));
-    let reasoning = '';
+    const mType = (ai.market_type || '').toLowerCase();
+    const mLabel = ai.recommended_market || '';
 
-    if (favoriteProb >= 65) {
-      pickLabel = `Gana ${favoriteTeam} (Moneyline)`;
-      pickMarket = 'Moneyline';
-      pickVal = favoriteSide;
-      pickProb = favoriteProb;
-      pickOdds = Number(Math.max(1.35, 1 / (favoriteProb / 100) * 0.95).toFixed(2));
-      reasoning = `Rendimiento superior en los últimos 5 partidos y ventaja táctica local (+${favoriteProb}% prob).`;
-    } else if (soccer && overProb >= 64) {
-      pickLabel = 'Más de 2.5 Goles totales';
-      pickMarket = 'Total de goles';
-      pickVal = 'Más de';
-      pickLine = 2.5;
-      pickProb = overProb;
-      pickOdds = Number(Math.max(1.65, 1 / (overProb / 100) * 0.95).toFixed(2));
-      reasoning = `Promedio de ${expectedTotal} goles esperados. Ambos equipos presentan alta tasa ofensiva.`;
-    } else if (soccer && bttsProb! >= 64) {
-      pickLabel = 'Ambos equipos anotan (Sí)';
+    if (mType === 'btts_yes' || mLabel.toLowerCase().includes('ambos equipos') || mLabel.toLowerCase().includes('btts')) {
       pickMarket = 'Ambos equipos anotan';
       pickVal = 'Sí';
-      pickProb = bttsProb!;
-      pickOdds = Number(Math.max(1.68, 1 / (bttsProb! / 100) * 0.95).toFixed(2));
-      reasoning = `Tanto ${g.home} como ${g.away} han marcado y recibido gol en el 70%+ de sus recientes juegos.`;
-    } else {
-      pickLabel = `${favoriteTeam} Hándicap / Ganador`;
+    } else if (mType === 'btts_no') {
+      pickMarket = 'Ambos equipos anotan';
+      pickVal = 'No';
+    } else if (mType === 'over_2_5' || mLabel.toLowerCase().includes('más de') || mLabel.toLowerCase().includes('over')) {
+      pickMarket = soccer ? 'Total de goles' : 'Total de puntos';
+      pickVal = 'Más de';
+      pickLine = soccer ? 2.5 : basketball ? 218.5 : 44.5;
+    } else if (mType === 'under_2_5' || mLabel.toLowerCase().includes('menos de') || mLabel.toLowerCase().includes('under')) {
+      pickMarket = soccer ? 'Total de goles' : 'Total de puntos';
+      pickVal = 'Menos de';
+      pickLine = soccer ? 2.5 : basketball ? 218.5 : 44.5;
+    } else if (mType === 'away_win' || mLabel.toLowerCase().includes(g.away.toLowerCase())) {
       pickMarket = 'Moneyline';
-      pickVal = favoriteSide;
-      pickProb = favoriteProb;
-      pickOdds = Number(Math.max(1.55, 1 / (favoriteProb / 100) * 0.95).toFixed(2));
-      reasoning = `Ligera inclinación hacia ${favoriteTeam} con valor ante la cuota de mercado.`;
+      pickVal = 'Visitante';
+    } else if (mType === 'draw' || mLabel.toLowerCase().includes('empate')) {
+      pickMarket = 'Moneyline';
+      pickVal = 'Empate';
+    } else if (mType === 'spread') {
+      pickMarket = 'Spread';
+      pickVal = mLabel.toLowerCase().includes(g.away.toLowerCase()) ? g.away : g.home;
+      pickLine = -1.5;
+    } else {
+      pickMarket = 'Moneyline';
+      pickVal = 'Local';
     }
 
-    const fullAnalysis = generateDeepAnalysis(g);
-    const valueBet = fullAnalysis.value_bet || buildSuperContextAndValueBet(
-      g,
-      homeWinProb,
-      awayWinProb,
-      drawProb,
-      fullAnalysis.injuries || [],
-      fullAnalysis.recent_form_home || [],
-      fullAnalysis.recent_form_away || [],
-      fullAnalysis.h2h || [],
-      fullAnalysis.bookmakers_odds || []
-    );
-
     const confidence: 'Muy Alta' | 'Alta' | 'Media' =
-      valueBet.nivel_confianza >= 4 ? 'Muy Alta' : valueBet.nivel_confianza === 3 ? 'Alta' : 'Media';
-    const isEV = valueBet.is_value_bet;
+      ai.confidence_level >= 4 ? 'Muy Alta' : ai.confidence_level === 3 ? 'Alta' : 'Media';
+
+    const valueBet: ValueBetAnalysis = {
+      partido: `${g.away} vs ${g.home}`,
+      mercado_recomendado: ai.recommended_market,
+      seleccion: ai.recommended_market,
+      cuota_objetivo: ai.target_odd,
+      bookmaker_cuota: ai.bookmaker || 'Pinnacle / Bet365',
+      probabilidad_implicita_casino: ai.implicit_probability_pct,
+      probabilidad_estimada_ia: ai.ai_estimated_probability_pct,
+      edge_ev: ai.expected_value_pct,
+      is_value_bet: ai.is_value_bet,
+      nivel_confianza: ai.confidence_level,
+      stake_sugerido_porcentaje: ai.suggested_stake_pct,
+      justificacion_tactica: ai.tactical_reasoning,
+      super_contexto: null,
+    };
 
     return {
       game: g,
@@ -437,18 +634,29 @@ export class PronosticosPageComponent implements OnInit {
       overProb,
       bttsProb,
       bestPick: {
-        label: pickLabel,
+        label: ai.recommended_market,
         market: pickMarket,
         pick: pickVal,
         line: pickLine,
-        odds: valueBet.cuota_objetivo || pickOdds,
-        prob: valueBet.probabilidad_estimada_ia || pickProb,
+        odds: ai.target_odd,
+        prob: ai.ai_estimated_probability_pct,
         confidence,
-        isEV,
-        reasoning: valueBet.justificacion_tactica || reasoning,
+        isEV: ai.is_value_bet,
+        reasoning: ai.tactical_reasoning,
       },
+      alternatives: ai.alternative_options || [],
       valueBet,
     };
+  }
+
+  addAlternativeOptionToTicket(g: SportsGame, opt: AlternativeMarketOption) {
+    this.ticketModal.open({
+      game: g,
+      market: opt.market,
+      pick: opt.market,
+      odds: opt.target_odd,
+      eventLabel: `${g.away} vs ${g.home} · ${opt.market}`,
+    });
   }
 
   isSoccer(g: SportsGame): boolean {

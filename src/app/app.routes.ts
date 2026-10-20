@@ -75,6 +75,18 @@ export const routes: Routes = [
     redirectTo: 'matches',
   },
   {
+    path: 'partidos/:league/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/partidos/pages/match-detail-page/match-detail-page.component').then(
+        (m) => m.MatchDetailPageComponent
+      ),
+  },
+  {
+    path: 'matches/:league/:id',
+    redirectTo: 'partidos/:league/:id',
+  },
+  {
     path: 'partidos',
     redirectTo: 'matches',
   },

@@ -20,11 +20,16 @@ export interface SportsGame extends GameReference {
   away_score: string | null;
   state: 'scheduled' | 'live' | 'final' | 'postponed' | 'unknown';
   detail: string;
+  clock?: string | null;
   updated_at?: string | null;
   stale?: boolean;
   message?: string;
   home_record?: string;
   away_record?: string;
+  odds?: MatchOdds | null;
+  home_odds?: number | null;
+  away_odds?: number | null;
+  draw_odds?: number | null;
 }
 export interface League { id: string; sport: string; name: string; source: string; configured: boolean }
 export interface Scoreboard {
@@ -301,7 +306,7 @@ export interface ValueBetAnalysis {
   nivel_confianza: 1 | 2 | 3 | 4 | 5;
   stake_sugerido_porcentaje: number; // Criterio Kelly fraccional (1.0% - 5.0%)
   justificacion_tactica: string;
-  super_contexto: {
+  super_contexto?: {
     cuotas: {
       pinnacle?: number;
       bet365?: number;
@@ -314,7 +319,17 @@ export interface ValueBetAnalysis {
     };
     h2h_reciente: string;
     lesiones_clave: { jugador: string; equipo: string; estado: string; impacto: string }[];
-  };
+  } | null;
+}
+
+export interface AlternativeMarketOption {
+  market: string;
+  target_odd: number;
+  probability_pct: number;
+  expected_value_pct: number;
+  market_type?: string;
+  tag?: string;
+  reasoning?: string;
 }
 
 export interface AIValueBetResponse {
@@ -328,8 +343,17 @@ export interface AIValueBetResponse {
   confidence_level: 1 | 2 | 3 | 4 | 5;
   suggested_stake_pct: number;
   tactical_reasoning: string;
+  market_type?: string;
+  alternative_options?: AlternativeMarketOption[];
   _cached?: boolean;
   _cache_age_seconds?: number;
+}
+
+export interface PredictionEvaluation {
+  status: 'WON' | 'LOST' | 'PENDING';
+  actualResult: string;
+  margin?: string;
+  profitUnits?: number;
 }
 
 export interface MatchDetails {

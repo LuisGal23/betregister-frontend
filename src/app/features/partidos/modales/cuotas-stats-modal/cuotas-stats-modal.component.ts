@@ -18,7 +18,14 @@ import type {
   AIValueBetResponse,
   ValueBetAnalysis,
 } from '../../services/sports.model';
-import { generateDeepAnalysis, getStadium, getRecord } from '../../../../shared/utils/match-analysis.utils';
+import {
+  generateDeepAnalysis,
+  getStadium,
+  getRecord,
+  calculateUnifiedGameProbabilities,
+  getUnifiedMatchPrediction,
+  evaluatePrediction,
+} from '../../../../shared/utils/match-analysis.utils';
 import { getTeamLogo } from '../../../../shared/utils/team-logos.utils';
 
 @Component({
@@ -163,34 +170,80 @@ export class CuotasStatsModalComponent {
   });
 
   effectiveProbabilities = computed(() => {
-    const d = this.details();
     const g = this.effectiveGame();
-    if (!g || !d || !d.probabilities) return null;
+    if (!g) return null;
 
-    const home = d.probabilities.home_pct;
-    const away = d.probabilities.away_pct;
-    const draw = d.probabilities.draw_pct;
-
-    const favoriteSide = home >= away ? 'home' : 'away';
-    const favoriteTeam = home >= away ? g.home : g.away;
-    const favProb = Math.max(home, away);
-    const confidence = favProb >= 65 ? 'ALTA' : favProb >= 56 ? 'MEDIA' : 'BAJA';
+    const p = calculateUnifiedGameProbabilities(g);
+    const favoriteSide = p.favorite;
+    const favoriteTeam = p.favorite === 'home' ? g.home : g.away;
+    const favProb = Math.max(p.homeProb, p.awayProb);
+    const confidence = favProb >= 65 ? 'ALTA' : favProb >= 55 ? 'MEDIA' : 'BAJA';
     const noVigProb = Number((favProb + 0.4).toFixed(1));
     const monteCarloProb = Number((favProb - 1.2).toFixed(1));
 
     return {
-      homePct: home,
-      awayPct: away,
-      drawPct: draw,
+      homePct: p.homeProb,
+      awayPct: p.awayProb,
+      drawPct: p.drawProb,
       favoriteTeam,
       favoriteSide,
       favProb,
       noVigProb,
       monteCarloProb,
       confidence,
-      source: d.probabilities.source,
+      source: p.source,
     };
   });
+
+  effectiveEvaluation = computed(() => {
+    const g = this.effectiveGame();
+    const vb = this.aiValueBet() || (g ? getUnifiedMatchPrediction(g) : null);
+    if (!g || !vb) return null;
+    return evaluatePrediction(vb, g);
+  });
+
+  formatRecommendedMarket(market?: string, game?: SportsGame | null, vb?: AIValueBetResponse | null): string {
+    if (!game) return market || 'Selección de Valor';
+    const raw = (market || '').trim();
+    const home = game.home;
+    const away = game.away;
+
+    // If market already specifies a team or distinct market (over/under/spread), return it
+    if (raw.toLowerCase().includes(home.toLowerCase()) || raw.toLowerCase().includes(away.toLowerCase())) {
+      return raw;
+    }
+    if (
+      raw.toLowerCase().includes('más de') ||
+      raw.toLowerCase().includes('over') ||
+      raw.toLowerCase().includes('menos de') ||
+      raw.toLowerCase().includes('under') ||
+      raw.toLowerCase().includes('spread')
+    ) {
+      return raw;
+    }
+
+    // Determine target team from market_type or reasoning or probability
+    const mType = (vb?.market_type || '').toLowerCase();
+    const reasoning = (vb?.tactical_reasoning || '').toLowerCase();
+
+    if (mType === 'away_win' || reasoning.includes(away.toLowerCase())) {
+      return `Victoria de ${away} (Moneyline)`;
+    }
+    if (mType === 'draw' || raw.toLowerCase().includes('empate')) {
+      return 'Empate (Draw)';
+    }
+    if (mType === 'over_2_5') {
+      return 'Más de 2.5 Goles (Over 2.5)';
+    }
+    if (mType === 'under_2_5') {
+      return 'Menos de 2.5 Goles (Under 2.5)';
+    }
+
+    // Default: calculate unified favorite team
+    const p = calculateUnifiedGameProbabilities(game);
+    const chosenTeam = p.favorite === 'away' ? away : home;
+    return `Victoria de ${chosenTeam} (Moneyline)`;
+  }
 
   getConfidenceReading(favProb: number, team: string): string {
     if (favProb < 56) {
@@ -354,14 +407,18 @@ export class CuotasStatsModalComponent {
     this.selectedPosition.set('all');
     this.showCustomOddsInput.set(false);
     this.customOdds.set(null);
-    this.aiValueBet.set(null);
+    // Pre-populate baseline unified prediction immediately (zero blank states)
+    const baseline = getUnifiedMatchPrediction(g);
+    this.aiValueBet.set(baseline);
     this.loadingAiValueBet.set(true);
 
     // Fetch +EV Sharp Bettor Analysis from backend
     this.sports
       .valueBet(g.league, g.id, g.home, g.away, g.start)
       .then((vb) => {
-        this.aiValueBet.set(vb);
+        if (vb) {
+          this.aiValueBet.set(vb);
+        }
         this.loadingAiValueBet.set(false);
       })
       .catch(() => {
@@ -417,13 +474,23 @@ export class CuotasStatsModalComponent {
         this.details.set(merged);
         this.loadingDetails.set(false);
 
-        // Concurrently resolve authentic cutouts/headshots for all players
+        // Preload all squad and star player images in a single batch
+        const allRosterMeta: { name: string; player_id?: string | null; team?: string; sport?: string }[] = [];
+        merged.star_players?.forEach((s) => allRosterMeta.push({ name: s.name, player_id: s.athlete_id, team: s.team_side === 'home' ? g.home : g.away, sport: g.sport }));
+        merged.player_prop_cards?.forEach((c) => allRosterMeta.push({ name: c.name, player_id: c.athlete_id, team: c.team_side === 'home' ? g.home : g.away, sport: g.sport }));
+        merged.players?.forEach((p) => allRosterMeta.push({ name: p.name, player_id: p.athlete_id, team: p.team_side === 'home' ? g.home : g.away, sport: g.sport }));
+        if (allRosterMeta.length) {
+          void this.playerMedia.preloadPlayers(allRosterMeta);
+        }
+
+        // Concurrently resolve authentic cutouts/headshots for all players with team context
         const promises: Promise<any>[] = [];
 
         if (merged.player_prop_cards?.length) {
           promises.push(
             ...merged.player_prop_cards.map(async (card) => {
-              const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id);
+              const cardTeam = card.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id, cardTeam);
               if (photo && photo !== card.photo) card.photo = photo;
             })
           );
@@ -432,7 +499,8 @@ export class CuotasStatsModalComponent {
         if (merged.star_players?.length) {
           promises.push(
             ...merged.star_players.map(async (star) => {
-              const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id);
+              const starTeam = star.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id, starTeam);
               if (photo && photo !== star.headshot) star.headshot = photo;
             })
           );
@@ -441,7 +509,8 @@ export class CuotasStatsModalComponent {
         if (merged.players?.length) {
           promises.push(
             ...merged.players.map(async (p) => {
-              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id);
+              const pTeam = p.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id, pTeam);
               if (photo && photo !== p.headshot) p.headshot = photo;
             })
           );
@@ -491,7 +560,8 @@ export class CuotasStatsModalComponent {
         if (fullAnalysis.player_prop_cards?.length) {
           promises.push(
             ...fullAnalysis.player_prop_cards.map(async (card) => {
-              const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id);
+              const cardTeam = card.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(card.name, card.photo, g.sport, card.athlete_id, cardTeam);
               if (photo && photo !== card.photo) card.photo = photo;
             })
           );
@@ -499,7 +569,8 @@ export class CuotasStatsModalComponent {
         if (fullAnalysis.star_players?.length) {
           promises.push(
             ...fullAnalysis.star_players.map(async (star) => {
-              const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id);
+              const starTeam = star.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(star.name, star.headshot, g.sport, star.athlete_id, starTeam);
               if (photo && photo !== star.headshot) star.headshot = photo;
             })
           );
@@ -507,7 +578,8 @@ export class CuotasStatsModalComponent {
         if (fullAnalysis.players?.length) {
           promises.push(
             ...fullAnalysis.players.map(async (p) => {
-              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id);
+              const pTeam = p.team_side === 'home' ? g.home : g.away;
+              const photo = await this.playerMedia.getPlayerPhoto(p.name, p.headshot, g.sport, p.athlete_id, pTeam);
               if (photo && photo !== p.headshot) p.headshot = photo;
             })
           );

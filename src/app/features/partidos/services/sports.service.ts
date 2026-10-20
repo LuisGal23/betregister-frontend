@@ -160,13 +160,15 @@ export class SportsService {
 
   /**
    * Fetches +EV Sharp Bettor analysis for a match (cached in DB for 6 hours).
+   * Set forceRefresh=true to bypass cache and recalculate directly with Gemini 2.5 Flash.
    */
   async valueBet(
     league: string,
     matchId: string,
     home = '',
     away = '',
-    date = ''
+    date = '',
+    forceRefresh = false
   ): Promise<AIValueBetResponse> {
     const params = new URLSearchParams({
       league,
@@ -174,11 +176,41 @@ export class SportsService {
       away,
       date,
     });
+    if (forceRefresh) {
+      params.append('refresh', 'true');
+    }
     return this.api.request<AIValueBetResponse>(
       `/sports/matches/${encodeURIComponent(matchId)}/value-bet?${params.toString()}`,
       undefined,
       15000
     );
+  }
+
+  /**
+   * Loads all pre-warmed AI predictions from DB in a single fast query.
+   */
+  async cachedPredictions(): Promise<Record<string, AIValueBetResponse>> {
+    try {
+      const res = await this.api.request<{ predictions: Record<string, AIValueBetResponse> }>(
+        '/sports/predictions/cached',
+        undefined,
+        4000
+      );
+      return res?.predictions || {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Fetches automated server-side audit metrics from DB.
+   */
+  async auditSummary(): Promise<any> {
+    try {
+      return await this.api.request<any>('/sports/predictions/audit-summary', undefined, 5000);
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -195,6 +227,23 @@ export class SportsService {
     } catch {
       const clean = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
       return `https://ui-avatars.com/api/?name=${encodeURIComponent(clean)}&background=1e293b&color=10b981&bold=true&size=256`;
+    }
+  }
+
+  /**
+   * Resolves multiple player images in a single batch request via backend cache.
+   */
+  async batchPlayerImages(names: string[]): Promise<Record<string, string>> {
+    if (!names || !names.length) return {};
+    try {
+      const res = await this.api.request<{ images: Record<string, string> }>(
+        '/sports/players/batch-images',
+        { names },
+        12000
+      );
+      return res?.images || {};
+    } catch {
+      return {};
     }
   }
 

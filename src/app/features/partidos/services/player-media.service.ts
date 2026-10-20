@@ -1,7 +1,9 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
+import { ApiService } from '../../../core/services/api.service';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerMediaService {
+  private api = inject(ApiService);
   private cache = new Map<string, string | null>();
   private inFlight = new Map<string, Promise<string | null>>();
 
@@ -223,7 +225,8 @@ export class PlayerMediaService {
     name: string,
     existingUrl?: string | null,
     sport?: string,
-    athleteId?: string | null
+    athleteId?: string | null,
+    team?: string | null
   ): Promise<string> {
     if (!name || name.trim().length === 0) {
       return 'https://ui-avatars.com/api/?name=Jugador&background=1e293b&color=38bdf8&bold=true&size=256';
@@ -274,28 +277,22 @@ export class PlayerMediaService {
 
     const promise = (async () => {
       try {
-        // Query TheSportsDB for free transparent cutout (API Key "123")
-        const sdbUrl = `https://www.thesportsdb.com/api/v1/json/123/searchplayers.php?p=${encodeURIComponent(key)}`;
-        const resSdb = await fetch(sdbUrl, { signal: AbortSignal.timeout(3500) });
-        if (resSdb.ok) {
-          const dataSdb = await resSdb.json();
-          const players: any[] = dataSdb?.player || [];
-          const pl = players.find((p: any) => p.strCutout || p.strRender);
-          if (pl?.strCutout) {
-            this.cache.set(key, pl.strCutout);
-            this.saveToSessionStorage(key, pl.strCutout);
-            return pl.strCutout;
-          }
-          if (pl?.strRender) {
-            this.cache.set(key, pl.strRender);
-            this.saveToSessionStorage(key, pl.strRender);
-            return pl.strRender;
-          }
-          if (pl?.strThumb) {
-            this.cache.set(key, pl.strThumb);
-            this.saveToSessionStorage(key, pl.strThumb);
-            return pl.strThumb;
-          }
+        // Query backend endpoint which queries database cache (player_images_cache in Supabase/PostgreSQL)
+        const params = new URLSearchParams({ name });
+        if (athleteId) params.set('player_id', athleteId);
+        if (sport) params.set('sport', sport);
+        if (team) params.set('team', team);
+
+        const res = await this.api.request<{ name: string; image_url: string }>(
+          `/sports/players/image?${params.toString()}`,
+          undefined,
+          6000
+        );
+        const photo = res?.image_url;
+        if (photo && !photo.includes('ui-avatars.com')) {
+          this.cache.set(key, photo);
+          this.saveToSessionStorage(key, photo);
+          return photo;
         }
       } catch {
         // timeout or error
@@ -317,6 +314,53 @@ export class PlayerMediaService {
 
     this.inFlight.set(key, promise);
     return promise;
+  }
+
+  /**
+   * Pre-fetches multiple players in a single batch call and populates memory/session cache.
+   * Eliminates wait times when opening match modals or inspecting player props!
+   */
+  async preloadPlayers(
+    players: (string | { name: string; player_id?: string | null; team?: string; sport?: string })[]
+  ): Promise<void> {
+    if (!players || !players.length) return;
+    const missingNames: string[] = [];
+    const missingMeta: { name: string; player_id?: string | null; team?: string; sport?: string }[] = [];
+
+    for (const item of players) {
+      if (!item) continue;
+      const name = typeof item === 'string' ? item : item.name;
+      if (!name) continue;
+      const key = PlayerMediaService.normalizeName(name);
+      if (!this.cache.has(key) && !PlayerMediaService.VERIFIED_PORTRAITS[key]) {
+        missingNames.push(name);
+        if (typeof item === 'object') {
+          missingMeta.push(item);
+        } else {
+          missingMeta.push({ name });
+        }
+      }
+    }
+
+    if (!missingNames.length) return;
+
+    try {
+      const res = await this.api.request<{ images: Record<string, string> }>(
+        '/sports/players/batch-images',
+        { names: missingNames, players: missingMeta },
+        12000
+      );
+      const batchRes: Record<string, string> = res?.images || {};
+      for (const [origName, url] of Object.entries(batchRes)) {
+        if (url) {
+          const key = PlayerMediaService.normalizeName(origName);
+          this.cache.set(key, url);
+          this.saveToSessionStorage(key, url);
+        }
+      }
+    } catch {
+      // Background preload - fail silently
+    }
   }
 
   private hydrateFromSessionStorage() {

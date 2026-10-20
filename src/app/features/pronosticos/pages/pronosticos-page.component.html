@@ -19,14 +19,262 @@
       <button 
         type="button" 
         class="action-pill-btn primary flex-1 sm:flex-initial py-2.5 px-5 text-xs inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        (click)="loadDailyPredictions()"
-        [disabled]="loading()"
+        (click)="loadDailyPredictions(true)"
+        [disabled]="loading() || isRefreshingAi()"
       >
-        <app-icon name="trend" [class.animate-spin]="loading()" class="w-4 h-4" />
-        <span>{{ loading() ? 'Recalculando…' : 'Actualizar Probabilidades' }}</span>
+        <app-icon name="trend" [class.animate-spin]="loading() || isRefreshingAi()" class="w-4 h-4" />
+        <span>{{ isRefreshingAi() ? 'Recalculando con Gemini...' : loading() ? 'Cargando partidos...' : 'Actualizar Pronósticos IA' }}</span>
       </button>
     </div>
   </header>
+
+  <!-- SECTION: AUDITORÍA DE PRONÓSTICOS IA & EFECTIVIDAD (+EV AUDIT) -->
+  @let audit = auditSummary();
+  <section class="flex flex-col gap-4 p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl relative overflow-hidden">
+    <!-- Ambient subtle glow -->
+    <div class="absolute -top-16 -right-16 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg">
+          🤖
+        </span>
+        <div>
+          <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-[var(--text)] m-0 font-mono uppercase">
+            Auditoría de Pronósticos IA & Efectividad del Día
+          </h2>
+          <p class="text-xs text-[var(--muted)] m-0">
+            Seguimiento de aciertos (verdes) y fallos (rojos) del modelo con justificación analítica oficial
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-mono px-3 py-1 rounded-full bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)]">
+          {{ audit.totalResolved }} de {{ audit.totalGames }} evaluados
+        </span>
+      </div>
+    </div>
+
+    <!-- 4 KPI Cards Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <!-- Card 1: Win Rate -->
+      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">TASA DE ACIERTO</span>
+        <div class="flex items-baseline gap-1.5 my-1">
+          <span class="text-2xl sm:text-3xl font-black font-mono"
+                [class.text-emerald-400]="audit.winRate >= 60"
+                [class.text-amber-400]="audit.winRate > 0 && audit.winRate < 60"
+                [class.text-[var(--muted)]]="audit.winRate === 0">
+            {{ audit.totalResolved > 0 ? audit.winRate + '%' : 'N/D' }}
+          </span>
+          @if (audit.totalResolved > 0) {
+            <small class="text-[10px] font-mono text-[var(--muted)]">win rate</small>
+          }
+        </div>
+        <div class="w-full h-1.5 rounded-full bg-[var(--surface)] overflow-hidden">
+          <div class="h-full bg-emerald-400 transition-all duration-500" [style.width.%]="audit.winRate"></div>
+        </div>
+      </div>
+
+      <!-- Card 2: Verdes (Aciertos) -->
+      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-emerald-500/30 flex flex-col justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> ACIERTOS (VERDES)
+        </span>
+        <div class="flex items-baseline gap-1.5 my-1">
+          <span class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{{ audit.won }}</span>
+          <small class="text-[10px] font-mono text-[var(--muted)]">acertados</small>
+        </div>
+        <span class="text-[10px] text-[var(--muted)] truncate">Pronósticos +EV cumplidos</span>
+      </div>
+
+      <!-- Card 3: Rojos (Fallos) -->
+      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-rose-500/30 flex flex-col justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 font-mono flex items-center gap-1">
+          <span class="w-2 h-2 rounded-full bg-rose-400"></span> FALLOS (ROJOS)
+        </span>
+        <div class="flex items-baseline gap-1.5 my-1">
+          <span class="text-2xl sm:text-3xl font-black font-mono text-rose-400">{{ audit.lost }}</span>
+          <small class="text-[10px] font-mono text-[var(--muted)]">no logrados</small>
+        </div>
+        <span class="text-[10px] text-[var(--muted)] truncate">Sorpresas o margen contrario</span>
+      </div>
+
+      <!-- Card 4: Unidades Netas / ROI -->
+      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE NETO IA</span>
+        <div class="flex items-baseline gap-1.5 my-1">
+          <span class="text-2xl sm:text-3xl font-black font-mono"
+                [class.text-emerald-400]="audit.netUnits > 0"
+                [class.text-rose-400]="audit.netUnits < 0"
+                [class.text-[var(--text)]]="audit.netUnits === 0">
+            {{ audit.netUnits > 0 ? '+' : '' }}{{ audit.netUnits }}u
+          </span>
+          <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+        </div>
+        <span class="text-[10px] text-[var(--muted)] truncate">
+          {{ audit.hasEvaluations ? 'ROI: ' + audit.roi + '%' : (audit.pending + audit.live) + ' por definirse' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Filter Pills for Audited List -->
+    <div class="flex items-center justify-between gap-3 flex-wrap pt-2">
+      <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+        <button 
+          type="button" 
+          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
+          [class.bg-[var(--accent)]]="auditFilter() === 'all'"
+          [class.text-white]="auditFilter() === 'all'"
+          [class.text-[var(--muted)]]="auditFilter() !== 'all'"
+          (click)="auditFilter.set('all')"
+        >
+          Todos ({{ audit.totalGames }})
+        </button>
+        <button 
+          type="button" 
+          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
+          [class.bg-emerald-500]="auditFilter() === 'won'"
+          [class.text-slate-950]="auditFilter() === 'won'"
+          [class.text-[var(--muted)]]="auditFilter() !== 'won'"
+          (click)="auditFilter.set('won')"
+        >
+          <span>✓</span> Verdes ({{ audit.won }})
+        </button>
+        <button 
+          type="button" 
+          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
+          [class.bg-rose-500]="auditFilter() === 'lost'"
+          [class.text-white]="auditFilter() === 'lost'"
+          [class.text-[var(--muted)]]="auditFilter() !== 'lost'"
+          (click)="auditFilter.set('lost')"
+        >
+          <span>✕</span> Rojos ({{ audit.lost }})
+        </button>
+        <button 
+          type="button" 
+          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
+          [class.bg-[var(--accent)]]="auditFilter() === 'pending'"
+          [class.text-white]="auditFilter() === 'pending'"
+          [class.text-[var(--muted)]]="auditFilter() !== 'pending'"
+          (click)="auditFilter.set('pending')"
+        >
+          Pendientes ({{ audit.pending + audit.live }})
+        </button>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-mono text-[var(--muted)]">
+          {{ auditedMatches().length }} partidos evaluados
+        </span>
+        <button
+          type="button"
+          class="text-xs font-mono font-bold text-[var(--accent)] hover:underline cursor-pointer bg-transparent border-0 p-0"
+          (click)="showAuditDetails.set(!showAuditDetails())"
+        >
+          {{ showAuditDetails() ? '▲ Ocultar listado' : '▼ Ver listado (' + auditedMatches().length + ')' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Audited Matches List (Collapsible for maximum performance) -->
+    @if (showAuditDetails()) {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+      @for (item of auditedMatches(); track item.game.id) {
+        @let g = item.game;
+        @let pred = item.prediction;
+        @let ev = item.evaluation;
+        <div class="p-4 rounded-xl bg-[var(--surface-high)]/40 border transition-all flex flex-col justify-between gap-3 hover:border-[var(--accent)]/50"
+             [class.border-emerald-500/40]="ev.status === 'WON'"
+             [class.bg-emerald-500/5]="ev.status === 'WON'"
+             [class.border-rose-500/40]="ev.status === 'LOST'"
+             [class.bg-rose-500/5]="ev.status === 'LOST'"
+             [class.border-[var(--border)]]="ev.status === 'PENDING'">
+          
+          <!-- Top Row: Teams + Result Badge -->
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="flex items-center -space-x-1.5 shrink-0">
+                <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
+                  <img [src]="getLogo(g.away, g.sport, g.away_logo)" [alt]="g.away" class="w-full h-full object-contain" />
+                </div>
+                <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
+                  <img [src]="getLogo(g.home, g.sport, g.home_logo)" [alt]="g.home" class="w-full h-full object-contain" />
+                </div>
+              </div>
+              <div class="min-w-0">
+                <strong class="text-xs font-bold text-[var(--text)] truncate block">
+                  {{ g.away }} vs {{ g.home }}
+                </strong>
+                <small class="text-[10px] text-[var(--muted)] font-mono uppercase block">
+                  {{ g.league_name || g.league }} · {{ g.state === 'final' ? 'FINAL' : g.state === 'live' ? 'EN VIVO' : (g.start | date:'HH:mm') }}
+                </small>
+              </div>
+            </div>
+
+            <!-- Score & Badge -->
+            <div class="flex items-center gap-2 shrink-0">
+              @if (g.state === 'final' || g.state === 'live') {
+                <span class="text-xs font-mono font-black px-2 py-0.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text)]">
+                  {{ g.away_score ?? 0 }} - {{ g.home_score ?? 0 }}
+                </span>
+              }
+              @if (ev.status === 'WON') {
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
+                  +{{ ev.profitUnits || 0 }}u Ganadas
+                </span>
+              } @else if (ev.status === 'LOST') {
+                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
+                  -1.00u
+                </span>
+              } @else {
+                <span class="px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--accent)] font-mono text-[10px] font-bold border border-[var(--border)]">
+                  @{{ pred.target_odd }}
+                </span>
+              }
+            </div>
+          </div>
+
+          <!-- Middle: Market Recommendation -->
+          <div class="p-2.5 rounded-lg bg-[var(--surface)]/90 border border-[var(--border)] flex items-center justify-between gap-2">
+            <div class="min-w-0">
+              <span class="text-[9px] font-bold uppercase font-mono text-[var(--muted)] block">SELECCIÓN RECOMENDADA POR IA</span>
+              <strong class="text-xs font-black text-emerald-400 truncate block">
+                {{ item.marketFormatted }}
+              </strong>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="text-[10px] font-mono text-[var(--muted)] block">Ventaja +EV</span>
+              <span class="text-xs font-black font-mono text-emerald-400">+{{ pred.expected_value_pct }}%</span>
+            </div>
+          </div>
+
+          <!-- Bottom: Analytical Audit Summary (Qué falló / Qué acertó) -->
+          <div class="text-[11px] leading-relaxed p-2.5 rounded-lg bg-[var(--surface)]/50 border border-[var(--border)]/70"
+               [class.text-emerald-300]="ev.status === 'WON'"
+               [class.text-rose-300]="ev.status === 'LOST'"
+               [class.text-[var(--text)]]="ev.status === 'PENDING'">
+            {{ item.reasoningSummary }}
+          </div>
+
+          <!-- Action: Open Match Analysis Sub-page -->
+          <div class="flex items-center justify-end pt-1">
+            <button 
+              type="button" 
+              class="text-[11px] font-bold text-[var(--accent)] hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+              (click)="goToMatchDetail(g)"
+            >
+              <span>Ver análisis completo del partido</span>
+              <span>→</span>
+            </button>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+  </section>
 
   <!-- SECTION 1: AI PARLAYS DEL DÍA (RECOMMENDED ACCUMULATORS) -->
   <section class="flex flex-col gap-4">
@@ -228,6 +476,16 @@
             />
             <span class="text-cyan-400 font-bold">Solo Opciones con Valor (+EV)</span>
           </label>
+
+          <label class="flex items-center gap-2 text-xs text-[var(--text)] font-semibold cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              class="w-4 h-4 rounded text-[var(--accent)] cursor-pointer"
+              [ngModel]="includeFinished()" 
+              (ngModelChange)="includeFinished.set($event)" 
+            />
+            <span [class.text-[var(--accent)]]="includeFinished()">Ver todos (incluir finalizados)</span>
+          </label>
         </div>
 
         <div class="relative w-full sm:w-64">
@@ -256,7 +514,7 @@
       </div>
     } @else if (filteredPredictions().length) {
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (pred of filteredPredictions(); track pred.game.id) {
+        @for (pred of visiblePredictions(); track pred.game.id) {
           <article class="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-[var(--accent)]/50 hover:shadow-md transition-all flex flex-col justify-between gap-4">
             
             <!-- Card Header: League & Status -->
@@ -401,11 +659,45 @@
               </p>
             </div>
 
-            <!-- Deep Analysis Modal Trigger Button (Matching Image 1) -->
+            <!-- 3 Alternative Market Options with Probabilities (User Request) -->
+            @if (pred.alternatives.length > 0) {
+              <div class="p-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-2">
+                <div class="flex items-center justify-between text-[10px] font-mono font-bold text-[var(--muted)]">
+                  <span class="flex items-center gap-1 text-[var(--accent)]">
+                    <span>🎯</span>
+                    <span>3 OPCIONES MÁS DE ALTA PROBABILIDAD:</span>
+                  </span>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                  @for (alt of pred.alternatives; track alt.market) {
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs gap-2 hover:border-[var(--accent)]/40 transition-colors">
+                      <div class="min-w-0 flex-1 flex items-center gap-2">
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono shrink-0">
+                          {{ alt.probability_pct }}%
+                        </span>
+                        <strong class="text-xs text-[var(--text)] truncate font-semibold block">
+                          {{ alt.market }}
+                        </strong>
+                      </div>
+                      <button
+                        type="button"
+                        class="py-1 px-2.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-[10px] font-mono font-bold text-[var(--accent)] transition-all cursor-pointer active:scale-95 shrink-0"
+                        (click)="addAlternativeOptionToTicket(pred.game, alt)"
+                        title="Añadir esta opción al ticket"
+                      >
+                        + @{{ alt.target_odd.toFixed(2) }}
+                      </button>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Dedicated Match Sub-page Navigation Button -->
             <button
               type="button"
               class="w-full py-2.5 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer mt-1"
-              (click)="openMatchModal(pred.game)"
+              (click)="goToMatchDetail(pred.game)"
             >
               <span>Ver análisis completo e IA</span>
               <span class="text-sm font-black">→</span>
@@ -414,6 +706,20 @@
           </article>
         }
       </div>
+
+      <!-- Load more matches button for high-speed virtualization -->
+      @if (visiblePredictions().length < filteredPredictions().length) {
+        <div class="flex justify-center pt-2">
+          <button
+            type="button"
+            class="action-pill-btn secondary py-3 px-8 text-xs font-bold font-mono inline-flex items-center gap-2 hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer"
+            (click)="loadMore()"
+          >
+            <span>Mostrar más partidos (+24 de {{ filteredPredictions().length - visiblePredictions().length }} restantes)</span>
+            <span>↓</span>
+          </button>
+        </div>
+      }
     } @else {
       <div class="p-10 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center flex flex-col items-center justify-center gap-3">
         <span class="text-3xl">🔎</span>
@@ -422,10 +728,19 @@
         <button 
           type="button" 
           class="action-pill-btn text-xs py-2 px-4 cursor-pointer mt-2"
-          (click)="selectedSport.set('all'); onlyHighConfidence.set(false); onlyEV.set(false); searchQuery.set('')"
+          (click)="selectedSport.set('all'); onlyHighConfidence.set(false); onlyEV.set(false); includeFinished.set(false); searchQuery.set('')"
         >
           Limpiar filtros
         </button>
+        @if (!includeFinished()) {
+          <button 
+            type="button" 
+            class="text-xs text-[var(--accent)] hover:underline cursor-pointer bg-transparent border-none mt-1"
+            (click)="includeFinished.set(true)"
+          >
+            Mostrar también partidos ya finalizados
+          </button>
+        }
       </div>
     }
   </section>

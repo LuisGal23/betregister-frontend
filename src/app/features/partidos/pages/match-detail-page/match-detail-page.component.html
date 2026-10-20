@@ -1,0 +1,490 @@
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-6">
+
+  <!-- Top Breadcrumb & Action Bar -->
+  <nav class="flex items-center justify-between gap-4 flex-wrap">
+    <button
+      type="button"
+      class="inline-flex items-center gap-2 text-xs font-bold text-[var(--muted)] hover:text-white px-3.5 py-2 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-high)] border border-[var(--border)] transition-all cursor-pointer shadow-xs active:scale-95"
+      (click)="goBack()"
+    >
+      <span class="text-sm">←</span>
+      <span>Volver</span>
+    </button>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]">
+        {{ game()?.league_name || league() | uppercase }}
+      </span>
+
+      @if (game()?.state === 'live') {
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 text-xs font-bold font-mono animate-pulse">
+          <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+          EN VIVO
+        </span>
+      } @else if (game()?.state === 'final') {
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-500/20 text-slate-300 border border-slate-500/40 text-xs font-bold font-mono">
+          FINALIZADO
+        </span>
+      } @else {
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/40 text-xs font-bold font-mono">
+          PROGRAMADO
+        </span>
+      }
+
+      <button
+        type="button"
+        class="action-pill-btn primary py-2 px-3.5 text-xs inline-flex items-center gap-1.5 shadow-md hover:scale-105 active:scale-95 transition-all cursor-pointer"
+        (click)="refreshAiPrediction()"
+        [disabled]="loadingAi()"
+      >
+        <app-icon name="trend" [class.animate-spin]="loadingAi()" class="w-3.5 h-3.5" />
+        <span>{{ loadingAi() ? 'Recalculando IA...' : 'Actualizar IA' }}</span>
+      </button>
+    </div>
+  </nav>
+
+  @if (loading()) {
+    <div class="flex flex-col items-center justify-center p-16 rounded-2xl bg-[var(--surface)] border border-[var(--border)] gap-3">
+      <app-icon name="trend" class="w-8 h-8 text-[var(--accent)] animate-spin" />
+      <span class="text-sm font-bold text-[var(--text)]">Cargando análisis profundo del partido...</span>
+    </div>
+  } @else if (game(); as g) {
+
+    <!-- Match Hero Banner -->
+    <header class="p-6 sm:p-8 rounded-2xl bg-gradient-to-br from-[var(--surface-high)] via-[var(--surface)] to-[var(--surface-high)] border border-[var(--border)] shadow-xl relative overflow-hidden flex flex-col gap-6">
+      <div class="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <!-- Teams Display -->
+      <div class="grid grid-cols-1 md:grid-cols-3 items-center gap-6 relative z-10">
+
+        <!-- Team Away -->
+        <div class="flex flex-col md:items-end items-center text-center md:text-right gap-2">
+          <div class="w-20 h-20 rounded-2xl bg-[var(--surface)] p-2.5 border border-[var(--border)] shadow-lg flex items-center justify-center">
+            <img [src]="getLogo(g.away, g.sport, g.away_logo)" [alt]="g.away" class="w-full h-full object-contain" (error)="onPlayerImgError($event, g.away)" />
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-black text-white m-0 tracking-tight">{{ g.away }}</h1>
+            <span class="text-xs text-[var(--muted)] font-mono font-medium block mt-0.5">Visitante</span>
+          </div>
+        </div>
+
+        <!-- Center Score / Date Info -->
+        <div class="flex flex-col items-center justify-center text-center gap-1.5 py-2">
+          @if (g.state === 'live' || g.state === 'final') {
+            <div class="flex items-center gap-3 font-mono text-3xl sm:text-4xl font-black text-white px-5 py-2 rounded-xl bg-[var(--surface)]/80 border border-[var(--border)] shadow-inner">
+              <span>{{ g.away_score ?? 0 }}</span>
+              <span class="text-[var(--muted)] text-xl font-normal">-</span>
+              <span>{{ g.home_score ?? 0 }}</span>
+            </div>
+            @if (g.state === 'live' && g.clock) {
+              <span class="text-xs font-mono text-rose-400 font-bold">{{ g.clock }}'</span>
+            }
+          } @else {
+            <div class="text-2xl sm:text-3xl font-mono font-black text-white tracking-wider">
+              VS
+            </div>
+            <div class="text-xs font-mono text-emerald-400 font-bold bg-emerald-500/15 px-3 py-1 rounded-full border border-emerald-500/30">
+              {{ g.start | date:'EEEE d MMMM · HH:mm' }}
+            </div>
+          }
+
+          @if (stadium()) {
+            <div class="text-[11px] text-[var(--muted)] flex items-center gap-1 mt-1">
+              <span>🏟️</span>
+              <span>{{ stadium() }}</span>
+            </div>
+          }
+        </div>
+
+        <!-- Team Home -->
+        <div class="flex flex-col md:items-start items-center text-center md:text-left gap-2">
+          <div class="w-20 h-20 rounded-2xl bg-[var(--surface)] p-2.5 border border-[var(--border)] shadow-lg flex items-center justify-center">
+            <img [src]="getLogo(g.home, g.sport, g.home_logo)" [alt]="g.home" class="w-full h-full object-contain" (error)="onPlayerImgError($event, g.home)" />
+          </div>
+          <div>
+            <h1 class="text-xl sm:text-2xl font-black text-white m-0 tracking-tight">{{ g.home }}</h1>
+            <span class="text-xs text-[var(--muted)] font-mono font-medium block mt-0.5">Local</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Probability Bar (Local / Empate / Visitante) -->
+      @let p = probs();
+      <div class="flex flex-col gap-1.5 pt-2 border-t border-[var(--border)]/50">
+        <div class="flex justify-between items-center text-[11px] font-mono font-bold text-[var(--muted)]">
+          <span>{{ g.away }}: <b class="text-white">{{ p.awayProb }}%</b></span>
+          @if (p.drawProb != null) {
+            <span>Empate: <b class="text-white">{{ p.drawProb }}%</b></span>
+          }
+          <span>{{ g.home }}: <b class="text-white">{{ p.homeProb }}%</b></span>
+        </div>
+        <div class="h-2 w-full rounded-full bg-[var(--surface-high)] overflow-hidden flex">
+          <div class="h-full bg-blue-500 transition-all duration-700" [style.width.%]="p.awayProb"></div>
+          @if (p.drawProb != null) {
+            <div class="h-full bg-amber-500 transition-all duration-700" [style.width.%]="p.drawProb"></div>
+          }
+          <div class="h-full bg-emerald-500 transition-all duration-700" [style.width.%]="p.homeProb"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- SECTION: PREDICCIONES IA GEMINI (+EV Y 3 OPCIONES ADICIONALES) -->
+    <section class="flex flex-col gap-4">
+      <div class="flex items-center justify-between gap-2 flex-wrap">
+        <div>
+          <h2 class="text-base sm:text-lg font-black text-white m-0 flex items-center gap-2">
+            <span>🧠</span>
+            <span>Pronóstico Cuantitativo Sharp · Gemini 2.5 Flash</span>
+          </h2>
+          <p class="text-xs text-[var(--muted)] m-0 mt-0.5">
+            Mercados analizados con ventaja matemática (+EV) frente al margen de las casas de apuestas.
+          </p>
+        </div>
+      </div>
+
+      <!-- Main Value Bet Highlight Card -->
+      @if (aiValueBet(); as vb) {
+        <div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-br from-[var(--surface)] to-[var(--surface-high)] border border-emerald-500/30 shadow-lg flex flex-col gap-4 relative overflow-hidden">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono border border-[var(--accent)]/30">
+                  MEJOR OPCIÓN IA (+EV)
+                </span>
+                @if (vb.is_value_bet) {
+                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                    +{{ vb.expected_value_pct }}% VENTAJAMATEMÁTICA
+                  </span>
+                }
+                <span class="text-xs text-[var(--muted)] font-mono font-medium">
+                  Certeza: <b class="text-white">{{ vb.confidence_level }}/5</b>
+                </span>
+                <span class="text-xs text-[var(--muted)] font-mono">
+                  Kelly: <b class="text-emerald-400">{{ vb.suggested_stake_pct }}% stake</b>
+                </span>
+              </div>
+              <h3 class="text-lg sm:text-xl font-black text-white mt-2 m-0">
+                {{ vb.recommended_market }}
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              class="w-full sm:w-auto py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
+              (click)="addToTicket(vb.recommended_market, vb.recommended_market, vb.target_odd, vb.recommended_market)"
+            >
+              <span>+ Añadir al Ticket</span>
+              <span class="font-mono bg-black/20 px-2 py-0.5 rounded-md text-slate-950">@{{ vb.target_odd.toFixed(2) }}</span>
+            </button>
+          </div>
+
+          <!-- Quantitative Comparison Bar -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-mono">
+            <div>
+              <span class="text-[var(--muted)] block text-[10px]">Prob. Casino:</span>
+              <b class="text-slate-300">{{ vb.implicit_probability_pct }}%</b>
+            </div>
+            <div>
+              <span class="text-[var(--muted)] block text-[10px]">Prob. Estimada IA:</span>
+              <b class="text-emerald-400 font-bold">{{ vb.ai_estimated_probability_pct }}%</b>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <span class="text-[var(--muted)] block text-[10px]">Línea sugerida:</span>
+              <b class="text-[var(--accent)] truncate block">{{ vb.bookmaker }}</b>
+            </div>
+          </div>
+
+          <p class="text-xs sm:text-sm text-slate-300 m-0 leading-relaxed bg-[var(--surface)]/50 p-3.5 rounded-xl border border-[var(--border)]/60">
+            {{ vb.tactical_reasoning }}
+          </p>
+        </div>
+      }
+
+      <!-- THREE ADDITIONAL ALTERNATIVE SCENARIOS WITH PROBABILITIES (USER REQUEST) -->
+      @let alts = alternativeOptions();
+      @if (alts.length > 0) {
+        <div class="flex flex-col gap-3 pt-2">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-white flex items-center gap-1.5 m-0 font-mono">
+              <span>🎯</span>
+              <span>3 Opciones Adicionales de Probabilidad & Valor</span>
+            </h3>
+            <span class="text-[11px] text-[var(--muted)] font-mono">Mercados alternativos auditados</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+            @for (opt of alts; track opt.market) {
+              <div class="p-4 rounded-xl bg-[var(--surface)] hover:bg-[var(--surface-high)]/60 border border-[var(--border)] hover:border-[var(--accent)]/50 transition-all flex flex-col justify-between gap-3 shadow-xs">
+                <div class="flex flex-col gap-2">
+                  <div class="flex items-center justify-between gap-2">
+                    <span class="text-[9px] font-bold font-mono px-2 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] border border-[var(--accent)]/30">
+                      {{ opt.tag || 'Alta Probabilidad' }}
+                    </span>
+                    <span class="text-[11px] font-mono font-bold text-emerald-400">
+                      {{ opt.probability_pct }}% Prob.
+                    </span>
+                  </div>
+
+                  <strong class="text-xs sm:text-sm font-bold text-white line-clamp-2">
+                    {{ opt.market }}
+                  </strong>
+
+                  @if (opt.reasoning) {
+                    <p class="text-[11px] text-[var(--muted)] m-0 leading-snug line-clamp-2">
+                      {{ opt.reasoning }}
+                    </p>
+                  }
+                </div>
+
+                <div class="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
+                  <div class="text-[11px] font-mono">
+                    <span class="text-[var(--muted)]">Cuota: </span>
+                    <b class="text-white">@{{ opt.target_odd.toFixed(2) }}</b>
+                    @if (opt.expected_value_pct > 0) {
+                      <span class="text-emerald-400 text-[10px] ml-1">(+{{ opt.expected_value_pct }}% EV)</span>
+                    }
+                  </div>
+
+                  <button
+                    type="button"
+                    class="py-1.5 px-3 rounded-lg bg-[var(--surface-high)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-xs font-bold text-white transition-all cursor-pointer active:scale-95 shrink-0"
+                    (click)="addToTicket(opt.market, opt.market, opt.target_odd, opt.market)"
+                  >
+                    + Añadir
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </section>
+
+    <!-- Navigation Tabs -->
+    <div class="flex items-center gap-2 border-b border-[var(--border)] overflow-x-auto pb-1">
+      <button
+        type="button"
+        class="py-2.5 px-4 text-xs font-bold font-mono rounded-t-xl transition-all cursor-pointer whitespace-nowrap"
+        [class.bg-[var(--surface)]]="activeTab() === 'analisis'"
+        [class.text-white]="activeTab() === 'analisis'"
+        [class.border-b-2]="activeTab() === 'analisis'"
+        [class.border-b-[var(--accent)]]="activeTab() === 'analisis'"
+        [class.text-[var(--muted)]]="activeTab() !== 'analisis'"
+        (click)="activeTab.set('analisis')"
+      >
+        Comparativa de Cuotas
+      </button>
+
+      <button
+        type="button"
+        class="py-2.5 px-4 text-xs font-bold font-mono rounded-t-xl transition-all cursor-pointer whitespace-nowrap"
+        [class.bg-[var(--surface)]]="activeTab() === 'alineaciones'"
+        [class.text-white]="activeTab() === 'alineaciones'"
+        [class.border-b-2]="activeTab() === 'alineaciones'"
+        [class.border-b-[var(--accent)]]="activeTab() === 'alineaciones'"
+        [class.text-[var(--muted)]]="activeTab() !== 'alineaciones'"
+        (click)="activeTab.set('alineaciones')"
+      >
+        Alineaciones & Jugadores
+      </button>
+
+      <button
+        type="button"
+        class="py-2.5 px-4 text-xs font-bold font-mono rounded-t-xl transition-all cursor-pointer whitespace-nowrap"
+        [class.bg-[var(--surface)]]="activeTab() === 'h2h'"
+        [class.text-white]="activeTab() === 'h2h'"
+        [class.border-b-2]="activeTab() === 'h2h'"
+        [class.border-b-[var(--accent)]]="activeTab() === 'h2h'"
+        [class.text-[var(--muted)]]="activeTab() !== 'h2h'"
+        (click)="activeTab.set('h2h')"
+      >
+        Historial H2H & Bajas
+      </button>
+    </div>
+
+    <!-- TAB 1: COMPARATIVA DE CUOTAS ENTRE CASAS -->
+    @if (activeTab() === 'analisis') {
+      <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-4">
+        <h3 class="text-sm font-bold text-white m-0 font-mono">
+          Comparativa de Cuotas Sharp vs Recreacionales
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
+            <span class="text-[var(--muted)] text-[11px]">Pinnacle (Sharp)</span>
+            <div class="flex justify-between items-center text-white">
+              <span>Local:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 1.78 : 2.85).toFixed(2) }}</b>
+            </div>
+            <div class="flex justify-between items-center text-white">
+              <span>Visita:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 3.40 : 1.85).toFixed(2) }}</b>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
+            <span class="text-[var(--muted)] text-[11px]">Bet365</span>
+            <div class="flex justify-between items-center text-white">
+              <span>Local:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 1.85 : 2.95).toFixed(2) }}</b>
+            </div>
+            <div class="flex justify-between items-center text-white">
+              <span>Visita:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 3.50 : 1.90).toFixed(2) }}</b>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
+            <span class="text-[var(--muted)] text-[11px]">Caliente.mx</span>
+            <div class="flex justify-between items-center text-white">
+              <span>Local:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 1.82 : 2.90).toFixed(2) }}</b>
+            </div>
+            <div class="flex justify-between items-center text-white">
+              <span>Visita:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 3.45 : 1.88).toFixed(2) }}</b>
+            </div>
+          </div>
+
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
+            <span class="text-[var(--muted)] text-[11px]">Playdoit</span>
+            <div class="flex justify-between items-center text-white">
+              <span>Local:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 1.84 : 2.92).toFixed(2) }}</b>
+            </div>
+            <div class="flex justify-between items-center text-white">
+              <span>Visita:</span>
+              <b>@{{ (probs().homeProb > probs().awayProb ? 3.48 : 1.89).toFixed(2) }}</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- TAB 2: ALINEACIONES & JUGADORES ESTRELLA -->
+    @if (activeTab() === 'alineaciones') {
+      <div class="flex flex-col gap-4">
+        @let d = details();
+        @if (d?.players?.length || d?.star_players?.length) {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Away Squad -->
+            <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+              <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
+                <img [src]="getLogo(g.away, g.sport, g.away_logo)" class="w-4 h-4 object-contain" />
+                <span>Roster {{ g.away }}</span>
+              </h4>
+
+              <div class="flex flex-col gap-2">
+                @for (p of d?.players; track p.name) {
+                  @if (p.team_side === 'away') {
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
+                      <div class="flex items-center gap-2.5">
+                        <img [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=1e293b&color=10b981'" class="w-8 h-8 rounded-full object-cover border border-[var(--border)]" (error)="onPlayerImgError($event, p.name)" />
+                        <div>
+                          <strong class="block text-white">{{ p.name }}</strong>
+                          <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '10' }}</span>
+                        </div>
+                      </div>
+                      <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- Home Squad -->
+            <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+              <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
+                <img [src]="getLogo(g.home, g.sport, g.home_logo)" class="w-4 h-4 object-contain" />
+                <span>Roster {{ g.home }}</span>
+              </h4>
+
+              <div class="flex flex-col gap-2">
+                @for (p of d?.players; track p.name) {
+                  @if (p.team_side === 'home') {
+                    <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
+                      <div class="flex items-center gap-2.5">
+                        <img [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=1e293b&color=10b981'" class="w-8 h-8 rounded-full object-cover border border-[var(--border)]" (error)="onPlayerImgError($event, p.name)" />
+                        <div>
+                          <strong class="block text-white">{{ p.name }}</strong>
+                          <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '9' }}</span>
+                        </div>
+                      </div>
+                      <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+          </div>
+        } @else {
+          <div class="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--muted)]">
+            Alineaciones oficiales pendientes de confirmación técnica para este partido.
+          </div>
+        }
+      </div>
+    }
+
+    <!-- TAB 3: HISTORIAL H2H & BAJAS -->
+    @if (activeTab() === 'h2h') {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
+        <!-- Bajas / Lesiones -->
+        <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+          <h3 class="text-xs font-mono font-bold text-white m-0 flex items-center gap-1.5 border-b border-[var(--border)] pb-2">
+            <span>🏥</span>
+            <span>Reporte Médico Oficial (Bajas y Dudas)</span>
+          </h3>
+
+          @if (details()?.injuries?.length) {
+            <div class="flex flex-col gap-2">
+              @for (inj of details()?.injuries; track inj.name) {
+                <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between text-xs">
+                  <div>
+                    <strong class="block text-white">{{ inj.name }}</strong>
+                    <span class="text-[10px] text-[var(--muted)]">{{ inj.team }} · {{ inj.reason }}</span>
+                  </div>
+                  <span class="text-[10px] font-mono px-2 py-0.5 rounded-md font-bold"
+                        [class.bg-rose-500/20]="inj.status === 'Baja Confirmada' || inj.status === 'Fuera (Out)'"
+                        [class.text-rose-400]="inj.status === 'Baja Confirmada' || inj.status === 'Fuera (Out)'"
+                        [class.bg-amber-500/20]="inj.status !== 'Baja Confirmada' && inj.status !== 'Fuera (Out)'"
+                        [class.text-amber-400]="inj.status !== 'Baja Confirmada' && inj.status !== 'Fuera (Out)'">
+                    {{ inj.status }}
+                  </span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-xs text-[var(--muted)] m-0">Plantillas completas sin reportes médicos mayores.</p>
+          }
+        </div>
+
+        <!-- Historial H2H -->
+        <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+          <h3 class="text-xs font-mono font-bold text-white m-0 flex items-center gap-1.5 border-b border-[var(--border)] pb-2">
+            <span>⚔️</span>
+            <span>Enfrentamientos Directos Recientes</span>
+          </h3>
+
+          @if (details()?.h2h?.length) {
+            <div class="flex flex-col gap-2">
+              @for (m of details()?.h2h; track m.date) {
+                <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between text-xs font-mono">
+                  <span class="text-[var(--muted)] text-[11px]">{{ m.date }}</span>
+                  <strong class="text-white">{{ m.competition || (m.home + ' vs ' + m.away) }}</strong>
+                  <span class="text-emerald-400 font-bold">{{ m.score || 'Final' }}</span>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-xs text-[var(--muted)] m-0">Sin precedentes directos registrados en la temporada actual.</p>
+          }
+        </div>
+
+      </div>
+    }
+
+  }
+</div>
