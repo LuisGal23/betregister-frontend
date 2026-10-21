@@ -246,6 +246,49 @@
                 </p>
               </div>
 
+              <!-- AUDITORÍA DE RESULTADO FINAL (POST-PARTIDO) -->
+              @if (effectiveEvaluation(); as evRes) {
+                @if (g.state === 'final') {
+                  <div class="p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md"
+                       [class.bg-emerald-500/15]="evRes.status === 'WON'"
+                       [class.border-emerald-500/50]="evRes.status === 'WON'"
+                       [class.bg-rose-500/15]="evRes.status === 'LOST'"
+                       [class.border-rose-500/50]="evRes.status === 'LOST'">
+                    <div class="flex items-center gap-3">
+                      <span class="w-10 h-10 rounded-xl flex items-center justify-center font-black text-lg"
+                            [class.bg-emerald-500]="evRes.status === 'WON'"
+                            [class.text-slate-950]="evRes.status === 'WON'"
+                            [class.bg-rose-500]="evRes.status === 'LOST'"
+                            [class.text-white]="evRes.status === 'LOST'">
+                        {{ evRes.status === 'WON' ? '✓' : '✕' }}
+                      </span>
+                      <div>
+                        <strong class="text-sm sm:text-base font-black uppercase font-mono block"
+                                [class.text-emerald-400]="evRes.status === 'WON'"
+                                [class.text-rose-400]="evRes.status === 'LOST'">
+                          {{ evRes.status === 'WON' ? 'PRONÓSTICO ACERTADO (VERDE)' : 'PRONÓSTICO NO CUMPLIDO (ROJO)' }}
+                        </strong>
+                        <span class="text-xs text-[var(--text)] block mt-0.5">
+                          Marcador oficial final: <b class="font-mono">{{ evRes.actualResult }}</b> · Selección: <b>{{ formatRecommendedMarket(aiValueBet()?.recommended_market, g, aiValueBet()) }}</b>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-mono px-3 py-1 rounded-lg font-black"
+                            [class.bg-emerald-500/20]="evRes.status === 'WON'"
+                            [class.text-emerald-300]="evRes.status === 'WON'"
+                            [class.border]="true"
+                            [class.border-emerald-500/40]="evRes.status === 'WON'"
+                            [class.bg-rose-500/20]="evRes.status === 'LOST'"
+                            [class.text-rose-300]="evRes.status === 'LOST'"
+                            [class.border-rose-500/40]="evRes.status === 'LOST'">
+                        {{ evRes.status === 'WON' ? '+' + evRes.profitUnits + 'u Ganadas' : '-1.00u' }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              }
+
               <!-- MOTOR QUANT SHARP BETTOR VALUE BET (+EV) CON GEMINI 2.5 FLASH -->
               @if (loadingAiValueBet()) {
                 <div class="p-5 sm:p-6 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-[var(--surface-high)] to-transparent border border-emerald-500/30 flex items-center gap-4 animate-pulse">
@@ -293,8 +336,8 @@
                     <!-- Recommended Market & Odd -->
                     <div class="p-3.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] flex flex-col justify-between">
                       <span class="text-[10px] font-bold text-[var(--muted)] uppercase font-mono">MERCADO RECOMENDADO</span>
-                      <strong class="text-base sm:text-lg font-black text-[var(--text)] mt-1 truncate block">
-                        {{ vb.recommended_market }}
+                      <strong class="text-base sm:text-lg font-black text-emerald-400 mt-1 truncate block" title="{{ formatRecommendedMarket(vb.recommended_market, g, vb) }}">
+                        {{ formatRecommendedMarket(vb.recommended_market, g, vb) }}
                       </strong>
                       <div class="flex items-center justify-between mt-2 pt-2 border-t border-[var(--border)]">
                         <span class="text-xs text-[var(--muted)]">Cuota objetivo</span>
@@ -762,21 +805,13 @@
                       <div class="mt-2 pt-3 border-t border-[var(--border)] text-xs flex flex-col gap-2 animate-fade-in">
                         <span class="text-[10px] font-bold text-[var(--muted)] uppercase font-mono">Últimos 3 encuentros disputados</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center">
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">12 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">85 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Gol / 4 Tiros</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">05 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">90 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">2 Tiros al arco</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">28 SEP</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">78 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Asistencia</small>
-                          </div>
+                          @for (log of getPlayerGameLog({ name: star.name, team_name: star.team, team_side: 'away', category: 'General', category_label: star.role, line: 1.5, prob: 80, odds: 1.85, position: star.role, display_stat: '1+' }); track log.date) {
+                            <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                              <span class="text-[9px] text-[var(--muted)] block font-mono uppercase">{{ log.date }}</span>
+                              <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">{{ log.minutes }} min</strong>
+                              <small class="text-[10px] text-[var(--text)] block truncate">{{ log.stat }}</small>
+                            </div>
+                          }
                         </div>
                       </div>
                     }
@@ -848,21 +883,13 @@
                       <div class="mt-2 pt-3 border-t border-[var(--border)] text-xs flex flex-col gap-2 animate-fade-in">
                         <span class="text-[10px] font-bold text-[var(--muted)] uppercase font-mono">Últimos 3 encuentros disputados</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center">
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">12 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">85 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Gol / 4 Tiros</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">05 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">90 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">2 Tiros al arco</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">28 SEP</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">78 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Asistencia</small>
-                          </div>
+                          @for (log of getPlayerGameLog({ name: star.name, team_name: star.team, team_side: 'home', category: 'General', category_label: star.role, line: 1.5, prob: 80, odds: 1.85, position: star.role, display_stat: '1+' }); track log.date) {
+                            <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                              <span class="text-[9px] text-[var(--muted)] block font-mono uppercase">{{ log.date }}</span>
+                              <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">{{ log.minutes }} min</strong>
+                              <small class="text-[10px] text-[var(--text)] block truncate">{{ log.stat }}</small>
+                            </div>
+                          }
                         </div>
                       </div>
                     }

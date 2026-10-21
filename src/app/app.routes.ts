@@ -47,6 +47,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pronosticos/:matchId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pronosticos/pages/pronosticos-page.component').then(
+        (m) => m.PronosticosPageComponent,
+      ),
+  },
+  {
     path: 'ia',
     redirectTo: 'pronosticos',
   },
@@ -73,6 +81,18 @@ export const routes: Routes = [
   {
     path: 'estadisticas',
     redirectTo: 'matches',
+  },
+  {
+    path: 'partidos/:league/:id',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/partidos/pages/match-detail-page/match-detail-page.component').then(
+        (m) => m.MatchDetailPageComponent
+      ),
+  },
+  {
+    path: 'matches/:league/:id',
+    redirectTo: 'partidos/:league/:id',
   },
   {
     path: 'partidos',

@@ -113,6 +113,7 @@ export class CreateTicketModalComponent {
             if (option.pick) this.selections[0].pick = option.pick;
             if (option.line !== undefined && option.line !== null) this.selections[0].line = option.line;
             if (option.description) this.selections[0].description = option.description;
+            if (option.predictionId) this.selections[0].prediction_id = option.predictionId;
           }
         }
 
@@ -202,14 +203,14 @@ export class CreateTicketModalComponent {
     if (sportForLeague(this.leagueTag) !== sport)
       this.setLeague(
         (
-          { Fútbol: 'MLS', Béisbol: 'MLB', Americano: 'NFL', Mixto: 'Mixto' } as Record<string, string>
+          { Fútbol: 'MLS', Béisbol: 'MLB', Americano: 'NFL', Básquetbol: 'NBA', Mixto: 'Mixto' } as Record<string, string>
         )[sport] ?? 'Sin clasificar',
       );
   }
 
   leagueOptions() {
     const sport = sportForLeague(this.leagueTag);
-    return ['Fútbol', 'Béisbol', 'Americano'].includes(sport)
+    return ['Fútbol', 'Béisbol', 'Americano', 'Básquetbol'].includes(sport)
       ? LEAGUE_TAGS.filter((league) => sportForLeague(league) === sport)
       : LEAGUE_TAGS;
   }
@@ -234,7 +235,12 @@ export class CreateTicketModalComponent {
         d.game_id = this.selectedGames[Math.min(i, this.selectedGames.length - 1)].id;
       if (!this.selectedGames.length) d.game_id = '';
       const g = this.selectedGames.find((g) => g.id === d.game_id);
-      if (g && d.sport !== g.sport) Object.assign(d, newSelection(g.sport), { game_id: g.id });
+      if (g) {
+        const gameSport = g.sport || sportForLeague(this.leagueTag);
+        if (d.sport !== gameSport) {
+          Object.assign(d, newSelection(gameSport), { game_id: g.id });
+        }
+      }
     });
   }
 
@@ -308,23 +314,27 @@ export class CreateTicketModalComponent {
       return;
     }
     if (this.stake === null || this.stake <= 0) {
-      this.vm.error.set('Indica el importe de la apuesta.');
+      this.vm.error.set('Indica el importe a apostar (stake mayor a 0).');
       return;
     }
-    if (this.odds === null) {
-      this.vm.error.set('Indica la cuota de la apuesta.');
+    if (this.odds === null || this.odds <= 0) {
+      this.vm.error.set('Indica una cuota válida para la apuesta.');
       return;
     }
     if (decimalOdds(this.odds, this.oddsFormat) === null) {
       this.vm.error.set(
-        'Cuota inválida. Decimal: mayor que 1. Americana: entero de -100 o menor, o +100 o mayor.',
+        'Cuota inválida. En decimal debe ser mayor que 1.0 (ej. 1.90).',
       );
       return;
     }
 
     try {
+      const linkedPredictionId =
+        this.modal.initialOption()?.predictionId ??
+        (this.selections.length === 1 ? (this.selections[0].prediction_id ?? null) : null);
       const ok = await this.bets.create({
         public_record: false,
+        prediction_id: linkedPredictionId,
         selection_details: this.selections,
         odds_format: this.oddsFormat,
         league_tag: this.leagueTag,
@@ -345,6 +355,8 @@ export class CreateTicketModalComponent {
         this.close();
         this.vm.notice.set('¡Ticket registrado exitosamente!');
         setTimeout(() => this.vm.notice.set(''), 4000);
+      } else if (!this.vm.error()) {
+        this.vm.error.set('No se pudo guardar el ticket. Revisa el saldo disponible en tu casa de apuestas.');
       }
     } catch (e: any) {
       this.vm.error.set(e?.message || 'Error al guardar el ticket. Revisa los datos.');
