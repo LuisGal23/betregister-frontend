@@ -49,6 +49,18 @@ export interface AIPrediction {
   valueBet: ValueBetAnalysis;
 }
 
+export interface AIParlayLeg {
+  game: SportsGame;
+  selectionText: string;
+  market: string;
+  pick: string;
+  line: number | null;
+  odds: number;
+  prob: number;
+  status: 'WON' | 'LOST' | 'PENDING' | 'LIVE';
+  scoreText?: string;
+}
+
 export interface AIParlay {
   id: string;
   title: string;
@@ -58,15 +70,10 @@ export interface AIParlay {
   description: string;
   combinedOdds: number;
   combinedProb: number;
-  legs: {
-    game: SportsGame;
-    selectionText: string;
-    market: string;
-    pick: string;
-    line: number | null;
-    odds: number;
-    prob: number;
-  }[];
+  status: 'WON' | 'LOST' | 'PENDING' | 'LIVE';
+  legsWon: number;
+  legsTotal: number;
+  legs: AIParlayLeg[];
 }
 
 @Component({
@@ -111,6 +118,7 @@ export class PronosticosPageComponent implements OnInit {
   showAuditDetails = signal<boolean>(false);
 
   // Auditoría IA Filters & Predictions Cache
+  auditView = signal<'matches' | 'parlays'>('matches');
   auditFilter = signal<'all' | 'won' | 'lost' | 'pending'>('all');
   aiPredictions = signal<Record<string, AIValueBetResponse>>({});
 
@@ -209,6 +217,46 @@ export class PronosticosPageComponent implements OnInit {
       lost,
       pending,
       live,
+      winRate,
+      netUnits: Number(netUnits.toFixed(2)),
+      roi,
+      hasEvaluations: totalResolved > 0,
+    };
+  });
+
+  // Dashboard KPI de Efectividad de Parlays IA
+  parlayAuditSummary = computed(() => {
+    const list = this.curatedParlays();
+    let won = 0;
+    let lost = 0;
+    let pending = 0;
+    let live = 0;
+    let netUnits = 0;
+
+    for (const p of list) {
+      if (p.status === 'WON') {
+        won++;
+        netUnits += (p.combinedOdds - 1.0);
+      } else if (p.status === 'LOST') {
+        lost++;
+        netUnits -= 1.0;
+      } else if (p.status === 'LIVE') {
+        live++;
+      } else {
+        pending++;
+      }
+    }
+
+    const totalResolved = won + lost;
+    const winRate = totalResolved > 0 ? Number(((won / totalResolved) * 100).toFixed(1)) : 0;
+    const roi = totalResolved > 0 ? Number(((netUnits / totalResolved) * 100).toFixed(1)) : 0;
+
+    return {
+      totalParlays: list.length,
+      totalResolved,
+      won,
+      lost,
+      pending: pending + live,
       winRate,
       netUnits: Number(netUnits.toFixed(2)),
       roi,
@@ -398,17 +446,62 @@ export class PronosticosPageComponent implements OnInit {
     this.displayLimit.update((c) => c + 24);
   }
 
-  // Parlays Engine: automatically constructs the 3 best parlays from upcoming/live matches
+  // Parlays Engine: automatically constructs the 3 best parlays from matches and audits them
   curatedParlays = computed<AIParlay[]>(() => {
-    // Only construct parlays from games not yet concluded
-    const all = this.predictions().filter((p) => p.game.state !== 'final');
+    const all = this.predictions();
     if (all.length < 2) return [];
 
     const parlays: AIParlay[] = [];
 
-    // 1. Parlay de Alta Confianza (Seguro) - 2-3 picks with >68% probability
+    const buildLeg = (p: AIPrediction): AIParlayLeg => {
+      const g = p.game;
+      const pred = this.getGamePrediction(g);
+      const ev = evaluatePrediction(pred, g);
+      let status: 'WON' | 'LOST' | 'PENDING' | 'LIVE' = 'PENDING';
+      let scoreText = '';
+
+      if (g.state === 'final') {
+        status = ev.status === 'WON' ? 'WON' : 'LOST';
+        scoreText = g.home_score != null ? `${g.away_score} - ${g.home_score}` : 'Finalizado';
+      } else if (g.state === 'live') {
+        status = 'LIVE';
+        scoreText = `${g.away_score ?? 0} - ${g.home_score ?? 0} (En vivo)`;
+      }
+
+      return {
+        game: g,
+        selectionText: `${g.away} vs ${g.home} · ${p.bestPick.label}`,
+        market: p.bestPick.market,
+        pick: p.bestPick.pick,
+        line: p.bestPick.line,
+        odds: p.bestPick.odds,
+        prob: p.bestPick.prob,
+        status,
+        scoreText,
+      };
+    };
+
+    const computeParlayStatus = (legs: AIParlayLeg[]): { status: 'WON' | 'LOST' | 'PENDING' | 'LIVE'; legsWon: number; legsTotal: number } => {
+      const legsWon = legs.filter((l) => l.status === 'WON').length;
+      const legsLost = legs.filter((l) => l.status === 'LOST').length;
+      const legsLive = legs.filter((l) => l.status === 'LIVE').length;
+      let status: 'WON' | 'LOST' | 'PENDING' | 'LIVE' = 'PENDING';
+
+      if (legsLost > 0) {
+        status = 'LOST';
+      } else if (legsWon === legs.length) {
+        status = 'WON';
+      } else if (legsLive > 0) {
+        status = 'LIVE';
+      } else {
+        status = 'PENDING';
+      }
+      return { status, legsWon, legsTotal: legs.length };
+    };
+
+    // 1. Parlay de Alta Confianza (Seguro) - 2-3 picks with highest probability
     const highCertainty = [...all]
-      .filter((p) => p.bestPick.prob >= 66)
+      .filter((p) => p.bestPick.prob >= 60)
       .sort((a, b) => b.bestPick.prob - a.bestPick.prob)
       .slice(0, 3);
 
@@ -420,6 +513,9 @@ export class PronosticosPageComponent implements OnInit {
         highCertainty.reduce((acc, p) => acc * (p.bestPick.prob / 100), 1) * 100,
       );
 
+      const legs = highCertainty.map(buildLeg);
+      const { status, legsWon, legsTotal } = computeParlayStatus(legs);
+
       parlays.push({
         id: 'parlay-seguro',
         title: 'Parlay de Alta Probabilidad · El Seguro del Día',
@@ -429,15 +525,10 @@ export class PronosticosPageComponent implements OnInit {
         description: 'Combinada de 2 a 3 selecciones con la mayor probabilidad estadística calculada por el modelo.',
         combinedOdds,
         combinedProb,
-        legs: highCertainty.map((p) => ({
-          game: p.game,
-          selectionText: `${p.game.away} vs ${p.game.home} · ${p.bestPick.label}`,
-          market: p.bestPick.market,
-          pick: p.bestPick.pick,
-          line: p.bestPick.line,
-          odds: p.bestPick.odds,
-          prob: p.bestPick.prob,
-        })),
+        status,
+        legsWon,
+        legsTotal,
+        legs,
       });
     }
 
@@ -457,6 +548,9 @@ export class PronosticosPageComponent implements OnInit {
         valueCandidates.reduce((acc, p) => acc * (p.bestPick.prob / 100), 1) * 100,
       );
 
+      const legs = valueCandidates.map(buildLeg);
+      const { status, legsWon, legsTotal } = computeParlayStatus(legs);
+
       parlays.push({
         id: 'parlay-valor',
         title: 'Parlay de Rentabilidad +EV · Ventaja vs Las Casas',
@@ -466,21 +560,16 @@ export class PronosticosPageComponent implements OnInit {
         description: 'Picks donde la probabilidad estimada por IA supera el margen de las casas de apuestas para maximizar ROI.',
         combinedOdds,
         combinedProb,
-        legs: valueCandidates.map((p) => ({
-          game: p.game,
-          selectionText: `${p.game.away} vs ${p.game.home} · ${p.bestPick.label}`,
-          market: p.bestPick.market,
-          pick: p.bestPick.pick,
-          line: p.bestPick.line,
-          odds: p.bestPick.odds,
-          prob: p.bestPick.prob,
-        })),
+        status,
+        legsWon,
+        legsTotal,
+        legs,
       });
     }
 
     // 3. Parlay de Goles & Puntos (Over / Under Totales)
     const totalsPicks = [...all]
-      .filter((p) => p.overProb >= 62 || p.bttsProb! >= 62)
+      .filter((p) => p.overProb >= 58 || (p.bttsProb ?? 0) >= 58)
       .slice(0, 3);
 
     if (totalsPicks.length >= 2) {
@@ -491,6 +580,23 @@ export class PronosticosPageComponent implements OnInit {
         totalsPicks.reduce((acc, p) => acc * (Math.max(p.overProb, p.bttsProb ?? 0) / 100), 1) * 100,
       );
 
+      const legs = totalsPicks.map((p) => {
+        const isSoccer = this.isSoccer(p.game);
+        const market = isSoccer ? 'Total de goles' : p.game.sport === 'Baloncesto' ? 'Total de puntos' : 'Total';
+        const pick = 'Más de';
+        const line = isSoccer ? 2.5 : p.game.sport === 'Baloncesto' ? 218.5 : 44.5;
+        const baseLeg = buildLeg(p);
+        baseLeg.market = market;
+        baseLeg.pick = pick;
+        baseLeg.line = line;
+        baseLeg.odds = 1.72;
+        baseLeg.prob = Math.max(p.overProb, p.bttsProb ?? 60);
+        baseLeg.selectionText = `${p.game.away} vs ${p.game.home} · Más de ${line} ${market}`;
+        return baseLeg;
+      });
+
+      const { status, legsWon, legsTotal } = computeParlayStatus(legs);
+
       parlays.push({
         id: 'parlay-goles',
         title: 'Parlay Dinámico · Goles & Puntos Totales',
@@ -500,21 +606,10 @@ export class PronosticosPageComponent implements OnInit {
         description: 'Combinada basada en ritmo ofensivo y expectativas de anotación por encima del promedio.',
         combinedOdds,
         combinedProb,
-        legs: totalsPicks.map((p) => {
-          const isSoccer = this.isSoccer(p.game);
-          const market = isSoccer ? 'Total de goles' : p.game.sport === 'Baloncesto' ? 'Total de puntos' : 'Total';
-          const pick = 'Más de';
-          const line = isSoccer ? 2.5 : p.game.sport === 'Baloncesto' ? 218.5 : 44.5;
-          return {
-            game: p.game,
-            selectionText: `${p.game.away} vs ${p.game.home} · Más de ${line} ${market}`,
-            market,
-            pick,
-            line,
-            odds: 1.72,
-            prob: Math.max(p.overProb, p.bttsProb ?? 60),
-          };
-        }),
+        status,
+        legsWon,
+        legsTotal,
+        legs,
       });
     }
 

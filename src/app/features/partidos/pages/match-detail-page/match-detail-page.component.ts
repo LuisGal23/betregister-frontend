@@ -46,7 +46,7 @@ export class MatchDetailPageComponent implements OnInit {
 
   loading = signal<boolean>(true);
   loadingAi = signal<boolean>(false);
-  activeTab = signal<'analisis' | 'alineaciones' | 'h2h' | 'cuotas'>('analisis');
+  activeTab = signal<'analisis' | 'alineaciones' | 'h2h'>('analisis');
 
   // Unified probabilities
   probs = computed(() => {

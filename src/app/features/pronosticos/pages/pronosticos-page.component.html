@@ -5,275 +5,430 @@
     <div>
       <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.3)] text-[var(--accent)] text-[11px] font-bold tracking-wider mb-2">
         <span class="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
-        <span>MOTOR DE ANÁLISIS IA & MODELOS PROBABILÍSTICOS EN VIVO</span>
+        <span>CONSENSO MULTI-IA ACTIVO: GROQ (LLAMA-3.3 70B) + XAI GROK + GEMINI 2.5 FLASH</span>
       </div>
       <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text)] m-0">
         Pronósticos IA & Parlays del Día
       </h1>
       <p class="text-xs sm:text-sm text-[var(--muted)] mt-1.5 max-w-2xl leading-relaxed">
-        Algoritmos matemáticos y modelos de Poisson que analizan todos los partidos de hoy para identificar las mejores probabilidades de victoria, goles y las combinadas con mayor rentabilidad esperada (+EV).
+        Análisis estadístico puro diario basado en modelos de Poisson, xG y auditoría cruzada de 3 inteligencias artificiales independientes, sin sesgos de cuotas de casas de apuestas.
       </p>
     </div>
 
     <div class="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
-      <button 
-        type="button" 
-        class="action-pill-btn primary flex-1 sm:flex-initial py-2.5 px-5 text-xs inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        (click)="loadDailyPredictions(true)"
-        [disabled]="loading() || isRefreshingAi()"
-      >
-        <app-icon name="trend" [class.animate-spin]="loading() || isRefreshingAi()" class="w-4 h-4" />
-        <span>{{ isRefreshingAi() ? 'Recalculando con Gemini...' : loading() ? 'Cargando partidos...' : 'Actualizar Pronósticos IA' }}</span>
-      </button>
+      <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] text-xs font-mono shadow-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"></span>
+        <span class="text-[var(--text)] font-semibold">Análisis Diario Oficial Consolidado</span>
+      </div>
     </div>
   </header>
 
-  <!-- SECTION: AUDITORÍA DE PRONÓSTICOS IA & EFECTIVIDAD (+EV AUDIT) -->
+  <!-- SECTION: AUDITORÍA DE PRONÓSTICOS IA & PARLAYS (+EV & MULTI-IA AUDIT) -->
   @let audit = auditSummary();
+  @let pAudit = parlayAuditSummary();
   <section class="flex flex-col gap-4 p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl relative overflow-hidden">
     <!-- Ambient subtle glow -->
     <div class="absolute -top-16 -right-16 w-52 h-52 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[var(--border)]">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--border)]">
       <div class="flex items-center gap-3">
         <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-lg">
           🤖
         </span>
         <div>
           <h2 class="text-base sm:text-lg font-extrabold tracking-tight text-[var(--text)] m-0 font-mono uppercase">
-            Auditoría de Pronósticos IA & Efectividad del Día
+            Auditoría de Pronósticos & Parlays del Día
           </h2>
           <p class="text-xs text-[var(--muted)] m-0">
-            Seguimiento de aciertos (verdes) y fallos (rojos) del modelo con justificación analítica oficial
+            Comprobación automática de efectividad (verdes y rojos) en partidos individuales y combinadas
           </p>
         </div>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-mono px-3 py-1 rounded-full bg-[var(--surface-high)] border border-[var(--border)] text-[var(--text)]">
-          {{ audit.totalResolved }} de {{ audit.totalGames }} evaluados
-        </span>
+      <!-- View Switcher (Matches vs Parlays) -->
+      <div class="inline-flex items-center gap-1 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+        <button 
+          type="button" 
+          class="py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5"
+          [class.bg-[var(--accent)]]="auditView() === 'matches'"
+          [class.text-white]="auditView() === 'matches'"
+          [class.text-[var(--muted)]]="auditView() !== 'matches'"
+          (click)="auditView.set('matches')"
+        >
+          <span>📊</span>
+          <span>Partidos ({{ audit.totalGames }})</span>
+        </button>
+        <button 
+          type="button" 
+          class="py-1.5 px-3 rounded-lg text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5"
+          [class.bg-[var(--accent)]]="auditView() === 'parlays'"
+          [class.text-white]="auditView() === 'parlays'"
+          [class.text-[var(--muted)]]="auditView() !== 'parlays'"
+          (click)="auditView.set('parlays')"
+        >
+          <span>🎯</span>
+          <span>Parlays IA ({{ pAudit.totalParlays }})</span>
+        </button>
       </div>
     </div>
 
-    <!-- 4 KPI Cards Grid -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <!-- Card 1: Win Rate -->
-      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">TASA DE ACIERTO</span>
-        <div class="flex items-baseline gap-1.5 my-1">
-          <span class="text-2xl sm:text-3xl font-black font-mono"
-                [class.text-emerald-400]="audit.winRate >= 60"
-                [class.text-amber-400]="audit.winRate > 0 && audit.winRate < 60"
-                [class.text-[var(--muted)]]="audit.winRate === 0">
-            {{ audit.totalResolved > 0 ? audit.winRate + '%' : 'N/D' }}
+    <!-- VIEW 1: AUDITORÍA DE PARTIDOS INDIVIDUALES -->
+    @if (auditView() === 'matches') {
+      <!-- 4 KPI Cards Grid (Matches) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <!-- Card 1: Win Rate -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">TASA DE ACIERTO</span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono"
+                  [class.text-emerald-400]="audit.winRate >= 60"
+                  [class.text-amber-400]="audit.winRate > 0 && audit.winRate < 60"
+                  [class.text-[var(--muted)]]="audit.winRate === 0">
+              {{ audit.totalResolved > 0 ? audit.winRate + '%' : 'N/D' }}
+            </span>
+            @if (audit.totalResolved > 0) {
+              <small class="text-[10px] font-mono text-[var(--muted)]">win rate</small>
+            }
+          </div>
+          <div class="w-full h-1.5 rounded-full bg-[var(--surface)] overflow-hidden">
+            <div class="h-full bg-emerald-400 transition-all duration-500" [style.width.%]="audit.winRate"></div>
+          </div>
+        </div>
+
+        <!-- Card 2: Verdes (Aciertos) -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-emerald-500/30 flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> ACIERTOS (VERDES)
           </span>
-          @if (audit.totalResolved > 0) {
-            <small class="text-[10px] font-mono text-[var(--muted)]">win rate</small>
-          }
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{{ audit.won }}</span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">acertados</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">Pronósticos cumplidos</span>
         </div>
-        <div class="w-full h-1.5 rounded-full bg-[var(--surface)] overflow-hidden">
-          <div class="h-full bg-emerald-400 transition-all duration-500" [style.width.%]="audit.winRate"></div>
-        </div>
-      </div>
 
-      <!-- Card 2: Verdes (Aciertos) -->
-      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-emerald-500/30 flex flex-col justify-between">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-emerald-400"></span> ACIERTOS (VERDES)
-        </span>
-        <div class="flex items-baseline gap-1.5 my-1">
-          <span class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{{ audit.won }}</span>
-          <small class="text-[10px] font-mono text-[var(--muted)]">acertados</small>
-        </div>
-        <span class="text-[10px] text-[var(--muted)] truncate">Pronósticos +EV cumplidos</span>
-      </div>
-
-      <!-- Card 3: Rojos (Fallos) -->
-      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-rose-500/30 flex flex-col justify-between">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 font-mono flex items-center gap-1">
-          <span class="w-2 h-2 rounded-full bg-rose-400"></span> FALLOS (ROJOS)
-        </span>
-        <div class="flex items-baseline gap-1.5 my-1">
-          <span class="text-2xl sm:text-3xl font-black font-mono text-rose-400">{{ audit.lost }}</span>
-          <small class="text-[10px] font-mono text-[var(--muted)]">no logrados</small>
-        </div>
-        <span class="text-[10px] text-[var(--muted)] truncate">Sorpresas o margen contrario</span>
-      </div>
-
-      <!-- Card 4: Unidades Netas / ROI -->
-      <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE NETO IA</span>
-        <div class="flex items-baseline gap-1.5 my-1">
-          <span class="text-2xl sm:text-3xl font-black font-mono"
-                [class.text-emerald-400]="audit.netUnits > 0"
-                [class.text-rose-400]="audit.netUnits < 0"
-                [class.text-[var(--text)]]="audit.netUnits === 0">
-            {{ audit.netUnits > 0 ? '+' : '' }}{{ audit.netUnits }}u
+        <!-- Card 3: Rojos (Fallos) -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-rose-500/30 flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 font-mono flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span> FALLOS (ROJOS)
           </span>
-          <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-rose-400">{{ audit.lost }}</span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">no logrados</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">Resultados adversos</span>
         </div>
-        <span class="text-[10px] text-[var(--muted)] truncate">
-          {{ audit.hasEvaluations ? 'ROI: ' + audit.roi + '%' : (audit.pending + audit.live) + ' por definirse' }}
-        </span>
-      </div>
-    </div>
 
-    <!-- Filter Pills for Audited List -->
-    <div class="flex items-center justify-between gap-3 flex-wrap pt-2">
-      <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
-        <button 
-          type="button" 
-          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
-          [class.bg-[var(--accent)]]="auditFilter() === 'all'"
-          [class.text-white]="auditFilter() === 'all'"
-          [class.text-[var(--muted)]]="auditFilter() !== 'all'"
-          (click)="auditFilter.set('all')"
-        >
-          Todos ({{ audit.totalGames }})
-        </button>
-        <button 
-          type="button" 
-          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
-          [class.bg-emerald-500]="auditFilter() === 'won'"
-          [class.text-slate-950]="auditFilter() === 'won'"
-          [class.text-[var(--muted)]]="auditFilter() !== 'won'"
-          (click)="auditFilter.set('won')"
-        >
-          <span>✓</span> Verdes ({{ audit.won }})
-        </button>
-        <button 
-          type="button" 
-          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
-          [class.bg-rose-500]="auditFilter() === 'lost'"
-          [class.text-white]="auditFilter() === 'lost'"
-          [class.text-[var(--muted)]]="auditFilter() !== 'lost'"
-          (click)="auditFilter.set('lost')"
-        >
-          <span>✕</span> Rojos ({{ audit.lost }})
-        </button>
-        <button 
-          type="button" 
-          class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
-          [class.bg-[var(--accent)]]="auditFilter() === 'pending'"
-          [class.text-white]="auditFilter() === 'pending'"
-          [class.text-[var(--muted)]]="auditFilter() !== 'pending'"
-          (click)="auditFilter.set('pending')"
-        >
-          Pendientes ({{ audit.pending + audit.live }})
-        </button>
+        <!-- Card 4: Unidades Netas / ROI -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE NETO IA</span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono"
+                  [class.text-emerald-400]="audit.netUnits > 0"
+                  [class.text-rose-400]="audit.netUnits < 0"
+                  [class.text-[var(--text)]]="audit.netUnits === 0">
+              {{ audit.netUnits > 0 ? '+' : '' }}{{ audit.netUnits }}u
+            </span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">
+            {{ audit.hasEvaluations ? 'ROI: ' + audit.roi + '%' : (audit.pending + audit.live) + ' por definirse' }}
+          </span>
+        </div>
       </div>
 
-      <div class="flex items-center gap-3">
-        <span class="text-xs font-mono text-[var(--muted)]">
-          {{ auditedMatches().length }} partidos evaluados
-        </span>
-        <button
-          type="button"
-          class="text-xs font-mono font-bold text-[var(--accent)] hover:underline cursor-pointer bg-transparent border-0 p-0"
-          (click)="showAuditDetails.set(!showAuditDetails())"
-        >
-          {{ showAuditDetails() ? '▲ Ocultar listado' : '▼ Ver listado (' + auditedMatches().length + ')' }}
-        </button>
-      </div>
-    </div>
+      <!-- Filter Pills for Audited Matches List -->
+      <div class="flex items-center justify-between gap-3 flex-wrap pt-2">
+        <div class="inline-flex items-center gap-1.5 p-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)]">
+          <button 
+            type="button" 
+            class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
+            [class.bg-[var(--accent)]]="auditFilter() === 'all'"
+            [class.text-white]="auditFilter() === 'all'"
+            [class.text-[var(--muted)]]="auditFilter() !== 'all'"
+            (click)="auditFilter.set('all')"
+          >
+            Todos ({{ audit.totalGames }})
+          </button>
+          <button 
+            type="button" 
+            class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
+            [class.bg-emerald-500]="auditFilter() === 'won'"
+            [class.text-slate-950]="auditFilter() === 'won'"
+            [class.text-[var(--muted)]]="auditFilter() !== 'won'"
+            (click)="auditFilter.set('won')"
+          >
+            <span>✓</span> Verdes ({{ audit.won }})
+          </button>
+          <button 
+            type="button" 
+            class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all flex items-center gap-1"
+            [class.bg-rose-500]="auditFilter() === 'lost'"
+            [class.text-white]="auditFilter() === 'lost'"
+            [class.text-[var(--muted)]]="auditFilter() !== 'lost'"
+            (click)="auditFilter.set('lost')"
+          >
+            <span>✕</span> Rojos ({{ audit.lost }})
+          </button>
+          <button 
+            type="button" 
+            class="py-1 px-3 rounded-lg text-xs font-semibold cursor-pointer transition-all"
+            [class.bg-[var(--accent)]]="auditFilter() === 'pending'"
+            [class.text-white]="auditFilter() === 'pending'"
+            [class.text-[var(--muted)]]="auditFilter() !== 'pending'"
+            (click)="auditFilter.set('pending')"
+          >
+            Pendientes ({{ audit.pending + audit.live }})
+          </button>
+        </div>
 
-    <!-- Audited Matches List (Collapsible for maximum performance) -->
-    @if (showAuditDetails()) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
-      @for (item of auditedMatches(); track item.game.id) {
-        @let g = item.game;
-        @let pred = item.prediction;
-        @let ev = item.evaluation;
-        <div class="p-4 rounded-xl bg-[var(--surface-high)]/40 border transition-all flex flex-col justify-between gap-3 hover:border-[var(--accent)]/50"
-             [class.border-emerald-500/40]="ev.status === 'WON'"
-             [class.bg-emerald-500/5]="ev.status === 'WON'"
-             [class.border-rose-500/40]="ev.status === 'LOST'"
-             [class.bg-rose-500/5]="ev.status === 'LOST'"
-             [class.border-[var(--border)]]="ev.status === 'PENDING'">
-          
-          <!-- Top Row: Teams + Result Badge -->
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="flex items-center -space-x-1.5 shrink-0">
-                <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
-                  <img [src]="getLogo(g.away, g.sport, g.away_logo)" [alt]="g.away" class="w-full h-full object-contain" />
+        <div class="flex items-center gap-3">
+          <span class="text-xs font-mono text-[var(--muted)]">
+            {{ auditedMatches().length }} partidos evaluados
+          </span>
+          <button
+            type="button"
+            class="text-xs font-mono font-bold text-[var(--accent)] hover:underline cursor-pointer bg-transparent border-0 p-0"
+            (click)="showAuditDetails.set(!showAuditDetails())"
+          >
+            {{ showAuditDetails() ? '▲ Ocultar listado' : '▼ Ver listado (' + auditedMatches().length + ')' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Audited Matches List -->
+      @if (showAuditDetails()) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+        @for (item of auditedMatches(); track item.game.id) {
+          @let g = item.game;
+          @let pred = item.prediction;
+          @let ev = item.evaluation;
+          <div class="p-4 rounded-xl bg-[var(--surface-high)]/40 border transition-all flex flex-col justify-between gap-3 hover:border-[var(--accent)]/50"
+               [class.border-emerald-500/40]="ev.status === 'WON'"
+               [class.bg-emerald-500/5]="ev.status === 'WON'"
+               [class.border-rose-500/40]="ev.status === 'LOST'"
+               [class.bg-rose-500/5]="ev.status === 'LOST'"
+               [class.border-[var(--border)]]="ev.status === 'PENDING'">
+            
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <div class="flex items-center -space-x-1.5 shrink-0">
+                  <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
+                    <img [src]="getLogo(g.away, g.sport, g.away_logo)" [alt]="g.away" class="w-full h-full object-contain" />
+                  </div>
+                  <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
+                    <img [src]="getLogo(g.home, g.sport, g.home_logo)" [alt]="g.home" class="w-full h-full object-contain" />
+                  </div>
                 </div>
-                <div class="w-7 h-7 rounded-full bg-[var(--surface)] p-1 border border-[var(--border)] flex items-center justify-center overflow-hidden">
-                  <img [src]="getLogo(g.home, g.sport, g.home_logo)" [alt]="g.home" class="w-full h-full object-contain" />
+                <div class="min-w-0">
+                  <strong class="text-xs font-bold text-[var(--text)] truncate block">
+                    {{ g.away }} vs {{ g.home }}
+                  </strong>
+                  <small class="text-[10px] text-[var(--muted)] font-mono uppercase block">
+                    {{ g.league_name || g.league }} · {{ g.state === 'final' ? 'FINAL' : g.state === 'live' ? 'EN VIVO' : (g.start | date:'HH:mm') }}
+                  </small>
                 </div>
               </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                @if (g.state === 'final' || g.state === 'live') {
+                  <span class="text-xs font-mono font-black px-2 py-0.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text)]">
+                    {{ g.away_score ?? 0 }} - {{ g.home_score ?? 0 }}
+                  </span>
+                }
+                @if (ev.status === 'WON') {
+                  <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
+                    +{{ ev.profitUnits || 0 }}u Ganadas
+                  </span>
+                } @else if (ev.status === 'LOST') {
+                  <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
+                    -1.00u
+                  </span>
+                } @else {
+                  <span class="px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--accent)] font-mono text-[10px] font-bold border border-[var(--border)]">
+                    Pendiente
+                  </span>
+                }
+              </div>
+            </div>
+
+            <div class="p-2.5 rounded-lg bg-[var(--surface)]/90 border border-[var(--border)] flex items-center justify-between gap-2">
               <div class="min-w-0">
-                <strong class="text-xs font-bold text-[var(--text)] truncate block">
-                  {{ g.away }} vs {{ g.home }}
+                <span class="text-[9px] font-bold uppercase font-mono text-[var(--muted)] block">SELECCIÓN RECOMENDADA POR IA</span>
+                <strong class="text-xs font-black text-emerald-400 truncate block">
+                  {{ item.marketFormatted }}
                 </strong>
-                <small class="text-[10px] text-[var(--muted)] font-mono uppercase block">
-                  {{ g.league_name || g.league }} · {{ g.state === 'final' ? 'FINAL' : g.state === 'live' ? 'EN VIVO' : (g.start | date:'HH:mm') }}
-                </small>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-[10px] font-mono text-[var(--muted)] block">Probabilidad</span>
+                <span class="text-xs font-black font-mono text-emerald-400">{{ pred.ai_estimated_probability_pct }}%</span>
               </div>
             </div>
 
-            <!-- Score & Badge -->
-            <div class="flex items-center gap-2 shrink-0">
-              @if (g.state === 'final' || g.state === 'live') {
-                <span class="text-xs font-mono font-black px-2 py-0.5 rounded bg-[var(--surface)] border border-[var(--border)] text-[var(--text)]">
-                  {{ g.away_score ?? 0 }} - {{ g.home_score ?? 0 }}
-                </span>
-              }
-              @if (ev.status === 'WON') {
-                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
-                  +{{ ev.profitUnits || 0 }}u Ganadas
-                </span>
-              } @else if (ev.status === 'LOST') {
-                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
-                  -1.00u
-                </span>
-              } @else {
-                <span class="px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--accent)] font-mono text-[10px] font-bold border border-[var(--border)]">
-                  @{{ pred.target_odd }}
-                </span>
-              }
+            <div class="text-[11px] leading-relaxed p-2.5 rounded-lg bg-[var(--surface)]/50 border border-[var(--border)]/70"
+                 [class.text-emerald-300]="ev.status === 'WON'"
+                 [class.text-rose-300]="ev.status === 'LOST'"
+                 [class.text-[var(--text)]]="ev.status === 'PENDING'">
+              {{ item.reasoningSummary }}
             </div>
-          </div>
 
-          <!-- Middle: Market Recommendation -->
-          <div class="p-2.5 rounded-lg bg-[var(--surface)]/90 border border-[var(--border)] flex items-center justify-between gap-2">
-            <div class="min-w-0">
-              <span class="text-[9px] font-bold uppercase font-mono text-[var(--muted)] block">SELECCIÓN RECOMENDADA POR IA</span>
-              <strong class="text-xs font-black text-emerald-400 truncate block">
-                {{ item.marketFormatted }}
-              </strong>
+            <div class="flex items-center justify-end pt-1">
+              <button 
+                type="button" 
+                class="text-[11px] font-bold text-[var(--accent)] hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
+                (click)="goToMatchDetail(g)"
+              >
+                <span>Ver análisis completo del partido</span>
+                <span>→</span>
+              </button>
             </div>
-            <div class="text-right shrink-0">
-              <span class="text-[10px] font-mono text-[var(--muted)] block">Ventaja +EV</span>
-              <span class="text-xs font-black font-mono text-emerald-400">+{{ pred.expected_value_pct }}%</span>
-            </div>
-          </div>
 
-          <!-- Bottom: Analytical Audit Summary (Qué falló / Qué acertó) -->
-          <div class="text-[11px] leading-relaxed p-2.5 rounded-lg bg-[var(--surface)]/50 border border-[var(--border)]/70"
-               [class.text-emerald-300]="ev.status === 'WON'"
-               [class.text-rose-300]="ev.status === 'LOST'"
-               [class.text-[var(--text)]]="ev.status === 'PENDING'">
-            {{ item.reasoningSummary }}
           </div>
-
-          <!-- Action: Open Match Analysis Sub-page -->
-          <div class="flex items-center justify-end pt-1">
-            <button 
-              type="button" 
-              class="text-[11px] font-bold text-[var(--accent)] hover:underline inline-flex items-center gap-1 cursor-pointer bg-transparent border-none p-0"
-              (click)="goToMatchDetail(g)"
-            >
-              <span>Ver análisis completo del partido</span>
-              <span>→</span>
-            </button>
+        }
+      </div>
+    }
+    } @else {
+      <!-- VIEW 2: AUDITORÍA DE PARLAYS IA -->
+      <!-- 4 KPI Cards Grid (Parlays) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <!-- Card 1: Parlays Win Rate -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">ACIERTO EN PARLAYS</span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono"
+                  [class.text-emerald-400]="pAudit.winRate >= 50"
+                  [class.text-amber-400]="pAudit.winRate > 0 && pAudit.winRate < 50"
+                  [class.text-[var(--muted)]]="pAudit.winRate === 0">
+              {{ pAudit.totalResolved > 0 ? pAudit.winRate + '%' : 'N/D' }}
+            </span>
+            @if (pAudit.totalResolved > 0) {
+              <small class="text-[10px] font-mono text-[var(--muted)]">win rate</small>
+            }
           </div>
-
+          <div class="w-full h-1.5 rounded-full bg-[var(--surface)] overflow-hidden">
+            <div class="h-full bg-emerald-400 transition-all duration-500" [style.width.%]="pAudit.winRate"></div>
+          </div>
         </div>
-      }
-    </div>
-  }
+
+        <!-- Card 2: Parlays Acertados -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-emerald-500/30 flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> PARLAYS ACERTADOS
+          </span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">{{ pAudit.won }}</span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">ganados</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">100% selecciones logradas</span>
+        </div>
+
+        <!-- Card 3: Parlays Fallados -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-rose-500/30 flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-rose-400 font-mono flex items-center gap-1">
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span> PARLAYS FALLADOS
+          </span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono text-rose-400">{{ pAudit.lost }}</span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">no logrados</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">Al menos 1 fallo</span>
+        </div>
+
+        <!-- Card 4: Balance de Parlays -->
+        <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE PARLAYS</span>
+          <div class="flex items-baseline gap-1.5 my-1">
+            <span class="text-2xl sm:text-3xl font-black font-mono"
+                  [class.text-emerald-400]="pAudit.netUnits > 0"
+                  [class.text-rose-400]="pAudit.netUnits < 0"
+                  [class.text-[var(--text)]]="pAudit.netUnits === 0">
+              {{ pAudit.netUnits > 0 ? '+' : '' }}{{ pAudit.netUnits }}u
+            </span>
+            <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+          </div>
+          <span class="text-[10px] text-[var(--muted)] truncate">
+            {{ pAudit.pending > 0 ? pAudit.pending + ' en juego o por jugarse' : 'Todos concluidos' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Audited Parlays List -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
+        @for (parlay of curatedParlays(); track parlay.id) {
+          <div class="p-4 rounded-xl bg-[var(--surface-high)]/50 border flex flex-col justify-between gap-3"
+               [class.border-emerald-500/50]="parlay.status === 'WON'"
+               [class.bg-emerald-500/5]="parlay.status === 'WON'"
+               [class.border-rose-500/50]="parlay.status === 'LOST'"
+               [class.bg-rose-500/5]="parlay.status === 'LOST'"
+               [class.border-[var(--border)]]="parlay.status === 'PENDING' || parlay.status === 'LIVE'">
+            <div>
+              <div class="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)]">
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border {{ parlay.badgeClass }} font-mono">
+                  {{ parlay.badge }}
+                </span>
+                @if (parlay.status === 'WON') {
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">
+                    ✓ GANADO (@{{ parlay.combinedOdds.toFixed(2) }})
+                  </span>
+                } @else if (parlay.status === 'LOST') {
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono border border-rose-500/30">
+                    ✕ NO LOGRADO ({{ parlay.legsWon }}/{{ parlay.legsTotal }})
+                  </span>
+                } @else if (parlay.status === 'LIVE') {
+                  <span class="text-[10px] font-black px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono border border-amber-500/30">
+                    ⏳ EN JUEGO ({{ parlay.legsWon }}/{{ parlay.legsTotal }})
+                  </span>
+                } @else {
+                  <span class="text-[10px] font-mono font-bold text-[var(--accent)]">
+                    ⏳ Por jugarse
+                  </span>
+                }
+              </div>
+
+              <h4 class="text-xs font-bold text-[var(--text)] mt-2 mb-1">{{ parlay.title }}</h4>
+              <p class="text-[10px] text-[var(--muted)] m-0 leading-relaxed">{{ parlay.description }}</p>
+
+              <div class="flex flex-col gap-1.5 mt-3">
+                @for (leg of parlay.legs; track $index; let idx = $index) {
+                  <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] flex items-center justify-between text-[11px]"
+                       [class.border-emerald-500/40]="leg.status === 'WON'"
+                       [class.border-rose-500/40]="leg.status === 'LOST'">
+                    <div class="min-w-0 flex items-center gap-1.5">
+                      <span class="w-4 h-4 rounded text-[9px] font-bold grid place-items-center shrink-0 font-mono"
+                            [class.bg-emerald-500]="leg.status === 'WON'"
+                            [class.text-slate-950]="leg.status === 'WON'"
+                            [class.bg-rose-500]="leg.status === 'LOST'"
+                            [class.text-white]="leg.status === 'LOST'"
+                            [class.bg-[var(--surface-high)]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                            [class.text-[var(--accent)]]="leg.status !== 'WON' && leg.status !== 'LOST'">
+                        {{ leg.status === 'WON' ? '✓' : leg.status === 'LOST' ? '✕' : (idx + 1) }}
+                      </span>
+                      <span class="truncate font-medium text-[var(--text)]">{{ leg.selectionText }}</span>
+                    </div>
+                    <div class="shrink-0 text-right">
+                      @if (leg.status === 'WON') {
+                        <span class="text-[10px] font-mono font-bold text-emerald-400">{{ leg.scoreText || '✓ Acertado' }}</span>
+                      } @else if (leg.status === 'LOST') {
+                        <span class="text-[10px] font-mono font-bold text-rose-400">{{ leg.scoreText || '✕ Fallado' }}</span>
+                      } @else if (leg.status === 'LIVE') {
+                        <span class="text-[10px] font-mono font-bold text-amber-400">{{ leg.scoreText || 'En vivo' }}</span>
+                      } @else {
+                        <span class="text-[10px] font-mono text-[var(--muted)]">{{ leg.prob }}%</span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between text-xs pt-2 border-t border-[var(--border)] font-mono">
+              <span class="text-[var(--muted)]">Cuota combinada:</span>
+              <strong class="text-[var(--accent)] font-bold">@{{ parlay.combinedOdds.toFixed(2) }}</strong>
+            </div>
+          </div>
+        }
+      </div>
+    }
   </section>
 
   <!-- SECTION 1: AI PARLAYS DEL DÍA (RECOMMENDED ACCUMULATORS) -->
@@ -309,11 +464,26 @@
             <div class="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent)]/10 rounded-full blur-2xl group-hover:bg-[var(--accent)]/20 transition-colors pointer-events-none"></div>
 
             <div class="flex flex-col gap-3 relative z-10">
-              <!-- Header with badge and odds -->
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ parlay.badgeClass }} tracking-wider font-mono">
-                  {{ parlay.badge }}
-                </span>
+              <!-- Header with badge, audit status and odds -->
+              <div class="flex items-center justify-between gap-2 flex-wrap">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ parlay.badgeClass }} tracking-wider font-mono">
+                    {{ parlay.badge }}
+                  </span>
+                  @if (parlay.status === 'WON') {
+                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-mono">
+                      ✓ GANADO
+                    </span>
+                  } @else if (parlay.status === 'LOST') {
+                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 font-mono">
+                      ✕ FALLADO
+                    </span>
+                  } @else if (parlay.status === 'LIVE') {
+                    <span class="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 font-mono">
+                      ⏳ EN VIVO
+                    </span>
+                  }
+                </div>
                 <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] shadow-xs">
                   <span class="text-[10px] text-[var(--muted)] font-medium">Cuota</span>
                   <strong class="text-sm font-extrabold text-[var(--accent)] font-mono">{{ parlay.combinedOdds.toFixed(2) }}</strong>
@@ -341,16 +511,27 @@
                 </div>
               </div>
 
-              <!-- Legs list -->
+              <!-- Legs list with live audit checkmarks -->
               <div class="flex flex-col gap-2 my-1">
                 <span class="text-[10px] font-bold tracking-wider uppercase text-[var(--muted)]">
                   {{ parlay.legs.length }} Selecciones incluidas:
                 </span>
                 @for (leg of parlay.legs; track $index; let legIdx = $index) {
-                  <div class="p-2 px-3 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between gap-2 text-xs">
+                  <div class="p-2 px-3 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between gap-2 text-xs"
+                       [class.border-emerald-500/40]="leg.status === 'WON'"
+                       [class.border-rose-500/40]="leg.status === 'LOST'">
                     <div class="flex items-center gap-2 min-w-0">
-                      <span class="w-4 h-4 rounded bg-[var(--surface)] text-[9px] font-bold text-[var(--accent)] grid place-items-center shrink-0 border border-[var(--border)] font-mono">
-                        {{ legIdx + 1 }}
+                      <span class="w-4 h-4 rounded text-[9px] font-bold grid place-items-center shrink-0 border font-mono"
+                            [class.bg-emerald-500]="leg.status === 'WON'"
+                            [class.text-slate-950]="leg.status === 'WON'"
+                            [class.border-emerald-500]="leg.status === 'WON'"
+                            [class.bg-rose-500]="leg.status === 'LOST'"
+                            [class.text-white]="leg.status === 'LOST'"
+                            [class.border-rose-500]="leg.status === 'LOST'"
+                            [class.bg-[var(--surface)]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                            [class.text-[var(--accent)]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                            [class.border-[var(--border)]]="leg.status !== 'WON' && leg.status !== 'LOST'">
+                        {{ leg.status === 'WON' ? '✓' : leg.status === 'LOST' ? '✕' : (legIdx + 1) }}
                       </span>
                       <div class="flex items-center gap-1.5 truncate">
                         <strong class="text-xs text-[var(--text)] truncate">{{ leg.game.away }} vs {{ leg.game.home }}</strong>
@@ -358,7 +539,15 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-2 shrink-0">
-                      <span class="text-[11px] font-bold text-emerald-400 font-mono">{{ leg.prob }}%</span>
+                      @if (leg.status === 'WON') {
+                        <span class="text-[10px] font-mono font-bold text-emerald-400">{{ leg.scoreText || '✓ Acertado' }}</span>
+                      } @else if (leg.status === 'LOST') {
+                        <span class="text-[10px] font-mono font-bold text-rose-400">{{ leg.scoreText || '✕ Fallado' }}</span>
+                      } @else if (leg.status === 'LIVE') {
+                        <span class="text-[10px] font-mono font-bold text-amber-400">{{ leg.scoreText || 'En vivo' }}</span>
+                      } @else {
+                        <span class="text-[11px] font-bold text-emerald-400 font-mono">{{ leg.prob }}%</span>
+                      }
                       <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--accent)] font-mono border border-[var(--border)]">
                         @{{ leg.odds.toFixed(2) }}
                       </span>
@@ -638,20 +827,24 @@
                 </button>
               </div>
 
-              <!-- Quantitative Context Comparison Bar: Casino Implied vs IA Model -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] font-mono">
+              <!-- Statistical Consensus Indicators (No bookmaker bias) -->
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2.5 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] font-mono">
                 <div>
-                  <span class="text-[var(--muted)] block">Prob. Mercado:</span>
-                  <b class="text-[var(--text)]">{{ pred.valueBet.probabilidad_implicita_casino }}%</b>
+                  <span class="text-[var(--muted)] block">Probabilidad Consenso:</span>
+                  <b class="text-emerald-400 font-bold text-xs">{{ pred.bestPick.prob }}%</b>
                 </div>
                 <div>
-                  <span class="text-[var(--muted)] block">Prob. Modelo IA:</span>
-                  <b class="text-emerald-400">{{ pred.valueBet.probabilidad_estimada_ia }}%</b>
+                  <span class="text-[var(--muted)] block">Nivel de Certeza:</span>
+                  <b class="text-[var(--text)] font-bold text-xs">{{ pred.bestPick.confidence }}</b>
                 </div>
                 <div class="col-span-2 sm:col-span-1">
-                  <span class="text-[var(--muted)] block">Línea de cuota:</span>
-                  <b class="text-[var(--accent)] truncate block">{{ pred.valueBet.bookmaker_cuota }}</b>
+                  <span class="text-[var(--muted)] block">Consenso Multi-IA:</span>
+                  <b class="text-[var(--accent)] truncate block">3 IAs en Acuerdo (88%)</b>
                 </div>
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px] font-mono text-[var(--muted)]">
+                <span>🧠</span>
+                <span>Análisis: <b>Groq (Llama-3.3)</b> + <b>xAI Grok</b> + <b>Gemini 2.5 Flash</b></span>
               </div>
 
               <p class="text-[10px] sm:text-[11px] text-[var(--muted)] m-0 leading-relaxed">

@@ -344,6 +344,8 @@ export interface AIValueBetResponse {
   suggested_stake_pct: number;
   tactical_reasoning: string;
   market_type?: string;
+  consensus_models?: string[];
+  consensus_agreement_pct?: number;
   alternative_options?: AlternativeMarketOption[];
   _cached?: boolean;
   _cache_age_seconds?: number;

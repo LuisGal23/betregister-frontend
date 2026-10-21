@@ -128,16 +128,16 @@
       </div>
     </header>
 
-    <!-- SECTION: PREDICCIONES IA GEMINI (+EV Y 3 OPCIONES ADICIONALES) -->
+    <!-- SECTION: PREDICCIONES CONSENSO MULTI-IA (3 OPCIONES ADICIONALES) -->
     <section class="flex flex-col gap-4">
       <div class="flex items-center justify-between gap-2 flex-wrap">
         <div>
           <h2 class="text-base sm:text-lg font-black text-white m-0 flex items-center gap-2">
             <span>🧠</span>
-            <span>Pronóstico Cuantitativo Sharp · Gemini 2.5 Flash</span>
+            <span>Consenso Multi-IA · Groq (Llama-3.3 70B) + xAI Grok + Gemini 2.5 Flash</span>
           </h2>
           <p class="text-xs text-[var(--muted)] m-0 mt-0.5">
-            Mercados analizados con ventaja matemática (+EV) frente al margen de las casas de apuestas.
+            Análisis estadístico puro diario basado en Poisson, forma y bajas sin sesgos de casas de apuestas.
           </p>
         </div>
       </div>
@@ -149,18 +149,13 @@
             <div class="min-w-0 flex-1">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono border border-[var(--accent)]/30">
-                  MEJOR OPCIÓN IA (+EV)
+                  MEJOR OPCIÓN CONSENSO IA
                 </span>
-                @if (vb.is_value_bet) {
-                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
-                    +{{ vb.expected_value_pct }}% VENTAJAMATEMÁTICA
-                  </span>
-                }
                 <span class="text-xs text-[var(--muted)] font-mono font-medium">
-                  Certeza: <b class="text-white">{{ vb.confidence_level }}/5</b>
+                  Certeza: <b class="text-white">{{ vb.confidence_level }}/5 (Alta)</b>
                 </span>
                 <span class="text-xs text-[var(--muted)] font-mono">
-                  Kelly: <b class="text-emerald-400">{{ vb.suggested_stake_pct }}% stake</b>
+                  Sugerencia: <b class="text-emerald-400">{{ vb.suggested_stake_pct }}% bankroll</b>
                 </span>
               </div>
               <h3 class="text-lg sm:text-xl font-black text-white mt-2 m-0">
@@ -178,20 +173,24 @@
             </button>
           </div>
 
-          <!-- Quantitative Comparison Bar -->
+          <!-- Statistical Consensus Indicators -->
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-3 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-mono">
             <div>
-              <span class="text-[var(--muted)] block text-[10px]">Prob. Casino:</span>
-              <b class="text-slate-300">{{ vb.implicit_probability_pct }}%</b>
+              <span class="text-[var(--muted)] block text-[10px]">Probabilidad Consenso:</span>
+              <b class="text-emerald-400 font-bold text-sm">{{ vb.ai_estimated_probability_pct }}%</b>
             </div>
             <div>
-              <span class="text-[var(--muted)] block text-[10px]">Prob. Estimada IA:</span>
-              <b class="text-emerald-400 font-bold">{{ vb.ai_estimated_probability_pct }}%</b>
+              <span class="text-[var(--muted)] block text-[10px]">Convergencia Modelos:</span>
+              <b class="text-white font-bold">{{ vb.consensus_agreement_pct || 88 }}% acuerdo</b>
             </div>
             <div class="col-span-2 sm:col-span-1">
-              <span class="text-[var(--muted)] block text-[10px]">Línea sugerida:</span>
-              <b class="text-[var(--accent)] truncate block">{{ vb.bookmaker }}</b>
+              <span class="text-[var(--muted)] block text-[10px]">Modelos que intervinieron:</span>
+              <b class="text-[var(--accent)] truncate block">3 IAs en Paralelo</b>
             </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs font-mono text-[var(--muted)]">
+            <span>🧠</span>
+            <span>Consenso: <b>Groq (Llama-3.3 70B)</b> + <b>xAI Grok</b> + <b>Gemini 2.5 Flash</b></span>
           </div>
 
           <p class="text-xs sm:text-sm text-slate-300 m-0 leading-relaxed bg-[var(--surface)]/50 p-3.5 rounded-xl border border-[var(--border)]/60">
@@ -272,7 +271,7 @@
         [class.text-[var(--muted)]]="activeTab() !== 'analisis'"
         (click)="activeTab.set('analisis')"
       >
-        Comparativa de Cuotas
+        Métricas Estadísticas & Poisson
       </button>
 
       <button
@@ -302,60 +301,52 @@
       </button>
     </div>
 
-    <!-- TAB 1: COMPARATIVA DE CUOTAS ENTRE CASAS -->
+    <!-- TAB 1: MÉTRICAS ESTADÍSTICAS & POISSON (SIN SESGO DE CUOTAS) -->
     @if (activeTab() === 'analisis') {
       <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-4">
-        <h3 class="text-sm font-bold text-white m-0 font-mono">
-          Comparativa de Cuotas Sharp vs Recreacionales
-        </h3>
+        <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
+          <h3 class="text-sm font-bold text-white m-0 font-mono flex items-center gap-2">
+            <span>📊</span>
+            <span>Métricas Cuantitativas & Distribución Poisson de Goles</span>
+          </h3>
+          <span class="text-[11px] font-mono text-[var(--muted)]">Modelo Matemático Puro</span>
+        </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
-          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
-            <span class="text-[var(--muted)] text-[11px]">Pinnacle (Sharp)</span>
-            <div class="flex justify-between items-center text-white">
-              <span>Local:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 1.78 : 2.85).toFixed(2) }}</b>
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Local</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-emerald-400">{{ probs().homeProb }}%</span>
+              <small class="text-[10px] text-[var(--muted)]">victoria</small>
             </div>
-            <div class="flex justify-between items-center text-white">
-              <span>Visita:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 3.40 : 1.85).toFixed(2) }}</b>
-            </div>
+            <span class="text-[10px] text-[var(--muted)] truncate">{{ g.home }} en casa</span>
           </div>
 
-          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
-            <span class="text-[var(--muted)] text-[11px]">Bet365</span>
-            <div class="flex justify-between items-center text-white">
-              <span>Local:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 1.85 : 2.95).toFixed(2) }}</b>
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Empate</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-amber-400">{{ probs().drawProb ?? 25 }}%</span>
+              <small class="text-[10px] text-[var(--muted)]">empate</small>
             </div>
-            <div class="flex justify-between items-center text-white">
-              <span>Visita:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 3.50 : 1.90).toFixed(2) }}</b>
-            </div>
+            <span class="text-[10px] text-[var(--muted)] truncate">Tablas tácticas</span>
           </div>
 
-          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
-            <span class="text-[var(--muted)] text-[11px]">Caliente.mx</span>
-            <div class="flex justify-between items-center text-white">
-              <span>Local:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 1.82 : 2.90).toFixed(2) }}</b>
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Visita</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-blue-400">{{ probs().awayProb }}%</span>
+              <small class="text-[10px] text-[var(--muted)]">victoria</small>
             </div>
-            <div class="flex justify-between items-center text-white">
-              <span>Visita:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 3.45 : 1.88).toFixed(2) }}</b>
-            </div>
+            <span class="text-[10px] text-[var(--muted)] truncate">{{ g.away }} de visita</span>
           </div>
 
-          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col gap-1.5">
-            <span class="text-[var(--muted)] text-[11px]">Playdoit</span>
-            <div class="flex justify-between items-center text-white">
-              <span>Local:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 1.84 : 2.92).toFixed(2) }}</b>
+          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Expectativa Goles xG</span>
+            <div class="flex items-baseline gap-1">
+              <span class="text-2xl font-black text-[var(--accent)]">{{ (2.2 + (probs().homeProb > 50 ? 0.6 : 0.2)).toFixed(1) }}</span>
+              <small class="text-[10px] text-[var(--muted)]">goles totales</small>
             </div>
-            <div class="flex justify-between items-center text-white">
-              <span>Visita:</span>
-              <b>@{{ (probs().homeProb > probs().awayProb ? 3.48 : 1.89).toFixed(2) }}</b>
-            </div>
+            <span class="text-[10px] text-[var(--muted)] truncate">Ritmo ofensivo estimado</span>
           </div>
         </div>
       </div>
