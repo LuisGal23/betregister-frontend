@@ -206,11 +206,13 @@ export class PronosticosPageComponent implements OnInit {
   }
 
   // Dashboard KPI de Efectividad IA del Día (porcentaje y partidos resueltos)
+  // Garantiza invariante: won + lost + pending + void === totalGames
   auditSummary = computed(() => {
     const list = this.games();
     let won = 0;
     let lost = 0;
     let pending = 0;
+    let voidCount = 0;
     let live = 0;
 
     for (const g of list) {
@@ -220,6 +222,8 @@ export class PronosticosPageComponent implements OnInit {
         won++;
       } else if (ev.status === 'LOST') {
         lost++;
+      } else if (ev.status === 'VOID') {
+        voidCount++;
       } else {
         if (g.state === 'live') live++;
         else pending++;
@@ -235,6 +239,7 @@ export class PronosticosPageComponent implements OnInit {
       won,
       lost,
       pending,
+      voidCount,
       live,
       winRate,
       hasEvaluations: totalResolved > 0,
@@ -275,9 +280,12 @@ export class PronosticosPageComponent implements OnInit {
     };
   });
 
-  // Evaluar cualquier opción alternativa en base al marcador final
-  evalAlternativeOption(alt: AlternativeMarketOption, game: SportsGame): 'WON' | 'LOST' | 'PENDING' {
-    return evaluateMarketResult(alt.market, alt.tag, game);
+  // Evaluar cualquier opción alternativa priorizando el estado determinista congelado del backend
+  evalAlternativeOption(alt: AlternativeMarketOption, game: SportsGame): 'WON' | 'LOST' | 'PENDING' | 'VOID' {
+    if (alt.status && (alt.status === 'WON' || alt.status === 'LOST' || alt.status === 'VOID')) {
+      return alt.status;
+    }
+    return evaluateMarketResult(alt.market, alt.market_type || alt.tag, game);
   }
 
   // Lista detallada con resumen de aciertos y fallos para la vista
@@ -291,11 +299,17 @@ export class PronosticosPageComponent implements OnInit {
 
       let reasoningSummary = '';
       if (ev.status === 'WON') {
-        reasoningSummary = `Acierto: ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : ''}. El modelo proyectó una probabilidad de ${pred.ai_estimated_probability_pct}% vs ${pred.implicit_probability_pct}% del mercado (+${pred.expected_value_pct}% EV) en favor de ${marketFormatted}, cumpliendo el resultado proyectado con éxito.`;
+        reasoningSummary = ev.ruleApplied
+          ? `Acierto Verificado (Determinista): ${ev.ruleApplied}. Marcador oficial: ${g.home} ${g.home_score} – ${g.away_score} ${g.away}.`
+          : `Acierto: ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : ''}. Pronóstico congelado: ${marketFormatted} (${pred.ai_estimated_probability_pct}% prob.).`;
       } else if (ev.status === 'LOST') {
-        reasoningSummary = `Fallo: El partido finalizó ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : 'con marcador adverso'}. La selección ${marketFormatted} no se cumplió ante la resistencia táctica rival.`;
+        reasoningSummary = ev.ruleApplied
+          ? `Fallo Verificado (Determinista): ${ev.ruleApplied}. Marcador oficial: ${g.home} ${g.home_score} – ${g.away_score} ${g.away}.`
+          : `Fallo: El partido finalizó ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : 'con marcador adverso'}. Selección congelada: ${marketFormatted}.`;
+      } else if (ev.status === 'VOID') {
+        reasoningSummary = `VOID / Push: ${ev.ruleApplied || 'Línea entera empatada o partido pospuesto/cancelado. Sin efecto en tasa de acierto.'}`;
       } else {
-        reasoningSummary = `En juego / Próximo: Partido ${g.state === 'live' ? 'en vivo en este momento' : 'programado'}. Recomendación del modelo Sharp: ${marketFormatted} con ${pred.ai_estimated_probability_pct}% de probabilidad estimada (+${pred.expected_value_pct}% EV).`;
+        reasoningSummary = `Pronóstico Congelado (${pred.locked_at ? 'Inmutable' : 'Pre-partido'}): ${marketFormatted} con ${pred.ai_estimated_probability_pct}% de probabilidad estimada.`;
       }
 
       return {
@@ -384,31 +398,37 @@ export class PronosticosPageComponent implements OnInit {
       unique.sort((a, b) => (a.start > b.start ? 1 : -1));
       this.games.set(unique);
 
-      // 1. Fetch all pre-warmed AI predictions from database in a single fast call (<30ms)
+      // 1. Fetch all pre-warmed frozen AI predictions from database in a single fast call (<30ms)
       const prewarmed = await this.sports.cachedPredictions();
       const initialPreds: Record<string, AIValueBetResponse> = { ...prewarmed, ...this.aiPredictions() };
       for (const g of unique) {
-        initialPreds[g.id] = sanitizeAIPredictionForSport(initialPreds[g.id], g);
+        if (initialPreds[g.id]) {
+          initialPreds[g.id] = sanitizeAIPredictionForSport(initialPreds[g.id], g);
+        } else {
+          initialPreds[g.id] = getUnifiedMatchPrediction(g);
+        }
       }
       this.aiPredictions.set(initialPreds);
 
-      // 2. Async query backend value bets for top visible games with forceRefresh support in ONE batched update
-      const targetGames = unique.slice(0, 16);
-      const batchUpdates: Record<string, AIValueBetResponse> = {};
-      await Promise.allSettled(
-        targetGames.map(async (g) => {
-          try {
-            const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start, forceRefresh);
-            if (vb) {
-              batchUpdates[g.id] = sanitizeAIPredictionForSport(vb, g);
+      // 2. Only fetch from backend if a visible match does NOT yet have a locked snapshot in DB
+      const unlockedGames = unique.slice(0, 16).filter((g) => !prewarmed[g.id]?.locked_at);
+      if (unlockedGames.length) {
+        const batchUpdates: Record<string, AIValueBetResponse> = {};
+        await Promise.allSettled(
+          unlockedGames.map(async (g) => {
+            try {
+              const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start, false);
+              if (vb) {
+                batchUpdates[g.id] = sanitizeAIPredictionForSport(vb, g);
+              }
+            } catch {
+              // Keep unified baseline prediction
             }
-          } catch {
-            // Keep unified baseline prediction
-          }
-        })
-      );
-      if (Object.keys(batchUpdates).length) {
-        this.aiPredictions.update((m) => ({ ...m, ...batchUpdates }));
+          })
+        );
+        if (Object.keys(batchUpdates).length) {
+          this.aiPredictions.update((m) => ({ ...m, ...batchUpdates }));
+        }
       }
     } catch (err) {
       this.error.set(

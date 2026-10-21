@@ -241,6 +241,10 @@
                   <span class="px-2.5 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30 flex items-center gap-1">
                     <span>✕</span> FALLO
                   </span>
+                } @else if (ev.status === 'VOID') {
+                  <span class="px-2.5 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-mono text-[10px] font-black border border-amber-500/30 flex items-center gap-1">
+                    <span>⊘</span> VOID / PUSH
+                  </span>
                 } @else {
                   <span class="px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--accent)] font-mono text-[10px] font-bold border border-[var(--border)]">
                     Pendiente
@@ -251,7 +255,12 @@
 
             <div class="p-2.5 rounded-lg bg-[var(--surface)]/90 border border-[var(--border)] flex items-center justify-between gap-2">
               <div class="min-w-0">
-                <span class="text-[9px] font-bold uppercase font-mono text-[var(--muted)] block">SELECCIÓN RECOMENDADA POR IA</span>
+                <span class="text-[9px] font-bold uppercase font-mono text-[var(--muted)] flex items-center gap-1.5">
+                  <span>SELECCIÓN CONGELADA (INMUTABLE)</span>
+                  @if (pred.locked_at) {
+                    <span class="text-emerald-400">🔒</span>
+                  }
+                </span>
                 <strong class="text-xs font-black text-emerald-400 truncate block">
                   {{ item.marketFormatted }}
                 </strong>

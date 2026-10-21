@@ -1695,13 +1695,20 @@ export function evaluateMarketResult(
     return hScore !== aScore ? 'WON' : 'LOST';
   }
 
-  // 7. Away Win
-  if (mType === 'away_win' || (awayMatches && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+  // 7. Away Win - Prioritize explicit team name match over LLM market_type tag to prevent home/away inversion (e.g. Roma 4-0)
+  if (homeMatches && !awayMatches && (mType === 'home_win' || mType === 'away_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana'))) {
+    return hScore > aScore ? 'WON' : 'LOST';
+  }
+  if (awayMatches && !homeMatches && (mType === 'away_win' || mType === 'home_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana'))) {
+    return aScore > hScore ? 'WON' : 'LOST';
+  }
+
+  if (mType === 'away_win') {
     return aScore > hScore ? 'WON' : 'LOST';
   }
 
   // 8. Home Win
-  if (mType === 'home_win' || (homeMatches && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+  if (mType === 'home_win') {
     return hScore > aScore ? 'WON' : 'LOST';
   }
 
@@ -1717,12 +1724,105 @@ export function evaluateMarketResult(
 }
 
 /**
- * Evaluates whether an AI prediction was WON or LOST based on final scores.
+ * Pure deterministic canonical grader (mirrors backend `sports/grading.py::grade`).
+ * HOME always maps strictly to `home_score` (`home_team_id`), AWAY to `away_score` (`away_team_id`).
+ */
+export function gradeCanonical(
+  market: string,
+  selection: string,
+  line: number | null | undefined,
+  homeScore: number | null | undefined,
+  awayScore: number | null | undefined,
+  matchState = 'final'
+): 'WON' | 'LOST' | 'VOID' | 'PENDING' {
+  const st = (matchState || '').toLowerCase();
+  if (st === 'postponed' || st === 'canceled' || st === 'cancelled' || st === 'void') {
+    return 'VOID';
+  }
+  if (st !== 'final' && st !== 'finished' && st !== 'ft') {
+    return 'PENDING';
+  }
+  if (homeScore == null || awayScore == null || isNaN(Number(homeScore)) || isNaN(Number(awayScore))) {
+    return 'PENDING';
+  }
+  const h = Number(homeScore);
+  const a = Number(awayScore);
+  const mkt = (market || '').toUpperCase();
+  const sel = (selection || '').toUpperCase();
+
+  if (mkt === '1X2') {
+    if (sel === 'HOME') return h > a ? 'WON' : 'LOST';
+    if (sel === 'AWAY') return a > h ? 'WON' : 'LOST';
+    if (sel === 'DRAW') return h === a ? 'WON' : 'LOST';
+  }
+  if (mkt === 'BTTS') {
+    if (sel === 'YES') return h > 0 && a > 0 ? 'WON' : 'LOST';
+    if (sel === 'NO') return h === 0 || a === 0 ? 'WON' : 'LOST';
+  }
+  if (mkt === 'OVER_UNDER' && line != null) {
+    const total = h + a;
+    if (Math.abs(total - Number(line)) < 1e-9) return 'VOID';
+    if (sel === 'OVER') return total > Number(line) ? 'WON' : 'LOST';
+    if (sel === 'UNDER') return total < Number(line) ? 'WON' : 'LOST';
+  }
+  if (mkt === 'DOUBLE_CHANCE') {
+    if (sel === 'HOME_OR_DRAW') return h >= a ? 'WON' : 'LOST';
+    if (sel === 'AWAY_OR_DRAW') return a >= h ? 'WON' : 'LOST';
+    if (sel === 'HOME_OR_AWAY') return h !== a ? 'WON' : 'LOST';
+  }
+  if (mkt === 'SPREAD' && line != null) {
+    const hcap = Number(line);
+    if (sel === 'HOME') {
+      if (Math.abs(h + hcap - a) < 1e-9) return 'VOID';
+      return h + hcap > a ? 'WON' : 'LOST';
+    }
+    if (sel === 'AWAY') {
+      if (Math.abs(a + hcap - h) < 1e-9) return 'VOID';
+      return a + hcap > h ? 'WON' : 'LOST';
+    }
+  }
+  return 'PENDING';
+}
+
+/**
+ * Evaluates whether an AI prediction was WON, LOST, VOID, or PENDING.
+ * Prioritizes the immutable backend-audited status (`prediction.status` & `result_snapshot`)
+ * or canonical `(market, selection, line)` over text heuristics.
  */
 export function evaluatePrediction(
   prediction: AIValueBetResponse,
   game: SportsGame
 ): PredictionEvaluation {
+  // 1. If backend has already graded and frozen this prediction, return the authoritative backend state directly!
+  if (prediction.status && (prediction.status === 'WON' || prediction.status === 'LOST' || prediction.status === 'VOID')) {
+    const snap = prediction.result_snapshot;
+    const hScore = snap?.home_score != null ? Number(snap.home_score) : Number(game.home_score ?? 0);
+    const aScore = snap?.away_score != null ? Number(snap.away_score) : Number(game.away_score ?? 0);
+    const actualScore = `${game.away} ${aScore} – ${hScore} ${game.home}`;
+    const targetOdd = Number(prediction.target_odd || 1.90);
+    return {
+      status: prediction.status,
+      actualResult: actualScore,
+      margin: `${Math.abs(hScore - aScore)} dif`,
+      profitUnits: prediction.status === 'WON' ? Number((targetOdd - 1.0).toFixed(2)) : prediction.status === 'VOID' ? 0 : -1.0,
+      ruleApplied: snap?.rule_applied,
+      lockedAt: prediction.locked_at,
+      gradedAt: prediction.graded_at,
+      needsReview: prediction.needs_review,
+      predictionId: prediction.prediction_id,
+    };
+  }
+
+  if (game.state === 'postponed') {
+    return {
+      status: 'VOID',
+      actualResult: 'Pospuesto / Cancelado (VOID)',
+      profitUnits: 0,
+      lockedAt: prediction.locked_at,
+      predictionId: prediction.prediction_id,
+    };
+  }
+
   if (game.state !== 'final') {
     const isLive = game.state === 'live';
     const liveScore = isLive && (game.away_score != null || game.home_score != null)
@@ -1732,6 +1832,8 @@ export function evaluatePrediction(
       status: 'PENDING',
       actualResult: isLive ? `En vivo (${liveScore})` : 'Por jugarse',
       profitUnits: 0,
+      lockedAt: prediction.locked_at,
+      predictionId: prediction.prediction_id,
     };
   }
 
@@ -1740,12 +1842,22 @@ export function evaluatePrediction(
       status: 'PENDING',
       actualResult: 'Marcador pendiente',
       profitUnits: 0,
+      lockedAt: prediction.locked_at,
+      predictionId: prediction.prediction_id,
     };
   }
 
-  const res = evaluateMarketResult(prediction.recommended_market, prediction.market_type, game);
   const hScore = Number(game.home_score);
   const aScore = Number(game.away_score);
+
+  // 2. If canonical (market, selection) is present on the prediction, use pure canonical grader
+  let res: 'WON' | 'LOST' | 'VOID' | 'PENDING';
+  if (prediction.market && prediction.selection) {
+    res = gradeCanonical(prediction.market, prediction.selection, prediction.line, hScore, aScore, game.state);
+  } else {
+    res = evaluateMarketResult(prediction.recommended_market, prediction.market_type, game);
+  }
+
   const actualScore = `${game.away} ${aScore} – ${hScore} ${game.home}`;
   const targetOdd = Number(prediction.target_odd || 1.90);
   const won = res === 'WON';
@@ -1754,7 +1866,11 @@ export function evaluatePrediction(
     status: res,
     actualResult: actualScore,
     margin: `${Math.abs(hScore - aScore)} dif`,
-    profitUnits: won ? Number((targetOdd - 1.0).toFixed(2)) : -1.0,
+    profitUnits: won ? Number((targetOdd - 1.0).toFixed(2)) : res === 'VOID' ? 0 : -1.0,
+    lockedAt: prediction.locked_at,
+    gradedAt: prediction.graded_at,
+    needsReview: prediction.needs_review,
+    predictionId: prediction.prediction_id,
   };
 }
 

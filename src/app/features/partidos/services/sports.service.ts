@@ -1,7 +1,15 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { EspnLiveService } from './espn-live.service';
-import type { League, Scoreboard, BetScores, SportsGame, MatchDetails, AIValueBetResponse } from './sports.model';
+import type {
+  League,
+  Scoreboard,
+  BetScores,
+  SportsGame,
+  MatchDetails,
+  AIValueBetResponse,
+  AuditVerificationProof,
+} from './sports.model';
 
 @Injectable({ providedIn: 'root' })
 export class SportsService {
@@ -205,9 +213,49 @@ export class SportsService {
   /**
    * Fetches automated server-side audit metrics from DB.
    */
-  async auditSummary(): Promise<any> {
+  async auditSummary(day?: string): Promise<any> {
     try {
-      return await this.api.request<any>('/sports/predictions/audit-summary', undefined, 5000);
+      const q = day ? `?day=${encodeURIComponent(day)}` : '';
+      return await this.api.request<any>(`/sports/predictions/audit-summary${q}`, undefined, 5000);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Loads the immutable frozen predictions board, frozen parlays, and single-query KPI counters.
+   */
+  async predictionsBoard(day?: string): Promise<any> {
+    try {
+      const q = day ? `?day=${encodeURIComponent(day)}` : '';
+      return await this.api.request<any>(`/sports/predictions/board${q}`, undefined, 6000);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Triggers the dedicated deterministic server-side audit job (/api/sports/audit/run).
+   */
+  async runDeterministicAudit(day?: string): Promise<any> {
+    try {
+      const q = day ? `?day=${encodeURIComponent(day)}` : '';
+      return await this.api.request<any>(`/sports/audit/run${q}`, {}, 10000);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Fetches the deterministic audit verification proof for a specific prediction_id.
+   */
+  async verifyPrediction(predictionId: number): Promise<AuditVerificationProof | null> {
+    try {
+      return await this.api.request<AuditVerificationProof>(
+        `/sports/audit/verify/${encodeURIComponent(String(predictionId))}`,
+        undefined,
+        5000
+      );
     } catch {
       return null;
     }
