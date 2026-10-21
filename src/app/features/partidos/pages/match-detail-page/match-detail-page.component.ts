@@ -21,6 +21,11 @@ import {
   getStadium,
   evaluateMarketResult,
   getKnownPlayerHeadshot,
+  isBasketballGame,
+  isNFLGame,
+  isMLBGame,
+  isSoccerGame,
+  sanitizeAIPredictionForSport,
 } from '../../../../shared/utils/match-analysis.utils';
 import { getTeamLogo } from '../../../../shared/utils/team-logos.utils';
 
@@ -53,11 +58,11 @@ export interface PlayerCardView {
   props: PlayerPropOption[];
 }
 
-function buildPlayerCard(p: any, sport: string, side: 'home' | 'away', teamName: string): PlayerCardView {
+function buildPlayerCard(p: any, sport: string, league: string, side: 'home' | 'away', teamName: string): PlayerCardView {
   const role = (p.role || p.position || '').toLowerCase();
-  const isBasketball = sport.includes('baloncesto') || sport.includes('basket') || sport === 'nba';
-  const isNFL = sport.includes('americano') || sport === 'nfl';
-  const isMLB = sport.includes('béisbol') || sport.includes('beisbol') || sport === 'mlb';
+  const isBasketball = isBasketballGame(sport, league);
+  const isNFL = isNFLGame(sport, league);
+  const isMLB = isMLBGame(sport, league);
 
   let stats: { label: string; value: string }[] = [];
   let props: PlayerPropOption[] = [];
@@ -378,14 +383,38 @@ export class MatchDetailPageComponent implements OnInit {
     return getStadium(g.home);
   });
 
+  isSoccerMatch = computed(() => {
+    const g = this.game();
+    const d = this.details();
+    return isSoccerGame(g?.sport || d?.sport, g?.league || this.league());
+  });
+
+  isBasketballMatch = computed(() => {
+    const g = this.game();
+    const d = this.details();
+    return isBasketballGame(g?.sport || d?.sport, g?.league || this.league());
+  });
+
+  isNFLMatch = computed(() => {
+    const g = this.game();
+    const d = this.details();
+    return isNFLGame(g?.sport || d?.sport, g?.league || this.league());
+  });
+
+  isMLBMatch = computed(() => {
+    const g = this.game();
+    const d = this.details();
+    return isMLBGame(g?.sport || d?.sport, g?.league || this.league());
+  });
+
   // Top 3 alternative options with probabilities
   alternativeOptions = computed<AlternativeMarketOption[]>(() => {
-    const ai = this.aiValueBet();
+    const g = this.game();
+    if (!g) return [];
+    const ai = sanitizeAIPredictionForSport(this.aiValueBet(), g);
     if (ai?.alternative_options && ai.alternative_options.length) {
       return ai.alternative_options.slice(0, 3);
     }
-    const g = this.game();
-    if (!g) return [];
     const unified = getUnifiedMatchPrediction(g);
     return unified.alternative_options || [];
   });
@@ -398,14 +427,15 @@ export class MatchDetailPageComponent implements OnInit {
 
     const homeName = g.home;
     const awayName = g.away;
-    const sport = (g.sport || d?.sport || 'Fútbol').toLowerCase();
+    const sport = g.sport || d?.sport || 'Fútbol';
+    const league = g.league || this.league() || '';
 
     // 1. If d.star_players exists and has entries, use them
     if (d?.star_players && d.star_players.length > 0) {
       return d.star_players.map((s) => {
         const side = s.team_side || 'home';
         const team = side === 'home' ? homeName : awayName;
-        return buildPlayerCard(s, sport, side, team);
+        return buildPlayerCard(s, sport, league, side, team);
       });
     }
 
@@ -418,7 +448,7 @@ export class MatchDetailPageComponent implements OnInit {
         return combined.map((p) => {
           const side = p.team_side || 'home';
           const team = side === 'home' ? homeName : awayName;
-          return buildPlayerCard(p, sport, side, team);
+          return buildPlayerCard(p, sport, league, side, team);
         });
       }
     }
@@ -429,7 +459,7 @@ export class MatchDetailPageComponent implements OnInit {
       return synthetic.star_players.map((s) => {
         const side = s.team_side || 'home';
         const team = side === 'home' ? homeName : awayName;
-        return buildPlayerCard(s, sport, side, team);
+        return buildPlayerCard(s, sport, league, side, team);
       });
     }
 
@@ -502,23 +532,25 @@ export class MatchDetailPageComponent implements OnInit {
         // Start with unified fallback instantly
         this.aiValueBet.set(getUnifiedMatchPrediction(g));
 
-        // Async fetch server Gemini prediction
+        // Async fetch server Gemini prediction (sanitized for sport coherence)
         this.sports
           .valueBet(league, matchId, g.home, g.away, g.start)
           .then((vb) => {
             if (vb) {
-              this.aiValueBet.set(vb);
+              this.aiValueBet.set(sanitizeAIPredictionForSport(vb, g));
             }
           })
           .catch(() => {});
       }
     } catch {
       // Fallback synthetic details if network is offline
+      const l = league.toLowerCase();
+      const synthSport = l === 'nba' ? 'Básquetbol' : l === 'nfl' ? 'Americano' : l === 'mlb' ? 'Béisbol' : 'Fútbol';
       const syntheticGame: SportsGame = {
         id: matchId,
         league,
         league_name: league.toUpperCase(),
-        sport: 'Fútbol',
+        sport: synthSport,
         home: 'Local',
         away: 'Visitante',
         start: new Date().toISOString(),
@@ -544,7 +576,7 @@ export class MatchDetailPageComponent implements OnInit {
     try {
       const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start, true);
       if (vb) {
-        this.aiValueBet.set(vb);
+        this.aiValueBet.set(sanitizeAIPredictionForSport(vb, g));
       }
     } catch {
       // Keep existing
@@ -610,9 +642,12 @@ export class MatchDetailPageComponent implements OnInit {
   }
 
   getPropForPlayer(p: any): { label: string; market: string; pick: string; line: number; prob: number } {
-    const sport = this.game()?.sport || 'Fútbol';
-    const isBasketball = sport === 'Baloncesto' || sport === 'Básquetbol' || this.game()?.league === 'nba';
-    const isNFL = sport === 'Americano' || this.game()?.league === 'nfl';
+    const g = this.game();
+    const sport = g?.sport || this.details()?.sport || 'Fútbol';
+    const league = g?.league || this.league() || '';
+    const isBasketball = isBasketballGame(sport, league);
+    const isNFL = isNFLGame(sport, league);
+    const isMLB = isMLBGame(sport, league);
 
     if (isBasketball) {
       const isPlaymaker = (p.role || '').toLowerCase().includes('base') || (p.position || '') === 'G';
@@ -625,9 +660,13 @@ export class MatchDetailPageComponent implements OnInit {
     if (isNFL) {
       const isQB = (p.role || '').toLowerCase().includes('quarterback') || (p.position || '') === 'QB';
       if (isQB) {
-        return { label: `Más de 1.5 Pases de TD (${p.name})`, market: 'Pases de TD de jugador', pick: 'Más de', line: 1.5, prob: 65 };
+        return { label: `Más de 1.5 Pases de TD (${p.name})`, market: 'Pases de touchdown de QB', pick: 'Más de', line: 1.5, prob: 65 };
       }
-      return { label: `Más de 64.5 Yardas totales (${p.name})`, market: 'Yardas de jugador', pick: 'Más de', line: 64.5, prob: 61 };
+      return { label: `Más de 64.5 Yardas totales (${p.name})`, market: 'Yardas terrestres', pick: 'Más de', line: 64.5, prob: 61 };
+    }
+
+    if (isMLB) {
+      return { label: `Más de 1.5 Hits (${p.name})`, market: 'Hits de bateador', pick: 'Más de', line: 1.5, prob: 60 };
     }
 
     // Soccer
@@ -643,10 +682,11 @@ export class MatchDetailPageComponent implements OnInit {
       return p.headshot;
     }
     const g = this.game();
-    const sport = (g?.sport || '').toLowerCase();
-    const isNba = sport.includes('baloncesto') || sport.includes('basket') || g?.league === 'nba';
-    const isNfl = sport.includes('americano') || g?.league === 'nfl';
-    const isMlb = sport.includes('béisbol') || sport.includes('beisbol') || g?.league === 'mlb';
+    const sport = g?.sport || this.details()?.sport || '';
+    const league = g?.league || this.league() || '';
+    const isNba = isBasketballGame(sport, league);
+    const isNfl = isNFLGame(sport, league);
+    const isMlb = isMLBGame(sport, league);
 
     if (p.athlete_id) {
       if (isNba) return `https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/${p.athlete_id}.png&w=350&h=254`;

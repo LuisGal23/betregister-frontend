@@ -17,6 +17,11 @@ import {
   getUnifiedMatchPrediction,
   evaluatePrediction,
   getVerifiedTeamStars,
+  isBasketballGame,
+  isNFLGame,
+  isMLBGame,
+  isSoccerGame,
+  sanitizeAIPredictionForSport,
 } from '../../../../shared/utils/match-analysis.utils';
 import { getTeamLogo } from '../../../../shared/utils/team-logos.utils';
 
@@ -130,9 +135,22 @@ export class MatchesPageComponent implements OnInit {
 
   formatRecommendedMarket(market?: string, game?: SportsGame | null, vb?: AIValueBetResponse | null): string {
     if (!game) return market || 'Selección de Valor';
+    const isSoccer = isSoccerGame(game.sport, game.league);
+    const isBball = isBasketballGame(game.sport, game.league);
+    const isNfl = isNFLGame(game.sport, game.league);
     const raw = (market || '').trim();
     const home = game.home;
     const away = game.away;
+
+    if (
+      !isSoccer &&
+      (raw.toLowerCase().includes('ambos') ||
+        raw.toLowerCase().includes('btts') ||
+        raw.toLowerCase().includes('gol') ||
+        raw.toLowerCase().includes('empate'))
+    ) {
+      return getUnifiedMatchPrediction(game).recommended_market;
+    }
 
     if (raw.toLowerCase().includes(home.toLowerCase()) || raw.toLowerCase().includes(away.toLowerCase())) {
       return raw;
@@ -153,14 +171,14 @@ export class MatchesPageComponent implements OnInit {
     if (mType === 'away_win' || reasoning.includes(away.toLowerCase())) {
       return `Victoria de ${away} (Moneyline)`;
     }
-    if (mType === 'draw' || raw.toLowerCase().includes('empate')) {
+    if ((mType === 'draw' || raw.toLowerCase().includes('empate')) && isSoccer) {
       return 'Empate (Draw)';
     }
     if (mType === 'over_2_5') {
-      return 'Más de 2.5 Goles (Over 2.5)';
+      return isSoccer ? 'Más de 2.5 Goles (Over 2.5)' : isBball ? 'Más de 218.5 Puntos' : isNfl ? 'Más de 44.5 Puntos' : 'Más de 8.5 Carreras';
     }
     if (mType === 'under_2_5') {
-      return 'Menos de 2.5 Goles (Under 2.5)';
+      return isSoccer ? 'Menos de 2.5 Goles (Under 2.5)' : isBball ? 'Menos de 218.5 Puntos' : isNfl ? 'Menos de 44.5 Puntos' : 'Menos de 8.5 Carreras';
     }
 
     const p = calculateUnifiedGameProbabilities(game);
@@ -169,7 +187,8 @@ export class MatchesPageComponent implements OnInit {
   }
 
   getGamePrediction(g: SportsGame): AIValueBetResponse {
-    return this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+    const raw = this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+    return sanitizeAIPredictionForSport(raw, g);
   }
 
   getPredictionEvaluation(g: SportsGame): PredictionEvaluation {
@@ -429,9 +448,7 @@ export class MatchesPageComponent implements OnInit {
       const prewarmed = await this.sports.cachedPredictions();
       const initialPreds: Record<string, AIValueBetResponse> = { ...prewarmed, ...this.aiPredictions() };
       for (const g of unique) {
-        if (!initialPreds[g.id]) {
-          initialPreds[g.id] = getUnifiedMatchPrediction(g);
-        }
+        initialPreds[g.id] = sanitizeAIPredictionForSport(initialPreds[g.id], g);
       }
       this.aiPredictions.set(initialPreds);
 
@@ -466,7 +483,7 @@ export class MatchesPageComponent implements OnInit {
           try {
             const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start);
             if (vb) {
-              batchAiUpdates[g.id] = vb;
+              batchAiUpdates[g.id] = sanitizeAIPredictionForSport(vb, g);
             }
           } catch {}
         })
@@ -563,7 +580,9 @@ export class MatchesPageComponent implements OnInit {
   // Direct betting on Over / Under
   addTotalBet(game: SportsGame, side: 'over' | 'under', line: any, oddDec?: number | null) {
     const numLine = Number(line) || 0;
-    const market = game.sport === 'Americano' ? 'Puntos' : game.sport === 'Béisbol' ? 'Carreras' : 'Goles';
+    const isSoccer = isSoccerGame(game.sport, game.league);
+    const isMlb = isMLBGame(game.sport, game.league);
+    const market = isSoccer ? 'Goles' : isMlb ? 'Carreras' : 'Puntos';
     const pick = side === 'over' ? 'Más de' : 'Menos de';
     this.ticketModal.open({
       game,

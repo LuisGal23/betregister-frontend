@@ -320,7 +320,9 @@
         <div class="flex items-center justify-between pb-2 border-b border-[var(--border)]">
           <h3 class="text-sm font-bold text-white m-0 font-mono flex items-center gap-2">
             <span>📊</span>
-            <span>Métricas Cuantitativas & Distribución Poisson de Goles</span>
+            <span>
+              {{ isBasketballMatch() ? 'Métricas Cuantitativas & Proyección de Posesiones NBA' : isNFLMatch() ? 'Métricas Cuantitativas & Eficiencia de Zona Roja NFL' : isMLBMatch() ? 'Métricas Cuantitativas & Proyección de Carreras MLB' : 'Métricas Cuantitativas & Distribución Poisson de Goles' }}
+            </span>
           </h3>
           <span class="text-[11px] font-mono text-[var(--muted)]">Modelo Matemático Puro</span>
         </div>
@@ -335,14 +337,25 @@
             <span class="text-[10px] text-[var(--muted)] truncate">{{ g.home }} en casa</span>
           </div>
 
-          <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
-            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Empate</span>
-            <div class="flex items-baseline gap-1">
-              <span class="text-2xl font-black text-amber-400">{{ probs().drawProb ?? 25 }}%</span>
-              <small class="text-[10px] text-[var(--muted)]">empate</small>
+          @if (isSoccerMatch()) {
+            <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+              <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Empate</span>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-black text-amber-400">{{ probs().drawProb ?? 25 }}%</span>
+                <small class="text-[10px] text-[var(--muted)]">empate</small>
+              </div>
+              <span class="text-[10px] text-[var(--muted)] truncate">Tablas tácticas</span>
             </div>
-            <span class="text-[10px] text-[var(--muted)] truncate">Tablas tácticas</span>
-          </div>
+          } @else {
+            <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
+              <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Diferencial / Spread</span>
+              <div class="flex items-baseline gap-1">
+                <span class="text-2xl font-black text-amber-400">{{ probs().homeProb >= probs().awayProb ? '-' : '+' }}{{ isBasketballMatch() ? '4.5' : isNFLMatch() ? '3.5' : '1.5' }}</span>
+                <small class="text-[10px] text-[var(--muted)]">{{ isMLBMatch() ? 'carreras' : 'pts' }}</small>
+              </div>
+              <span class="text-[10px] text-[var(--muted)] truncate">Margen proyectado</span>
+            </div>
+          }
 
           <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
             <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Probabilidad Visita</span>
@@ -354,10 +367,23 @@
           </div>
 
           <div class="p-3.5 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] flex flex-col justify-between gap-2">
-            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">Expectativa Goles xG</span>
+            <span class="text-[var(--muted)] text-[10px] uppercase font-bold">
+              {{ isBasketballMatch() ? 'Proyección Puntos' : isNFLMatch() ? 'Proyección Puntos' : isMLBMatch() ? 'Proyección Carreras' : 'Expectativa Goles xG' }}
+            </span>
             <div class="flex items-baseline gap-1">
-              <span class="text-2xl font-black text-[var(--accent)]">{{ (2.2 + (probs().homeProb > 50 ? 0.6 : 0.2)).toFixed(1) }}</span>
-              <small class="text-[10px] text-[var(--muted)]">goles totales</small>
+              @if (isBasketballMatch()) {
+                <span class="text-2xl font-black text-[var(--accent)]">{{ (218.5 + (probs().homeProb > 50 ? 4.0 : 1.0)).toFixed(1) }}</span>
+                <small class="text-[10px] text-[var(--muted)]">pts totales</small>
+              } @else if (isNFLMatch()) {
+                <span class="text-2xl font-black text-[var(--accent)]">{{ (44.5 + (probs().homeProb > 50 ? 2.0 : 0.5)).toFixed(1) }}</span>
+                <small class="text-[10px] text-[var(--muted)]">pts totales</small>
+              } @else if (isMLBMatch()) {
+                <span class="text-2xl font-black text-[var(--accent)]">8.5</span>
+                <small class="text-[10px] text-[var(--muted)]">carreras</small>
+              } @else {
+                <span class="text-2xl font-black text-[var(--accent)]">{{ (2.2 + (probs().homeProb > 50 ? 0.6 : 0.2)).toFixed(1) }}</span>
+                <small class="text-[10px] text-[var(--muted)]">goles totales</small>
+              }
             </div>
             <span class="text-[10px] text-[var(--muted)] truncate">Ritmo ofensivo estimado</span>
           </div>

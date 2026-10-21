@@ -805,21 +805,13 @@
                       <div class="mt-2 pt-3 border-t border-[var(--border)] text-xs flex flex-col gap-2 animate-fade-in">
                         <span class="text-[10px] font-bold text-[var(--muted)] uppercase font-mono">Últimos 3 encuentros disputados</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center">
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">12 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">85 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Gol / 4 Tiros</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">05 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">90 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">2 Tiros al arco</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">28 SEP</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">78 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Asistencia</small>
-                          </div>
+                          @for (log of getPlayerGameLog({ name: star.name, team_name: star.team, team_side: 'away', category: 'General', category_label: star.role, line: 1.5, prob: 80, odds: 1.85, position: star.role, display_stat: '1+' }); track log.date) {
+                            <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                              <span class="text-[9px] text-[var(--muted)] block font-mono uppercase">{{ log.date }}</span>
+                              <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">{{ log.minutes }} min</strong>
+                              <small class="text-[10px] text-[var(--text)] block truncate">{{ log.stat }}</small>
+                            </div>
+                          }
                         </div>
                       </div>
                     }
@@ -891,21 +883,13 @@
                       <div class="mt-2 pt-3 border-t border-[var(--border)] text-xs flex flex-col gap-2 animate-fade-in">
                         <span class="text-[10px] font-bold text-[var(--muted)] uppercase font-mono">Últimos 3 encuentros disputados</span>
                         <div class="grid grid-cols-3 gap-1.5 text-center">
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">12 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">85 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Gol / 4 Tiros</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">05 OCT</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">90 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">2 Tiros al arco</small>
-                          </div>
-                          <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
-                            <span class="text-[9px] text-[var(--muted)] block font-mono">28 SEP</span>
-                            <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">78 min</strong>
-                            <small class="text-[10px] text-[var(--text)] block truncate">1 Asistencia</small>
-                          </div>
+                          @for (log of getPlayerGameLog({ name: star.name, team_name: star.team, team_side: 'home', category: 'General', category_label: star.role, line: 1.5, prob: 80, odds: 1.85, position: star.role, display_stat: '1+' }); track log.date) {
+                            <div class="p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)]">
+                              <span class="text-[9px] text-[var(--muted)] block font-mono uppercase">{{ log.date }}</span>
+                              <strong class="text-[11px] text-emerald-400 block font-bold mt-0.5">{{ log.minutes }} min</strong>
+                              <small class="text-[10px] text-[var(--text)] block truncate">{{ log.stat }}</small>
+                            </div>
+                          }
                         </div>
                       </div>
                     }

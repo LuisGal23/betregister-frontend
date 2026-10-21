@@ -25,6 +25,11 @@ import {
   evaluatePrediction,
   evaluateMarketResult,
   calculateUnifiedGameProbabilities,
+  isBasketballGame,
+  isNFLGame,
+  isMLBGame,
+  isSoccerGame,
+  sanitizeAIPredictionForSport,
 } from '../../../shared/utils/match-analysis.utils';
 
 export interface AIPrediction {
@@ -136,9 +141,25 @@ export class PronosticosPageComponent implements OnInit {
   // Explicit, unambiguous market formatter
   formatRecommendedMarket(market?: string, game?: SportsGame | null, vb?: AIValueBetResponse | null): string {
     if (!game) return market || 'Selección de Valor';
+    const isSoccer = isSoccerGame(game.sport, game.league);
+    const isBball = isBasketballGame(game.sport, game.league);
+    const isNfl = isNFLGame(game.sport, game.league);
+    const isMlb = isMLBGame(game.sport, game.league);
     const raw = (market || '').trim();
     const home = game.home;
     const away = game.away;
+
+    // Prevent soccer markets from displaying on non-soccer games
+    if (
+      !isSoccer &&
+      (raw.toLowerCase().includes('ambos') ||
+        raw.toLowerCase().includes('btts') ||
+        raw.toLowerCase().includes('gol') ||
+        raw.toLowerCase().includes('empate'))
+    ) {
+      const sanitized = getUnifiedMatchPrediction(game);
+      return sanitized.recommended_market;
+    }
 
     if (raw.toLowerCase().includes(home.toLowerCase()) || raw.toLowerCase().includes(away.toLowerCase())) {
       return raw;
@@ -159,14 +180,14 @@ export class PronosticosPageComponent implements OnInit {
     if (mType === 'away_win' || reasoning.includes(away.toLowerCase())) {
       return `Victoria de ${away} (Moneyline)`;
     }
-    if (mType === 'draw' || raw.toLowerCase().includes('empate')) {
+    if ((mType === 'draw' || raw.toLowerCase().includes('empate')) && isSoccer) {
       return 'Empate (Draw)';
     }
     if (mType === 'over_2_5') {
-      return 'Más de 2.5 Goles (Over 2.5)';
+      return isSoccer ? 'Más de 2.5 Goles (Over 2.5)' : isBball ? 'Más de 218.5 Puntos' : isNfl ? 'Más de 44.5 Puntos' : 'Más de 8.5 Carreras';
     }
     if (mType === 'under_2_5') {
-      return 'Menos de 2.5 Goles (Under 2.5)';
+      return isSoccer ? 'Menos de 2.5 Goles (Under 2.5)' : isBball ? 'Menos de 218.5 Puntos' : isNfl ? 'Menos de 44.5 Puntos' : 'Menos de 8.5 Carreras';
     }
 
     const p = calculateUnifiedGameProbabilities(game);
@@ -175,7 +196,8 @@ export class PronosticosPageComponent implements OnInit {
   }
 
   getGamePrediction(g: SportsGame): AIValueBetResponse {
-    return this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+    const raw = this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+    return sanitizeAIPredictionForSport(raw, g);
   }
 
   getPredictionEvaluation(g: SportsGame): PredictionEvaluation {
@@ -366,9 +388,7 @@ export class PronosticosPageComponent implements OnInit {
       const prewarmed = await this.sports.cachedPredictions();
       const initialPreds: Record<string, AIValueBetResponse> = { ...prewarmed, ...this.aiPredictions() };
       for (const g of unique) {
-        if (!initialPreds[g.id]) {
-          initialPreds[g.id] = getUnifiedMatchPrediction(g);
-        }
+        initialPreds[g.id] = sanitizeAIPredictionForSport(initialPreds[g.id], g);
       }
       this.aiPredictions.set(initialPreds);
 
@@ -380,7 +400,7 @@ export class PronosticosPageComponent implements OnInit {
           try {
             const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start, forceRefresh);
             if (vb) {
-              batchUpdates[g.id] = vb;
+              batchUpdates[g.id] = sanitizeAIPredictionForSport(vb, g);
             }
           } catch {
             // Keep unified baseline prediction
@@ -422,10 +442,9 @@ export class PronosticosPageComponent implements OnInit {
       if (ev && !p.bestPick.isEV) return false;
 
       if (sport === 'futbol' && !this.isSoccer(g)) return false;
-      if (sport === 'nfl' && g.sport !== 'Americano' && g.league !== 'nfl') return false;
-      if (sport === 'nba' && g.sport !== 'Baloncesto' && g.league !== 'nba') return false;
-      if (sport === 'mlb' && g.sport !== 'Béisbol' && g.league !== 'mlb' && g.league !== 'kbo')
-        return false;
+      if (sport === 'nfl' && !isNFLGame(g.sport, g.league)) return false;
+      if (sport === 'nba' && !isBasketballGame(g.sport, g.league)) return false;
+      if (sport === 'mlb' && !isMLBGame(g.sport, g.league)) return false;
 
       if (q && !`${g.home} ${g.away} ${g.league_name}`.toLowerCase().includes(q)) return false;
       return true;
@@ -576,9 +595,9 @@ export class PronosticosPageComponent implements OnInit {
 
       const legs = totalsPicks.map((p) => {
         const isSoccer = this.isSoccer(p.game);
-        const isBball = p.game.sport === 'Baloncesto' || p.game.sport === 'Básquetbol' || p.game.league === 'nba';
-        const isNfl = p.game.sport === 'Americano' || p.game.league === 'nfl';
-        const isMlb = p.game.sport === 'Béisbol' || p.game.league === 'mlb' || p.game.league === 'kbo';
+        const isBball = isBasketballGame(p.game.sport, p.game.league);
+        const isNfl = isNFLGame(p.game.sport, p.game.league);
+        const isMlb = isMLBGame(p.game.sport, p.game.league);
         const market = isSoccer ? 'Total de goles' : isBball ? 'Total de puntos' : isNfl ? 'Total de puntos' : isMlb ? 'Total de carreras' : 'Total de puntos';
         const pick = 'Más de';
         const line = isSoccer ? 2.5 : isBball ? 218.5 : isNfl ? 44.5 : 8.5;
@@ -589,6 +608,10 @@ export class PronosticosPageComponent implements OnInit {
         baseLeg.odds = 1.72;
         baseLeg.prob = Math.max(p.overProb, p.bttsProb ?? 60);
         baseLeg.selectionText = `${p.game.away} vs ${p.game.home} · Más de ${line} ${market}`;
+        if (p.game.state === 'final') {
+          const legEval = evaluateMarketResult(`Más de ${line}`, 'over', p.game);
+          baseLeg.status = legEval === 'WON' ? 'WON' : 'LOST';
+        }
         return baseLeg;
       });
 
@@ -622,9 +645,9 @@ export class PronosticosPageComponent implements OnInit {
     }
     const seed = Math.abs(hash);
     const soccer = this.isSoccer(g);
-    const basketball = g.sport === 'Baloncesto' || g.sport === 'Básquetbol' || g.league === 'nba';
-    const nfl = g.sport === 'Americano' || g.league === 'nfl';
-    const baseball = g.sport === 'Béisbol' || g.league === 'mlb' || g.league === 'kbo';
+    const basketball = isBasketballGame(g.sport, g.league);
+    const nfl = isNFLGame(g.sport, g.league);
+    const baseball = isMLBGame(g.sport, g.league);
 
     // Model Base Probability Calculation
     const bias = (seed % 30) - 15;
@@ -662,8 +685,8 @@ export class PronosticosPageComponent implements OnInit {
       bttsProb = null;
     }
 
-    // Unified AI source of truth: prioritize server Gemini analysis, fallback to unified local model
-    const ai = aiResp || this.aiPredictions()[g.id] || getUnifiedMatchPrediction(g);
+    // Unified AI source of truth: prioritize server Gemini analysis (sanitized for sport), fallback to unified local model
+    const ai = sanitizeAIPredictionForSport(aiResp || this.aiPredictions()[g.id], g);
 
     let pickMarket = 'Moneyline';
     let pickVal = 'Local';
@@ -755,23 +778,7 @@ export class PronosticosPageComponent implements OnInit {
   }
 
   isSoccer(g: SportsGame): boolean {
-    return (
-      g.sport === 'Fútbol' ||
-      [
-        'premier',
-        'laliga',
-        'champions',
-        'seriea',
-        'bundesliga',
-        'ligue1',
-        'europa',
-        'ligamx',
-        'mls',
-        'nations',
-        'concacaf-nations',
-        'friendlies',
-      ].includes(g.league)
-    );
+    return isSoccerGame(g.sport, g.league);
   }
 
   getLogo(teamName: string, sport?: string, existing?: string | null): string {
