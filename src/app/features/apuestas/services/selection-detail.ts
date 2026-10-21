@@ -32,6 +32,7 @@ export interface SelectionDetail {
   player?: string;
   game_id: string;
   event_label: string;
+  prediction_id?: number | null;
 }
 
 export const SOCCER_MARKETS: MarketDef[] = [

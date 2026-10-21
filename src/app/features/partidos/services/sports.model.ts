@@ -15,6 +15,77 @@ export interface GameReference {
   away_id?: string;
   provider: string;
 }
+export interface ProbabilitiesContract {
+  model: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  market_implied: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  edge?: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  live?: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  } | null;
+  confidence: {
+    score: number;
+    level: 'ALTA' | 'MEDIA' | 'BAJA';
+    label: string;
+    agreement_pct?: number;
+    participating_models?: number;
+  };
+  calculated_at?: string | null;
+  model_version?: string;
+  source?: string;
+}
+
+export interface AnalyticsBucket {
+  key: string;
+  sample_size: number;
+  won: number;
+  lost: number;
+  void: number;
+  staked: number;
+  net_profit: number;
+  win_rate: number;
+  roi_pct: number;
+  small_sample_warning: boolean;
+}
+
+export interface PersonalVsAiAnalytics {
+  by_market: AnalyticsBucket[];
+  by_league: AnalyticsBucket[];
+  by_sport: AnalyticsBucket[];
+  by_odds_range: AnalyticsBucket[];
+  best_markets: AnalyticsBucket[];
+  worst_markets: AnalyticsBucket[];
+  followed_ai_vs_independent: {
+    followed_ai: AnalyticsBucket;
+    independent: AnalyticsBucket;
+  };
+  comparison_by_market: {
+    market: string;
+    user_sample_size: number;
+    user_win_rate: number;
+    user_roi_pct: number;
+    user_net_profit: number;
+    user_small_sample_warning: boolean;
+    ai_sample_size: number;
+    ai_win_rate: number;
+    ai_won: number;
+    ai_lost: number;
+  }[];
+}
+
 export interface SportsGame extends GameReference {
   home_score: string | null;
   away_score: string | null;
@@ -30,6 +101,12 @@ export interface SportsGame extends GameReference {
   home_odds?: number | null;
   away_odds?: number | null;
   draw_odds?: number | null;
+  home_team_id?: string;
+  away_team_id?: string;
+  home_logo_mirrored?: string;
+  away_logo_mirrored?: string;
+  probabilities?: any;
+  probabilities_contract?: ProbabilitiesContract | null;
 }
 export interface League { id: string; sport: string; name: string; source: string; configured: boolean }
 export interface Scoreboard {
@@ -385,6 +462,7 @@ export interface AIValueBetResponse {
   _cached?: boolean;
   _immutable?: boolean;
   _cache_age_seconds?: number;
+  probabilities?: ProbabilitiesContract | null;
 }
 
 export interface PredictionEvaluation {

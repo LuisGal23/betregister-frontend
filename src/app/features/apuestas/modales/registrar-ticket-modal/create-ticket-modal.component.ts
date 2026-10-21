@@ -113,6 +113,7 @@ export class CreateTicketModalComponent {
             if (option.pick) this.selections[0].pick = option.pick;
             if (option.line !== undefined && option.line !== null) this.selections[0].line = option.line;
             if (option.description) this.selections[0].description = option.description;
+            if (option.predictionId) this.selections[0].prediction_id = option.predictionId;
           }
         }
 
@@ -328,8 +329,12 @@ export class CreateTicketModalComponent {
     }
 
     try {
+      const linkedPredictionId =
+        this.modal.initialOption()?.predictionId ??
+        (this.selections.length === 1 ? (this.selections[0].prediction_id ?? null) : null);
       const ok = await this.bets.create({
         public_record: false,
+        prediction_id: linkedPredictionId,
         selection_details: this.selections,
         odds_format: this.oddsFormat,
         league_tag: this.leagueTag,

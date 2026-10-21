@@ -1189,15 +1189,86 @@ export interface UnifiedGameProbabilities {
 }
 
 /**
- * Single source of truth for match probabilities.
- * Uses real bookmaker odds (without vig) if present, or deterministic seed if pending.
- * Ensures the main page card, preview ticker and modal ALWAYS show 100% identical numbers!
+ * Normalizes an array of numbers using the Largest Remainder Method so that
+ * after rounding to 1 decimal place their sum is guaranteed to equal 100.0.
+ */
+export function normalizeLargestRemainder100(values: number[]): number[] {
+  const cleaned = values.map((v) => Math.max(0, Number(v) || 0));
+  const total = cleaned.reduce((a, b) => a + b, 0);
+  const n = cleaned.length;
+  if (n === 0) return [];
+  const targetUnits = 1000; // 100.0 * 10
+  if (total <= 0) {
+    const base = Math.floor(targetUnits / n);
+    const rem = targetUnits - base * n;
+    return cleaned.map((_, i) => Number(((base + (i < rem ? 1 : 0)) / 10).toFixed(1)));
+  }
+  const scaled = cleaned.map((v) => (v / total) * targetUnits);
+  const floored = scaled.map((x) => Math.floor(x));
+  const remainders = scaled.map((x, i) => ({ idx: i, rem: x - floored[i], orig: cleaned[i] }));
+  const missing = targetUnits - floored.reduce((a, b) => a + b, 0);
+  remainders.sort((a, b) => b.rem - a.rem || b.orig - a.orig || a.idx - b.idx);
+  for (let k = 0; k < Math.max(0, missing); k++) {
+    floored[remainders[k].idx] += 1;
+  }
+  return floored.map((u) => Number((u / 10).toFixed(1)));
+}
+
+/**
+ * Single source of truth for match probabilities (Part I).
+ * Reads first from the backend's frozen `probabilities_contract.model` or `probabilities.model`,
+ * and normalizes with Largest Remainder Method to 100.0% (1 decimal place).
  */
 export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGameProbabilities {
   const isSoccer = isSoccerGame(game.sport, game.league);
-
-  // Check if real decimal odds are present
   const anyGame = game as any;
+
+  // 1. Authoritative Backend Probabilities Contract (`probabilities_contract.model` or `probabilities.model`)
+  const backendModel =
+    anyGame?.probabilities_contract?.model ||
+    anyGame?.probabilities?.model ||
+    (anyGame?.probabilities?.home_win !== undefined
+      ? {
+          home: anyGame.probabilities.home_win,
+          draw: anyGame.probabilities.draw,
+          away: anyGame.probabilities.away_win,
+        }
+      : null);
+
+  if (backendModel && backendModel.home != null && backendModel.away != null) {
+    if (isSoccer && backendModel.draw != null) {
+      const [hPct, dPct, aPct] = normalizeLargestRemainder100([
+        Number(backendModel.home),
+        Number(backendModel.draw),
+        Number(backendModel.away),
+      ]);
+      const favProb = Math.max(hPct, aPct);
+      return {
+        homeProb: hPct,
+        drawProb: dPct,
+        awayProb: aPct,
+        favorite: hPct >= aPct ? 'home' : 'away',
+        confidence: favProb >= 65 ? 'alta' : favProb >= 54 ? 'moderada' : 'baja',
+        source: anyGame?.probabilities_contract?.source || 'Snapshot del Modelo',
+      };
+    } else {
+      const [hPct, aPct] = normalizeLargestRemainder100([
+        Number(backendModel.home),
+        Number(backendModel.away),
+      ]);
+      const favProb = Math.max(hPct, aPct);
+      return {
+        homeProb: hPct,
+        drawProb: null,
+        awayProb: aPct,
+        favorite: hPct >= aPct ? 'home' : 'away',
+        confidence: favProb >= 65 ? 'alta' : favProb >= 54 ? 'moderada' : 'baja',
+        source: anyGame?.probabilities_contract?.source || 'Snapshot del Modelo',
+      };
+    }
+  }
+
+  // 2. Check if real decimal odds are present
   const homeOdd = Number(anyGame?.home_odds || anyGame?.odds?.moneyline?.home_decimal || 0);
   const awayOdd = Number(anyGame?.away_odds || anyGame?.odds?.moneyline?.away_decimal || 0);
   const drawOdd = Number(anyGame?.draw_odds || anyGame?.odds?.moneyline?.draw_decimal || 0);
@@ -1205,12 +1276,16 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
   if (homeOdd > 1.05 && awayOdd > 1.05) {
     const rawHome = 1.0 / homeOdd;
     const rawAway = 1.0 / awayOdd;
-    const rawDraw = (isSoccer && drawOdd > 1.05) ? (1.0 / drawOdd) : 0;
-    const vigSum = rawHome + rawAway + rawDraw;
+    const rawDraw = isSoccer && drawOdd > 1.05 ? 1.0 / drawOdd : 0;
 
-    const hPct = Number(((rawHome / vigSum) * 100).toFixed(1));
-    const aPct = Number(((rawAway / vigSum) * 100).toFixed(1));
-    const dPct = rawDraw > 0 ? Number(((rawDraw / vigSum) * 100).toFixed(1)) : null;
+    let hPct: number;
+    let dPct: number | null = null;
+    let aPct: number;
+    if (isSoccer && rawDraw > 0) {
+      [hPct, dPct, aPct] = normalizeLargestRemainder100([rawHome, rawDraw, rawAway]);
+    } else {
+      [hPct, aPct] = normalizeLargestRemainder100([rawHome, rawAway]);
+    }
 
     const favProb = Math.max(hPct, aPct);
     const favorite = hPct >= aPct ? 'home' : 'away';

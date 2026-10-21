@@ -13,6 +13,7 @@ export interface InitialBetOption {
   line?: number | null;
   description?: string | null;
   eventLabel?: string | null;
+  predictionId?: number | null;
   selections?: SelectionDetail[] | null;
   legs?: BetLeg[] | null;
 }

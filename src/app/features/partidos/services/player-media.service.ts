@@ -8,7 +8,7 @@ export class PlayerMediaService {
   private inFlight = new Map<string, Promise<string | null>>();
 
   // Curated, verified transparent cutouts for top sports stars and managers
-  private static readonly VERIFIED_PORTRAITS: Record<string, string> = {
+  public static readonly VERIFIED_PORTRAITS: Record<string, string> = {
     // Top Managers
     'luis enrique': 'https://r2.thesportsdb.com/images/media/player/cutout/ph0a3h1688640332.png',
     'l. enrique': 'https://r2.thesportsdb.com/images/media/player/cutout/ph0a3h1688640332.png',

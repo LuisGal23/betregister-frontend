@@ -7,6 +7,7 @@ export interface BetLeg {
   selection: string;
   odds: number | string;
   status: 'pending' | 'won' | 'lost' | 'void';
+  prediction_id?: number | null;
 }
 export interface Bet {
   public_record?: boolean;
@@ -32,6 +33,7 @@ export interface Bet {
   selection_details?: SelectionDetail[];
   same_game_selections?: string[];
   bet_type?: 'simple' | 'parlay' | 'same_game';
+  prediction_id?: number | null;
   bonus?: number;
   payout: number;
   status: BetStatus;
@@ -42,6 +44,7 @@ export interface CreateBet {
   public_record?: boolean;
   event_start?: string;
   challenge_id?: number;
+  prediction_id?: number | null;
   odds_format?: 'decimal' | 'american';
   league_tag?: string;
   market_tag?: string;

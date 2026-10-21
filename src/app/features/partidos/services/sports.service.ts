@@ -9,6 +9,7 @@ import type {
   MatchDetails,
   AIValueBetResponse,
   AuditVerificationProof,
+  PersonalVsAiAnalytics,
 } from './sports.model';
 
 @Injectable({ providedIn: 'root' })
@@ -128,31 +129,29 @@ export class SportsService {
       return this.inFlightDetails.get(cacheKey)!;
     }
 
-    // 3. Initiate single network request
+    // 3. Initiate single network request (Backend-first per Part A1 & D4)
     const promise = (async () => {
       try {
         let liveDetails: MatchDetails | null = null;
-        if (game) {
+        try {
+          liveDetails = await this.api.request<MatchDetails>(
+            `/sports/event-details?league=${encodeURIComponent(league)}&id=${encodeURIComponent(id)}`,
+            undefined,
+            6000
+          );
+        } catch (err) {
+          if (game) {
+            liveDetails = await this.espnLive.fetchLiveSummary(game);
+          }
+          if (!liveDetails) throw err;
+        }
+
+        if (!liveDetails && game) {
           liveDetails = await this.espnLive.fetchLiveSummary(game);
         }
 
-        if (!liveDetails) {
-          try {
-            liveDetails = await this.api.request<MatchDetails>(
-              `/sports/event-details?league=${encodeURIComponent(league)}&id=${encodeURIComponent(id)}`,
-              undefined,
-              6000
-            );
-          } catch (err) {
-            if (game) {
-              liveDetails = await this.espnLive.fetchLiveSummary(game);
-            }
-            if (!liveDetails) throw err;
-          }
-        }
-
-        this.detailsCache.set(cacheKey, { timestamp: Date.now(), data: liveDetails });
-        return liveDetails;
+        this.detailsCache.set(cacheKey, { timestamp: Date.now(), data: liveDetails! });
+        return liveDetails!;
       } finally {
         this.inFlightDetails.delete(cacheKey);
       }
@@ -167,8 +166,8 @@ export class SportsService {
   }
 
   /**
-   * Fetches +EV Sharp Bettor analysis for a match (cached in DB for 6 hours).
-   * Set forceRefresh=true to bypass cache and recalculate directly with Gemini 2.5 Flash.
+   * Point 1: Fetches +EV Sharp Bettor analysis for a match (cached in DB / Upstash Redis for ~30ms).
+   * Set forceRefresh=true to bypass cache and recalculate directly with Gemini / Grok / Groq.
    */
   async valueBet(
     league: string,
@@ -188,10 +187,42 @@ export class SportsService {
       params.append('refresh', 'true');
     }
     return this.api.request<AIValueBetResponse>(
-      `/sports/matches/${encodeURIComponent(matchId)}/value-bet?${params.toString()}`,
+      `/sports/matches/${encodeURIComponent(matchId)}/analisis-ia?${params.toString()}`,
       undefined,
       15000
     );
+  }
+
+  /**
+   * Point 1 & 2: Dedicated AI analysis endpoint (/api/sports/matches/{id}/analisis-ia).
+   * Executes in parallel or on demand without freezing the UI.
+   */
+  async aiAnalysis(
+    matchId: string,
+    league = 'premier',
+    home = '',
+    away = '',
+    date = '',
+    forceRefresh = false
+  ): Promise<AIValueBetResponse | null> {
+    const params = new URLSearchParams({
+      league,
+      home,
+      away,
+      date,
+    });
+    if (forceRefresh) {
+      params.append('refresh', 'true');
+    }
+    try {
+      return await this.api.request<AIValueBetResponse>(
+        `/sports/matches/${encodeURIComponent(matchId)}/analisis-ia?${params.toString()}`,
+        undefined,
+        15000
+      );
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -255,6 +286,45 @@ export class SportsService {
         `/sports/audit/verify/${encodeURIComponent(String(predictionId))}`,
         undefined,
         5000
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Point 1, 2, 3 & 4: Ultra-fast Match Info endpoint (< 200ms / ~30ms via Upstash Redis).
+   * Returns scoreboard, teams, odds, standings, form, H2H, and lineups without waiting for AI tokens.
+   */
+  async matchInfo(matchId: string, league?: string): Promise<any> {
+    try {
+      const q = league ? `?league=${encodeURIComponent(league)}` : '';
+      return await this.api.request<any>(
+        `/sports/matches/${encodeURIComponent(matchId)}/info${q}`,
+        undefined,
+        6000
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Part A & D: Fetches the normalized SofaScore Match Center payload from backend cache/service.
+   */
+  async matchCenter(matchId: string, league?: string): Promise<any> {
+    return this.matchInfo(matchId, league);
+  }
+
+  /**
+   * Part E2: Fetches personal effectiveness & ROI vs frozen AI predictions by market, league, sport & odds range.
+   */
+  async personalVsAiAnalytics(): Promise<PersonalVsAiAnalytics | null> {
+    try {
+      return await this.api.request<PersonalVsAiAnalytics>(
+        '/sports/analytics/personal-vs-ai',
+        undefined,
+        6000
       );
     } catch {
       return null;

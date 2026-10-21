@@ -475,21 +475,19 @@ export class MatchesPageComponent implements OnInit {
         void this.playerMedia.preloadPlayers(playerMetaToPreload);
       }
 
-      // 3. Asynchronously query backend value-bets in a single batched update
-      const targetForAi = unique.slice(0, 12);
-      const batchAiUpdates: Record<string, AIValueBetResponse> = {};
-      await Promise.allSettled(
-        targetForAi.map(async (g) => {
-          try {
-            const vb = await this.sports.valueBet(g.league, g.id, g.home, g.away, g.start);
-            if (vb) {
-              batchAiUpdates[g.id] = sanitizeAIPredictionForSport(vb, g);
-            }
-          } catch {}
-        })
-      );
-      if (Object.keys(batchAiUpdates).length) {
-        this.aiPredictions.update((m) => ({ ...m, ...batchAiUpdates }));
+      // 3. Deferred background enrichment for pre-match games (Non-blocking Point 1)
+      const targetForAi = unique.filter((g) => !this.aiPredictions()[g.id]?.locked_at && g.state === 'scheduled').slice(0, 6);
+      if (targetForAi.length > 0) {
+        void Promise.allSettled(
+          targetForAi.map(async (g) => {
+            try {
+              const vb = await this.sports.aiAnalysis(g.id, g.league, g.home, g.away, g.start);
+              if (vb) {
+                this.aiPredictions.update((m) => ({ ...m, [g.id]: sanitizeAIPredictionForSport(vb, g) }));
+              }
+            } catch {}
+          })
+        );
       }
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'No se pudieron cargar los partidos del día.');
@@ -518,13 +516,13 @@ export class MatchesPageComponent implements OnInit {
     }
   }
 
-  // Unified, 100% consistent probabilities matching modal and bookmaker lines
+  // Unified, 100% consistent probabilities matching modal and bookmaker lines (1 decimal place, exact 100.0% sum)
   analyzeGame(g: SportsGame): MatchAnalysis {
     const p = calculateUnifiedGameProbabilities(g);
     return {
-      homeProb: Math.round(p.homeProb),
-      drawProb: p.drawProb != null ? Math.round(p.drawProb) : null,
-      awayProb: Math.round(p.awayProb),
+      homeProb: Number(p.homeProb.toFixed(1)),
+      drawProb: p.drawProb != null ? Number(p.drawProb.toFixed(1)) : null,
+      awayProb: Number(p.awayProb.toFixed(1)),
       favorite: p.favorite,
       confidence: p.confidence,
     };

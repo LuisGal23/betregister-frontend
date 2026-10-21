@@ -47,6 +47,14 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'pronosticos/:matchId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/pronosticos/pages/pronosticos-page.component').then(
+        (m) => m.PronosticosPageComponent,
+      ),
+  },
+  {
     path: 'ia',
     redirectTo: 'pronosticos',
   },
