@@ -23,6 +23,7 @@ import {
   generateDeepAnalysis,
   getUnifiedMatchPrediction,
   evaluatePrediction,
+  evaluateMarketResult,
   calculateUnifiedGameProbabilities,
 } from '../../../shared/utils/match-analysis.utils';
 
@@ -182,24 +183,21 @@ export class PronosticosPageComponent implements OnInit {
     return evaluatePrediction(pred, g);
   }
 
-  // Dashboard KPI de Efectividad IA del Día
+  // Dashboard KPI de Efectividad IA del Día (porcentaje y partidos resueltos)
   auditSummary = computed(() => {
     const list = this.games();
     let won = 0;
     let lost = 0;
     let pending = 0;
     let live = 0;
-    let netUnits = 0;
 
     for (const g of list) {
       const pred = this.getGamePrediction(g);
       const ev = evaluatePrediction(pred, g);
       if (ev.status === 'WON') {
         won++;
-        netUnits += ev.profitUnits || 0;
       } else if (ev.status === 'LOST') {
         lost++;
-        netUnits -= 1.0;
       } else {
         if (g.state === 'live') live++;
         else pending++;
@@ -208,7 +206,6 @@ export class PronosticosPageComponent implements OnInit {
 
     const totalResolved = won + lost;
     const winRate = totalResolved > 0 ? Number(((won / totalResolved) * 100).toFixed(1)) : 0;
-    const roi = totalResolved > 0 ? Number(((netUnits / totalResolved) * 100).toFixed(1)) : 0;
 
     return {
       totalGames: list.length,
@@ -218,8 +215,6 @@ export class PronosticosPageComponent implements OnInit {
       pending,
       live,
       winRate,
-      netUnits: Number(netUnits.toFixed(2)),
-      roi,
       hasEvaluations: totalResolved > 0,
     };
   });
@@ -231,15 +226,12 @@ export class PronosticosPageComponent implements OnInit {
     let lost = 0;
     let pending = 0;
     let live = 0;
-    let netUnits = 0;
 
     for (const p of list) {
       if (p.status === 'WON') {
         won++;
-        netUnits += (p.combinedOdds - 1.0);
       } else if (p.status === 'LOST') {
         lost++;
-        netUnits -= 1.0;
       } else if (p.status === 'LIVE') {
         live++;
       } else {
@@ -249,7 +241,6 @@ export class PronosticosPageComponent implements OnInit {
 
     const totalResolved = won + lost;
     const winRate = totalResolved > 0 ? Number(((won / totalResolved) * 100).toFixed(1)) : 0;
-    const roi = totalResolved > 0 ? Number(((netUnits / totalResolved) * 100).toFixed(1)) : 0;
 
     return {
       totalParlays: list.length,
@@ -258,11 +249,14 @@ export class PronosticosPageComponent implements OnInit {
       lost,
       pending: pending + live,
       winRate,
-      netUnits: Number(netUnits.toFixed(2)),
-      roi,
       hasEvaluations: totalResolved > 0,
     };
   });
+
+  // Evaluar cualquier opción alternativa en base al marcador final
+  evalAlternativeOption(alt: AlternativeMarketOption, game: SportsGame): 'WON' | 'LOST' | 'PENDING' {
+    return evaluateMarketResult(alt.market, alt.tag, game);
+  }
 
   // Lista detallada con resumen de aciertos y fallos para la vista
   auditedMatches = computed(() => {
@@ -275,9 +269,9 @@ export class PronosticosPageComponent implements OnInit {
 
       let reasoningSummary = '';
       if (ev.status === 'WON') {
-        reasoningSummary = `Acierto: ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : ''}. El modelo proyectó una probabilidad de ${pred.ai_estimated_probability_pct}% vs ${pred.implicit_probability_pct}% del casino (+${pred.expected_value_pct}% EV) en favor de ${marketFormatted}, generando +${ev.profitUnits}u de ganancia.`;
+        reasoningSummary = `Acierto: ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : ''}. El modelo proyectó una probabilidad de ${pred.ai_estimated_probability_pct}% vs ${pred.implicit_probability_pct}% del mercado (+${pred.expected_value_pct}% EV) en favor de ${marketFormatted}, cumpliendo el resultado proyectado con éxito.`;
       } else if (ev.status === 'LOST') {
-        reasoningSummary = `Fallo: El partido finalizó ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : 'con marcador adverso'}. La selección ${marketFormatted} (@${pred.target_odd}) no se cumplió ante la resistencia táctica rival (-1.00u).`;
+        reasoningSummary = `Fallo: El partido finalizó ${g.home_score != null ? `${g.home} ${g.home_score} – ${g.away_score} ${g.away}` : 'con marcador adverso'}. La selección ${marketFormatted} no se cumplió ante la resistencia táctica rival.`;
       } else {
         reasoningSummary = `En juego / Próximo: Partido ${g.state === 'live' ? 'en vivo en este momento' : 'programado'}. Recomendación del modelo Sharp: ${marketFormatted} con ${pred.ai_estimated_probability_pct}% de probabilidad estimada (+${pred.expected_value_pct}% EV).`;
       }

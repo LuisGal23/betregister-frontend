@@ -244,13 +244,26 @@
                     }
                   </div>
 
-                  <button
-                    type="button"
-                    class="py-1.5 px-3 rounded-lg bg-[var(--surface-high)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-xs font-bold text-white transition-all cursor-pointer active:scale-95 shrink-0"
-                    (click)="addToTicket(opt.market, opt.market, opt.target_odd, opt.market)"
-                  >
-                    + Añadir
-                  </button>
+                  @if (game()?.state === 'final') {
+                    @let status = evalAlternativeOption(opt);
+                    @if (status === 'WON') {
+                      <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/40 flex items-center gap-1 shrink-0">
+                        <span>✓</span> ACERTADA
+                      </span>
+                    } @else {
+                      <span class="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-mono text-xs font-bold border border-rose-500/40 flex items-center gap-1 shrink-0">
+                        <span>✕</span> NO SE DIO
+                      </span>
+                    }
+                  } @else {
+                    <button
+                      type="button"
+                      class="py-1.5 px-3 rounded-lg bg-[var(--surface-high)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-xs font-bold text-white transition-all cursor-pointer active:scale-95 shrink-0"
+                      (click)="addToTicket(opt.market, opt.market, opt.target_odd, opt.market)"
+                    >
+                      + Añadir
+                    </button>
+                  }
                 </div>
               </div>
             }
@@ -357,44 +370,46 @@
       <div class="flex flex-col gap-6">
         @let d = details();
         
-        <!-- SECTION 1: PROPS & JUGADORES ESTRELLA (TARJETAS GRANDES DE JUGADOR) -->
-        @if (d?.star_players?.length) {
+        <!-- SECTION 1: PROPS & JUGADORES ESTRELLA (TARJETAS GRANDES INTERACTIVAS) -->
+        @let propsPlayers = topPropsPlayers();
+        @if (propsPlayers.length > 0) {
           <div class="flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <h3 class="text-sm font-bold text-white flex items-center gap-2 m-0 font-mono">
                 <span>⭐</span>
-                <span>Jugadores Clave & Props Estadísticos Recomendados</span>
+                <span>Jugadores Clave & Props Estadísticos Interactivos</span>
               </h3>
-              <span class="text-[11px] text-[var(--muted)] font-mono">Fotografías oficiales & líneas estimadas</span>
+              <span class="text-[11px] text-[var(--muted)] font-mono">Selecciona un prop para analizar y registrar</span>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              @for (p of d?.star_players; track p.name) {
-                @let prop = getPropForPlayer(p);
-                <div class="p-4 rounded-2xl bg-[var(--surface)] hover:bg-[var(--surface-high)]/70 border border-[var(--border)] hover:border-emerald-500/40 transition-all flex flex-col justify-between gap-3 shadow-md relative overflow-hidden group">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              @for (p of propsPlayers; track p.name) {
+                @let activeProp = getSelectedProp(p);
+                <div class="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] hover:bg-[var(--surface-high)]/70 border border-[var(--border)] hover:border-emerald-500/40 transition-all flex flex-col justify-between gap-4 shadow-lg relative overflow-hidden group">
                   
-                  <div class="flex items-start gap-3.5">
+                  <!-- Top: Photo + Info + Key Stats Badges -->
+                  <div class="flex items-start gap-4">
                     <!-- Large Player Portrait Headshot -->
-                    <div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden bg-slate-900/90 border border-white/10 shadow-md">
+                    <div class="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden bg-slate-900/90 border border-white/10 shadow-md">
                       <img 
-                        [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                        [src]="getPlayerHeadshot(p)" 
                         [alt]="p.name"
                         class="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
-                        (error)="onPlayerImgError($event, p.name)"
+                        (error)="onPlayerImgError($event, p.name, p.athlete_id)"
                       />
-                      <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/75 text-[9px] font-mono font-bold text-white border border-white/20">
-                        #{{ p.jersey || '10' }}
+                      <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/80 text-[10px] font-mono font-bold text-white border border-white/20">
+                        #{{ p.jersey }}
                       </span>
                     </div>
 
                     <!-- Player Info & Role -->
-                    <div class="min-w-0 flex-1 flex flex-col gap-1">
-                      <div class="flex items-center justify-between gap-1">
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[var(--surface-high)] text-[var(--muted)] font-mono border border-[var(--border)]">
-                          {{ p.team }}
+                    <div class="min-w-0 flex-1 flex flex-col gap-1.5">
+                      <div class="flex items-center justify-between gap-1 flex-wrap">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[var(--surface-high)] text-[var(--accent)] font-mono border border-[var(--border)]">
+                          {{ p.team }} ({{ p.team_side === 'home' ? 'Local' : 'Visita' }})
                         </span>
                         <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
-                          {{ p.marginImpact || '+1.5 pts' }}
+                          {{ p.marginImpact }}
                         </span>
                       </div>
 
@@ -403,29 +418,66 @@
                       </strong>
 
                       <span class="text-[11px] text-[var(--muted)] font-mono truncate">
-                        {{ p.role }} · <b class="text-slate-300">{{ p.statusText || 'Titular confirmado' }}</b>
+                        {{ p.position }} · {{ p.role }} · <b class="text-emerald-400">{{ p.statusText }}</b>
                       </span>
+
+                      <!-- Season Key Stats Row -->
+                      <div class="flex items-center gap-1.5 pt-1 flex-wrap">
+                        @for (st of p.stats; track st.label) {
+                          <span class="px-1.5 py-0.5 rounded bg-[var(--surface-high)] border border-[var(--border)] text-[10px] font-mono">
+                            <span class="text-[var(--muted)]">{{ st.label }}:</span> <b class="text-white">{{ st.value }}</b>
+                          </span>
+                        }
+                      </div>
                     </div>
                   </div>
 
-                  <!-- Prop Line Highlight & Quick Ticket Action -->
-                  <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex items-center justify-between gap-2 mt-1">
+                  <!-- Middle: Selectable Prop Chips (Puntos, Rebotes, Asistencias, Triples, PRA, etc.) -->
+                  <div class="flex flex-col gap-1.5 pt-2 border-t border-[var(--border)]">
+                    <span class="text-[10px] font-mono font-bold text-[var(--muted)] uppercase tracking-wider flex items-center justify-between">
+                      <span>Seleccionar Mercado de Prop:</span>
+                      <span class="text-emerald-400 font-bold">{{ activeProp.prob }}% de Certeza</span>
+                    </span>
+
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      @for (prop of p.props; track prop.id; let idx = $index) {
+                        <button
+                          type="button"
+                          class="py-1 px-2.5 rounded-lg text-xs font-mono font-bold cursor-pointer transition-all border active:scale-95"
+                          [class.bg-emerald-500]="activeProp.id === prop.id"
+                          [class.text-slate-950]="activeProp.id === prop.id"
+                          [class.border-emerald-400]="activeProp.id === prop.id"
+                          [class.shadow-sm]="activeProp.id === prop.id"
+                          [class.bg-[var(--surface-high)]]="activeProp.id !== prop.id"
+                          [class.text-white]="activeProp.id !== prop.id"
+                          [class.border-[var(--border)]]="activeProp.id !== prop.id"
+                          [class.hover:border-emerald-500/50]="activeProp.id !== prop.id"
+                          (click)="selectProp(p, idx)"
+                        >
+                          {{ prop.name }} +{{ prop.line }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Bottom: Selected Prop Preview & Quick Ticket Action -->
+                  <div class="p-3 rounded-xl bg-[var(--surface-high)]/80 border border-emerald-500/30 flex items-center justify-between gap-3">
                     <div class="min-w-0 flex-1">
-                      <span class="text-[9px] uppercase tracking-wider text-[var(--muted)] block font-mono font-bold">
-                        Prop Recomendado · {{ prop.prob }}% Certeza
-                      </span>
-                      <strong class="text-xs text-emerald-400 font-bold truncate block">
-                        {{ prop.label }}
+                      <strong class="text-xs sm:text-sm text-emerald-400 font-bold truncate block">
+                        {{ activeProp.label }}
                       </strong>
+                      <span class="text-[10px] text-[var(--muted)] font-mono block truncate">
+                        {{ activeProp.reason }}
+                      </span>
                     </div>
 
                     <button
                       type="button"
-                      class="py-1.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
-                      (click)="addToTicket(prop.market, prop.pick, 1.85, prop.label, prop.line)"
+                      class="py-2 px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all cursor-pointer shrink-0"
+                      (click)="addPlayerPropToTicket(p, activeProp)"
                       title="Agregar este prop de jugador directamente al ticket"
                     >
-                      <span>+ Ticket</span>
+                      <span>+ Al Ticket</span>
                     </button>
                   </div>
                 </div>
@@ -453,19 +505,31 @@
                 <div class="flex flex-col gap-2">
                   @for (p of d?.players; track p.name) {
                     @if (p.team_side === 'away') {
-                      <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
-                        <div class="flex items-center gap-3">
+                      @let pProp = getPropForPlayer(p);
+                      <div class="flex items-center justify-between p-2.5 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs gap-2">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
                           <img 
-                            [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                            [src]="getPlayerHeadshot(p)" 
+                            [alt]="p.name"
                             class="w-11 h-11 rounded-xl object-cover bg-slate-900 border border-[var(--border)] shrink-0" 
-                            (error)="onPlayerImgError($event, p.name)" 
+                            (error)="onPlayerImgError($event, p.name, p.athlete_id)" 
                           />
-                          <div>
-                            <strong class="block text-white font-semibold">{{ p.name }}</strong>
+                          <div class="min-w-0">
+                            <strong class="block text-white font-semibold truncate">{{ p.name }}</strong>
                             <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '10' }}</span>
                           </div>
                         </div>
-                        <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                          <span class="text-[11px] font-mono text-[var(--accent)] font-bold hidden sm:inline">{{ p.display_stat || 'Titular' }}</span>
+                          <button
+                            type="button"
+                            class="py-1 px-2.5 rounded-lg bg-[var(--surface)] hover:bg-emerald-500 hover:text-slate-950 border border-[var(--border)] text-[10px] font-mono font-bold text-emerald-400 transition-all cursor-pointer active:scale-95"
+                            (click)="addToTicket(pProp.market, pProp.pick, 1.85, pProp.label, pProp.line)"
+                            title="Añadir prop al ticket"
+                          >
+                            + Prop
+                          </button>
+                        </div>
                       </div>
                     }
                   }
@@ -482,19 +546,31 @@
                 <div class="flex flex-col gap-2">
                   @for (p of d?.players; track p.name) {
                     @if (p.team_side === 'home') {
-                      <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
-                        <div class="flex items-center gap-3">
+                      @let pProp = getPropForPlayer(p);
+                      <div class="flex items-center justify-between p-2.5 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs gap-2">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
                           <img 
-                            [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                            [src]="getPlayerHeadshot(p)" 
+                            [alt]="p.name"
                             class="w-11 h-11 rounded-xl object-cover bg-slate-900 border border-[var(--border)] shrink-0" 
-                            (error)="onPlayerImgError($event, p.name)" 
+                            (error)="onPlayerImgError($event, p.name, p.athlete_id)" 
                           />
-                          <div>
-                            <strong class="block text-white font-semibold">{{ p.name }}</strong>
+                          <div class="min-w-0">
+                            <strong class="block text-white font-semibold truncate">{{ p.name }}</strong>
                             <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '9' }}</span>
                           </div>
                         </div>
-                        <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                        <div class="flex items-center gap-2 shrink-0">
+                          <span class="text-[11px] font-mono text-[var(--accent)] font-bold hidden sm:inline">{{ p.display_stat || 'Titular' }}</span>
+                          <button
+                            type="button"
+                            class="py-1 px-2.5 rounded-lg bg-[var(--surface)] hover:bg-emerald-500 hover:text-slate-950 border border-[var(--border)] text-[10px] font-mono font-bold text-emerald-400 transition-all cursor-pointer active:scale-95"
+                            (click)="addToTicket(pProp.market, pProp.pick, 1.85, pProp.label, pProp.line)"
+                            title="Añadir prop al ticket"
+                          >
+                            + Prop
+                          </button>
+                        </div>
                       </div>
                     }
                   }
@@ -503,7 +579,7 @@
 
             </div>
           </div>
-        } @else if (!d?.star_players?.length) {
+        } @else if (!propsPlayers.length) {
           <div class="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--muted)]">
             Alineaciones oficiales y props de jugadores pendientes de confirmación técnica para este partido.
           </div>

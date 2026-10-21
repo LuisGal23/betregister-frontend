@@ -119,20 +119,17 @@
           <span class="text-[10px] text-[var(--muted)] truncate">Resultados adversos</span>
         </div>
 
-        <!-- Card 4: Unidades Netas / ROI -->
+        <!-- Card 4: Partidos Auditados / Resueltos -->
         <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE NETO IA</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">PARTIDOS AUDITADOS</span>
           <div class="flex items-baseline gap-1.5 my-1">
-            <span class="text-2xl sm:text-3xl font-black font-mono"
-                  [class.text-emerald-400]="audit.netUnits > 0"
-                  [class.text-rose-400]="audit.netUnits < 0"
-                  [class.text-[var(--text)]]="audit.netUnits === 0">
-              {{ audit.netUnits > 0 ? '+' : '' }}{{ audit.netUnits }}u
+            <span class="text-2xl sm:text-3xl font-black font-mono text-white">
+              {{ audit.totalResolved }}<small class="text-sm font-normal text-[var(--muted)]">/{{ audit.totalGames }}</small>
             </span>
-            <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+            <small class="text-[10px] font-mono text-emerald-400 font-bold">resueltos</small>
           </div>
           <span class="text-[10px] text-[var(--muted)] truncate">
-            {{ audit.hasEvaluations ? 'ROI: ' + audit.roi + '%' : (audit.pending + audit.live) + ' por definirse' }}
+            {{ (audit.pending + audit.live) > 0 ? (audit.pending + audit.live) + ' por definirse hoy' : 'Jornada concluida' }}
           </span>
         </div>
       </div>
@@ -237,12 +234,12 @@
                   </span>
                 }
                 @if (ev.status === 'WON') {
-                  <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
-                    +{{ ev.profitUnits || 0 }}u Ganadas
+                  <span class="px-2.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30 flex items-center gap-1">
+                    <span>✓</span> ACIERTO
                   </span>
                 } @else if (ev.status === 'LOST') {
-                  <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
-                    -1.00u
+                  <span class="px-2.5 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30 flex items-center gap-1">
+                    <span>✕</span> FALLO
                   </span>
                 } @else {
                   <span class="px-2 py-0.5 rounded-md bg-[var(--surface)] text-[var(--accent)] font-mono text-[10px] font-bold border border-[var(--border)]">
@@ -334,17 +331,14 @@
           <span class="text-[10px] text-[var(--muted)] truncate">Al menos 1 fallo</span>
         </div>
 
-        <!-- Card 4: Balance de Parlays -->
+        <!-- Card 4: Parlays Concluidos -->
         <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex flex-col justify-between">
-          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">BALANCE PARLAYS</span>
+          <span class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)] font-mono">PARLAYS CONCLUIDOS</span>
           <div class="flex items-baseline gap-1.5 my-1">
-            <span class="text-2xl sm:text-3xl font-black font-mono"
-                  [class.text-emerald-400]="pAudit.netUnits > 0"
-                  [class.text-rose-400]="pAudit.netUnits < 0"
-                  [class.text-[var(--text)]]="pAudit.netUnits === 0">
-              {{ pAudit.netUnits > 0 ? '+' : '' }}{{ pAudit.netUnits }}u
+            <span class="text-2xl sm:text-3xl font-black font-mono text-white">
+              {{ pAudit.totalResolved }}<small class="text-sm font-normal text-[var(--muted)]">/{{ pAudit.totalParlays }}</small>
             </span>
-            <small class="text-[10px] font-mono text-[var(--muted)]">unidades</small>
+            <small class="text-[10px] font-mono text-emerald-400 font-bold">resueltos</small>
           </div>
           <span class="text-[10px] text-[var(--muted)] truncate">
             {{ pAudit.pending > 0 ? pAudit.pending + ' en juego o por jugarse' : 'Todos concluidos' }}
@@ -863,6 +857,7 @@
                 </div>
                 <div class="flex flex-col gap-1.5">
                   @for (alt of pred.alternatives; track alt.market) {
+                    @let altStatus = evalAlternativeOption(alt, pred.game);
                     <div class="flex items-center justify-between p-2 rounded-lg bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs gap-2 hover:border-[var(--accent)]/40 transition-colors">
                       <div class="min-w-0 flex-1 flex items-center gap-2">
                         <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono shrink-0">
@@ -872,14 +867,26 @@
                           {{ alt.market }}
                         </strong>
                       </div>
-                      <button
-                        type="button"
-                        class="py-1 px-2.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-[10px] font-mono font-bold text-[var(--accent)] transition-all cursor-pointer active:scale-95 shrink-0"
-                        (click)="addAlternativeOptionToTicket(pred.game, alt)"
-                        title="Añadir esta opción al ticket"
-                      >
-                        + Añadir ({{ alt.probability_pct }}%)
-                      </button>
+                      @if (pred.game.state === 'final') {
+                        @if (altStatus === 'WON') {
+                          <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-mono text-[10px] font-bold border border-emerald-500/30 flex items-center gap-1 shrink-0">
+                            <span>✓</span> ACERTADA
+                          </span>
+                        } @else {
+                          <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-400 font-mono text-[10px] font-bold border border-rose-500/30 flex items-center gap-1 shrink-0">
+                            <span>✕</span> NO SE DIO
+                          </span>
+                        }
+                      } @else {
+                        <button
+                          type="button"
+                          class="py-1 px-2.5 rounded-lg bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] text-[10px] font-mono font-bold text-[var(--accent)] transition-all cursor-pointer active:scale-95 shrink-0"
+                          (click)="addAlternativeOptionToTicket(pred.game, alt)"
+                          title="Añadir esta opción al ticket"
+                        >
+                          + Añadir ({{ alt.probability_pct }}%)
+                        </button>
+                      }
                     </div>
                   }
                 </div>

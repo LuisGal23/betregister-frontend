@@ -320,6 +320,17 @@
         </div>
       </div>
 
+      <!-- Sticky Error Banner for Footer -->
+      @if (vm.error()) {
+        <div class="mx-5 sm:mx-7 mt-2 p-2.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-center justify-between gap-2 animate-[fadeIn_0.2s_ease-out]">
+          <div class="flex items-center gap-2">
+            <app-icon name="alert" class="w-4 h-4 shrink-0" />
+            <span class="font-medium">{{ vm.error() }}</span>
+          </div>
+          <button type="button" class="text-red-400 hover:text-red-200 bg-transparent border-none cursor-pointer text-sm font-bold p-1 leading-none" (click)="vm.error.set('')">✕</button>
+        </div>
+      }
+
       <!-- Modal Footer Action Buttons -->
       <div class="flex flex-col-reverse sm:flex-row justify-between items-center gap-3 px-5 sm:px-7 py-4 border-t border-[var(--border)] bg-[var(--surface)]">
         <button 

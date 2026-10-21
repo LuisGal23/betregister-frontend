@@ -1387,6 +1387,121 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
 }
 
 /**
+ * Robust team matcher that handles prefix/suffixes like 'AS Roma' -> 'Roma',
+ * 'Oklahoma City Thunder' -> 'Thunder', 'Club América' -> 'América'.
+ */
+export function teamMatches(teamFullName: string, text: string): boolean {
+  if (!teamFullName || !text) return false;
+  const tNorm = teamFullName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+  const textNorm = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+  if (textNorm.includes(tNorm) || tNorm.includes(textNorm)) return true;
+
+  const stopWords = new Set(['fc', 'cf', 'as', 'cd', 'ca', 'de', 'la', 'el', 'los', 'las', 'club', 'sporting', 'ac', 'sc', 'united', 'city']);
+  const tokens = tNorm.split(/[\s-]+/).filter((w) => w.length >= 3 && !stopWords.has(w));
+
+  for (const token of tokens) {
+    if (textNorm.includes(token)) return true;
+  }
+  return false;
+}
+
+/**
+ * Universal, sport-aware evaluator for any market (main prediction or alternative options).
+ */
+export function evaluateMarketResult(
+  marketText: string,
+  marketType: string | undefined,
+  game: SportsGame
+): 'WON' | 'LOST' | 'PENDING' {
+  if (game.state !== 'final' || game.home_score == null || game.away_score == null) {
+    return 'PENDING';
+  }
+
+  const hScore = Number(game.home_score);
+  const aScore = Number(game.away_score);
+  const total = hScore + aScore;
+
+  const mType = (marketType || '').toLowerCase();
+  const mText = (marketText || '').toLowerCase();
+
+  const isSoccer = game.sport === 'Fútbol' || ['premier', 'laliga', 'champions', 'seriea', 'bundesliga', 'ligue1', 'europa', 'ligamx', 'mls', 'nations', 'concacaf-nations', 'friendlies'].includes(game.league);
+
+  const homeMatches = teamMatches(game.home, mText);
+  const awayMatches = teamMatches(game.away, mText);
+
+  // 1. Ambos equipos anotan (BTTS) - only for Soccer
+  if (mType === 'btts_yes' || (mText.includes('ambos') && mText.includes('sí')) || mText.includes('btts')) {
+    return isSoccer && (hScore > 0 && aScore > 0) ? 'WON' : 'LOST';
+  }
+  if (mType === 'btts_no' || (mText.includes('ambos') && mText.includes('no'))) {
+    return isSoccer && (hScore === 0 || aScore === 0) ? 'WON' : 'LOST';
+  }
+
+  // 2. Over / Totales (Más de)
+  if (mType.includes('over') || mText.includes('más de') || mText.includes('over')) {
+    const match = mText.match(/(?:más de|over)\s+([\d.]+)/i);
+    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
+    return total > line ? 'WON' : 'LOST';
+  }
+
+  // 3. Under / Totales (Menos de)
+  if (mType.includes('under') || mText.includes('menos de') || mText.includes('under')) {
+    const match = mText.match(/(?:menos de|under)\s+([\d.]+)/i);
+    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
+    return total < line ? 'WON' : 'LOST';
+  }
+
+  // 4. Spread / Handicap / Run Line
+  if (mType === 'spread' || mText.includes('spread') || mText.includes('hándicap') || mText.includes('handicap') || mText.includes('run line')) {
+    const match = mText.match(/([+-]?\d+(?:\.\d+)?)/);
+    const spreadLine = match ? parseFloat(match[1]) : 0;
+
+    if (awayMatches && !homeMatches) {
+      return (aScore + spreadLine) > hScore ? 'WON' : 'LOST';
+    }
+    return (hScore + spreadLine) > aScore ? 'WON' : 'LOST';
+  }
+
+  // 5. Draw / Empate
+  if (mType === 'draw' || mText.includes('empate') || mText.includes('draw')) {
+    return isSoccer && (hScore === aScore) ? 'WON' : 'LOST';
+  }
+
+  // 6. Doble oportunidad
+  if (mText.includes('doble oportunidad') || mText.includes('1x') || mText.includes('x2')) {
+    if (!isSoccer) return 'LOST';
+    if (mText.includes('1x') || (homeMatches && mText.includes('empate'))) {
+      return hScore >= aScore ? 'WON' : 'LOST';
+    }
+    if (mText.includes('x2') || (awayMatches && mText.includes('empate'))) {
+      return aScore >= hScore ? 'WON' : 'LOST';
+    }
+    return hScore !== aScore ? 'WON' : 'LOST';
+  }
+
+  // 7. Away Win
+  if (mType === 'away_win' || (awayMatches && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+    return aScore > hScore ? 'WON' : 'LOST';
+  }
+
+  // 8. Home Win
+  if (mType === 'home_win' || (homeMatches && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+    return hScore > aScore ? 'WON' : 'LOST';
+  }
+
+  // 9. Specific team match fallback
+  if (awayMatches && !homeMatches) {
+    return aScore > hScore ? 'WON' : 'LOST';
+  }
+  if (homeMatches && !awayMatches) {
+    return hScore > aScore ? 'WON' : 'LOST';
+  }
+
+  return 'LOST';
+}
+
+/**
  * Evaluates whether an AI prediction was WON or LOST based on final scores.
  */
 export function evaluatePrediction(
@@ -1413,80 +1528,18 @@ export function evaluatePrediction(
     };
   }
 
+  const res = evaluateMarketResult(prediction.recommended_market, prediction.market_type, game);
   const hScore = Number(game.home_score);
   const aScore = Number(game.away_score);
-  const total = hScore + aScore;
-  const targetOdd = Number(prediction.target_odd || 1.90);
-
-  const mType = (prediction.market_type || '').toLowerCase();
-  const mText = (prediction.recommended_market || '').toLowerCase();
-  const homeNorm = (game.home || '').toLowerCase();
-  const awayNorm = (game.away || '').toLowerCase();
-
-  const isSoccer = game.sport === 'Fútbol' || ['premier', 'laliga', 'champions', 'seriea', 'bundesliga', 'ligue1', 'europa', 'ligamx', 'mls', 'nations', 'concacaf-nations', 'friendlies'].includes(game.league);
-
-  let won = false;
-
-  // 1. Ambos equipos anotan (BTTS) - Strictly verified only for Soccer
-  if (mType === 'btts_yes' || (mText.includes('ambos') && mText.includes('sí')) || mText.includes('btts')) {
-    won = isSoccer && (hScore > 0 && aScore > 0);
-  } else if (mType === 'btts_no' || (mText.includes('ambos') && mText.includes('no'))) {
-    won = isSoccer && (hScore === 0 || aScore === 0);
-  } 
-  // 2. Over / Totales (Más de) - parses exact numerical line (e.g. 218.5, 44.5, 2.5)
-  else if (mType.includes('over') || mText.includes('más de') || mText.includes('over')) {
-    const match = mText.match(/(?:más de|over)\s+([\d.]+)/i);
-    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
-    won = total > line;
-  }
-  // 3. Under / Totales (Menos de)
-  else if (mType.includes('under') || mText.includes('menos de') || mText.includes('under')) {
-    const match = mText.match(/(?:menos de|under)\s+([\d.]+)/i);
-    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
-    won = total < line;
-  }
-  // 4. Spread / Handicap / Run Line
-  else if (mType === 'spread' || mText.includes('spread') || mText.includes('hándicap') || mText.includes('handicap') || mText.includes('run line')) {
-    const isAway = mText.includes(awayNorm);
-    const isHome = mText.includes(homeNorm);
-    const match = mText.match(/([+-]?\d+(?:\.\d+)?)/);
-    const spreadLine = match ? parseFloat(match[1]) : 0;
-
-    if (isAway && !isHome) {
-      won = (aScore + spreadLine) > hScore;
-    } else {
-      won = (hScore + spreadLine) > aScore;
-    }
-  }
-  // 5. Draw / Empate
-  else if (mType === 'draw' || mText.includes('empate') || mText.includes('draw')) {
-    won = isSoccer && (hScore === aScore);
-  }
-  // 6. Away Win (Visitante)
-  else if (mType === 'away_win' || (mText.includes(awayNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
-    won = aScore > hScore;
-  }
-  // 7. Home Win (Local)
-  else if (mType === 'home_win' || (mText.includes(homeNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
-    won = hScore > aScore;
-  }
-  // 8. Strict fallback: Never default to automatic win!
-  else if (mText.includes(awayNorm) && !mText.includes(homeNorm)) {
-    won = aScore > hScore;
-  } else if (mText.includes(homeNorm) && !mText.includes(awayNorm)) {
-    won = hScore > aScore;
-  } else {
-    won = false;
-  }
-
   const actualScore = `${game.away} ${aScore} – ${hScore} ${game.home}`;
-  const profitUnits = won ? Number((targetOdd - 1.0).toFixed(2)) : -1.0;
+  const targetOdd = Number(prediction.target_odd || 1.90);
+  const won = res === 'WON';
 
   return {
-    status: won ? 'WON' : 'LOST',
+    status: res,
     actualResult: actualScore,
     margin: `${Math.abs(hScore - aScore)} dif`,
-    profitUnits,
+    profitUnits: won ? Number((targetOdd - 1.0).toFixed(2)) : -1.0,
   };
 }
 
