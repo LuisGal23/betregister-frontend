@@ -582,9 +582,12 @@ export class PronosticosPageComponent implements OnInit {
 
       const legs = totalsPicks.map((p) => {
         const isSoccer = this.isSoccer(p.game);
-        const market = isSoccer ? 'Total de goles' : p.game.sport === 'Baloncesto' ? 'Total de puntos' : 'Total';
+        const isBball = p.game.sport === 'Baloncesto' || p.game.sport === 'Básquetbol' || p.game.league === 'nba';
+        const isNfl = p.game.sport === 'Americano' || p.game.league === 'nfl';
+        const isMlb = p.game.sport === 'Béisbol' || p.game.league === 'mlb' || p.game.league === 'kbo';
+        const market = isSoccer ? 'Total de goles' : isBball ? 'Total de puntos' : isNfl ? 'Total de puntos' : isMlb ? 'Total de carreras' : 'Total de puntos';
         const pick = 'Más de';
-        const line = isSoccer ? 2.5 : p.game.sport === 'Baloncesto' ? 218.5 : 44.5;
+        const line = isSoccer ? 2.5 : isBball ? 218.5 : isNfl ? 44.5 : 8.5;
         const baseLeg = buildLeg(p);
         baseLeg.market = market;
         baseLeg.pick = pick;
@@ -625,7 +628,9 @@ export class PronosticosPageComponent implements OnInit {
     }
     const seed = Math.abs(hash);
     const soccer = this.isSoccer(g);
-    const basketball = g.sport === 'Baloncesto' || g.league === 'nba';
+    const basketball = g.sport === 'Baloncesto' || g.sport === 'Básquetbol' || g.league === 'nba';
+    const nfl = g.sport === 'Americano' || g.league === 'nfl';
+    const baseball = g.sport === 'Béisbol' || g.league === 'mlb' || g.league === 'kbo';
 
     // Model Base Probability Calculation
     const bias = (seed % 30) - 15;
@@ -658,7 +663,7 @@ export class PronosticosPageComponent implements OnInit {
       homeWinProb = baseHome;
       awayWinProb = 100 - baseHome;
       drawProb = null;
-      expectedTotal = g.sport === 'Americano' ? 44 + (seed % 12) : 8 + (seed % 5);
+      expectedTotal = nfl ? 44 + (seed % 12) : 8 + (seed % 5);
       overProb = Math.min(74, Math.max(46, 52 + (seed % 16) - 8));
       bttsProb = null;
     }
@@ -672,30 +677,31 @@ export class PronosticosPageComponent implements OnInit {
     const mType = (ai.market_type || '').toLowerCase();
     const mLabel = ai.recommended_market || '';
 
-    if (mType === 'btts_yes' || mLabel.toLowerCase().includes('ambos equipos') || mLabel.toLowerCase().includes('btts')) {
+    // Strictly enforce sport market validity (Never assign BTTS or Goles to basketball or NFL!)
+    if ((mType === 'btts_yes' || mLabel.toLowerCase().includes('ambos equipos') || mLabel.toLowerCase().includes('btts')) && soccer) {
       pickMarket = 'Ambos equipos anotan';
       pickVal = 'Sí';
-    } else if (mType === 'btts_no') {
+    } else if (mType === 'btts_no' && soccer) {
       pickMarket = 'Ambos equipos anotan';
       pickVal = 'No';
-    } else if (mType === 'over_2_5' || mLabel.toLowerCase().includes('más de') || mLabel.toLowerCase().includes('over')) {
-      pickMarket = soccer ? 'Total de goles' : 'Total de puntos';
+    } else if (mType.includes('over') || mLabel.toLowerCase().includes('más de') || mLabel.toLowerCase().includes('over')) {
+      pickMarket = soccer ? 'Total de goles' : baseball ? 'Total de carreras' : 'Total de puntos';
       pickVal = 'Más de';
-      pickLine = soccer ? 2.5 : basketball ? 218.5 : 44.5;
-    } else if (mType === 'under_2_5' || mLabel.toLowerCase().includes('menos de') || mLabel.toLowerCase().includes('under')) {
-      pickMarket = soccer ? 'Total de goles' : 'Total de puntos';
+      pickLine = soccer ? 2.5 : basketball ? 218.5 : nfl ? 44.5 : 8.5;
+    } else if (mType.includes('under') || mLabel.toLowerCase().includes('menos de') || mLabel.toLowerCase().includes('under')) {
+      pickMarket = soccer ? 'Total de goles' : baseball ? 'Total de carreras' : 'Total de puntos';
       pickVal = 'Menos de';
-      pickLine = soccer ? 2.5 : basketball ? 218.5 : 44.5;
+      pickLine = soccer ? 2.5 : basketball ? 218.5 : nfl ? 44.5 : 8.5;
+    } else if (mType === 'spread' || mLabel.toLowerCase().includes('spread') || mLabel.toLowerCase().includes('hándicap')) {
+      pickMarket = baseball ? 'Run Line' : 'Spread';
+      pickVal = mLabel.toLowerCase().includes(g.away.toLowerCase()) ? g.away : g.home;
+      pickLine = basketball ? -4.5 : nfl ? -3.5 : -1.5;
     } else if (mType === 'away_win' || mLabel.toLowerCase().includes(g.away.toLowerCase())) {
       pickMarket = 'Moneyline';
       pickVal = 'Visitante';
-    } else if (mType === 'draw' || mLabel.toLowerCase().includes('empate')) {
+    } else if ((mType === 'draw' || mLabel.toLowerCase().includes('empate')) && soccer) {
       pickMarket = 'Moneyline';
       pickVal = 'Empate';
-    } else if (mType === 'spread') {
-      pickMarket = 'Spread';
-      pickVal = mLabel.toLowerCase().includes(g.away.toLowerCase()) ? g.away : g.home;
-      pickLine = -1.5;
     } else {
       pickMarket = 'Moneyline';
       pickVal = 'Local';

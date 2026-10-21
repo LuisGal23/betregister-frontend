@@ -223,7 +223,7 @@
         <div class="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0"></div>
         <div>
           <span class="text-xs sm:text-sm font-bold text-text block">Cargando partidos y analizando predicciones IA...</span>
-          <span class="text-[11px] text-muted block">Sincronizando cuotas en vivo, probabilidades matemáticas y fotos de jugadores</span>
+          <span class="text-[11px] text-muted block">Sincronizando análisis estadístico en vivo, probabilidades y datos de jugadores</span>
         </div>
       </div>
       <span class="text-[11px] font-mono text-accent font-semibold px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 hidden sm:inline-block">
@@ -404,7 +404,7 @@
                     PRONÓSTICO ACERTADO (VERDE)
                   </span>
                   <strong class="text-xs font-bold text-text truncate block">
-                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }} (@{{ pred.target_odd }})
+                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }}
                   </strong>
                 </div>
               } @else if (evalRes.status === 'LOST') {
@@ -416,7 +416,7 @@
                     PRONÓSTICO NO LOGRADO (ROJO)
                   </span>
                   <strong class="text-xs font-bold text-text truncate block">
-                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }} (@{{ pred.target_odd }})
+                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }}
                   </strong>
                 </div>
               } @else {
@@ -437,15 +437,15 @@
             <div class="flex items-center gap-2 shrink-0 sm:self-center">
               @if (evalRes.status === 'WON') {
                 <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
-                  +{{ evalRes.profitUnits }}u Ganadas
+                  Acierto Verificado
                 </span>
               } @else if (evalRes.status === 'LOST') {
                 <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
-                  -1.00u
+                  Fallo
                 </span>
               } @else {
-                <span class="px-2 py-0.5 rounded-md bg-surface text-accent font-mono text-[11px] font-black border border-border">
-                  @{{ pred.target_odd }}
+                <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-400 font-mono text-[10px] font-bold border border-cyan-500/30">
+                  {{ pred.ai_estimated_probability_pct }}% conf.
                 </span>
               }
             </div>

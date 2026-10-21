@@ -168,8 +168,8 @@
               class="w-full sm:w-auto py-3 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer shrink-0"
               (click)="addToTicket(vb.recommended_market, vb.recommended_market, vb.target_odd, vb.recommended_market)"
             >
-              <span>+ Añadir al Ticket</span>
-              <span class="font-mono bg-black/20 px-2 py-0.5 rounded-md text-slate-950">@{{ vb.target_odd.toFixed(2) }}</span>
+              <span>+ Registrar en Ticket</span>
+              <span class="font-mono bg-black/20 px-2 py-0.5 rounded-md text-slate-950">{{ vb.ai_estimated_probability_pct }}% prob.</span>
             </button>
           </div>
 
@@ -237,10 +237,10 @@
 
                 <div class="flex items-center justify-between gap-2 pt-2 border-t border-[var(--border)]">
                   <div class="text-[11px] font-mono">
-                    <span class="text-[var(--muted)]">Cuota: </span>
-                    <b class="text-white">@{{ opt.target_odd.toFixed(2) }}</b>
+                    <span class="text-[var(--muted)]">Certeza: </span>
+                    <b class="text-emerald-400 font-bold">{{ opt.probability_pct }}%</b>
                     @if (opt.expected_value_pct > 0) {
-                      <span class="text-emerald-400 text-[10px] ml-1">(+{{ opt.expected_value_pct }}% EV)</span>
+                      <span class="text-cyan-400 text-[10px] ml-1 font-bold">(+{{ opt.expected_value_pct }}% EV)</span>
                     }
                   </div>
 
@@ -352,67 +352,160 @@
       </div>
     }
 
-    <!-- TAB 2: ALINEACIONES & JUGADORES ESTRELLA -->
+    <!-- TAB 2: ALINEACIONES & PROPS DE JUGADORES (TARJETAS GRANDES) -->
     @if (activeTab() === 'alineaciones') {
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-6">
         @let d = details();
-        @if (d?.players?.length || d?.star_players?.length) {
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
-            <!-- Away Squad -->
-            <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
-              <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
-                <img [src]="getLogo(g.away, g.sport, g.away_logo)" class="w-4 h-4 object-contain" />
-                <span>Roster {{ g.away }}</span>
-              </h4>
-
-              <div class="flex flex-col gap-2">
-                @for (p of d?.players; track p.name) {
-                  @if (p.team_side === 'away') {
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
-                      <div class="flex items-center gap-2.5">
-                        <img [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=1e293b&color=10b981'" class="w-8 h-8 rounded-full object-cover border border-[var(--border)]" (error)="onPlayerImgError($event, p.name)" />
-                        <div>
-                          <strong class="block text-white">{{ p.name }}</strong>
-                          <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '10' }}</span>
-                        </div>
-                      </div>
-                      <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
-                    </div>
-                  }
-                }
-              </div>
+        
+        <!-- SECTION 1: PROPS & JUGADORES ESTRELLA (TARJETAS GRANDES DE JUGADOR) -->
+        @if (d?.star_players?.length) {
+          <div class="flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-sm font-bold text-white flex items-center gap-2 m-0 font-mono">
+                <span>⭐</span>
+                <span>Jugadores Clave & Props Estadísticos Recomendados</span>
+              </h3>
+              <span class="text-[11px] text-[var(--muted)] font-mono">Fotografías oficiales & líneas estimadas</span>
             </div>
 
-            <!-- Home Squad -->
-            <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
-              <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
-                <img [src]="getLogo(g.home, g.sport, g.home_logo)" class="w-4 h-4 object-contain" />
-                <span>Roster {{ g.home }}</span>
-              </h4>
-
-              <div class="flex flex-col gap-2">
-                @for (p of d?.players; track p.name) {
-                  @if (p.team_side === 'home') {
-                    <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
-                      <div class="flex items-center gap-2.5">
-                        <img [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=1e293b&color=10b981'" class="w-8 h-8 rounded-full object-cover border border-[var(--border)]" (error)="onPlayerImgError($event, p.name)" />
-                        <div>
-                          <strong class="block text-white">{{ p.name }}</strong>
-                          <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '9' }}</span>
-                        </div>
-                      </div>
-                      <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              @for (p of d?.star_players; track p.name) {
+                @let prop = getPropForPlayer(p);
+                <div class="p-4 rounded-2xl bg-[var(--surface)] hover:bg-[var(--surface-high)]/70 border border-[var(--border)] hover:border-emerald-500/40 transition-all flex flex-col justify-between gap-3 shadow-md relative overflow-hidden group">
+                  
+                  <div class="flex items-start gap-3.5">
+                    <!-- Large Player Portrait Headshot -->
+                    <div class="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden bg-slate-900/90 border border-white/10 shadow-md">
+                      <img 
+                        [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                        [alt]="p.name"
+                        class="w-full h-full object-cover object-top transition-transform duration-300 group-hover:scale-105"
+                        (error)="onPlayerImgError($event, p.name)"
+                      />
+                      <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/75 text-[9px] font-mono font-bold text-white border border-white/20">
+                        #{{ p.jersey || '10' }}
+                      </span>
                     </div>
-                  }
-                }
-              </div>
-            </div>
 
+                    <!-- Player Info & Role -->
+                    <div class="min-w-0 flex-1 flex flex-col gap-1">
+                      <div class="flex items-center justify-between gap-1">
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[var(--surface-high)] text-[var(--muted)] font-mono border border-[var(--border)]">
+                          {{ p.team }}
+                        </span>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                          {{ p.marginImpact || '+1.5 pts' }}
+                        </span>
+                      </div>
+
+                      <strong class="text-sm sm:text-base font-bold text-white truncate block">
+                        {{ p.name }}
+                      </strong>
+
+                      <span class="text-[11px] text-[var(--muted)] font-mono truncate">
+                        {{ p.role }} · <b class="text-slate-300">{{ p.statusText || 'Titular confirmado' }}</b>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Prop Line Highlight & Quick Ticket Action -->
+                  <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/60 border border-[var(--border)] flex items-center justify-between gap-2 mt-1">
+                    <div class="min-w-0 flex-1">
+                      <span class="text-[9px] uppercase tracking-wider text-[var(--muted)] block font-mono font-bold">
+                        Prop Recomendado · {{ prop.prob }}% Certeza
+                      </span>
+                      <strong class="text-xs text-emerald-400 font-bold truncate block">
+                        {{ prop.label }}
+                      </strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      class="py-1.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1 shadow-sm active:scale-95 transition-all cursor-pointer shrink-0"
+                      (click)="addToTicket(prop.market, prop.pick, 1.85, prop.label, prop.line)"
+                      title="Agregar este prop de jugador directamente al ticket"
+                    >
+                      <span>+ Ticket</span>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
           </div>
-        } @else {
+        }
+
+        <!-- SECTION 2: ROSTERS OFICIALES COMPLETOS -->
+        @if (d?.players?.length) {
+          <div class="flex flex-col gap-3">
+            <h4 class="text-xs font-mono font-bold text-white flex items-center gap-1.5 m-0 pt-2 border-t border-[var(--border)]">
+              <span>📋</span>
+              <span>Alineaciones & Plantillas Convocadas</span>
+            </h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Away Squad -->
+              <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+                <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
+                  <img [src]="getLogo(g.away, g.sport, g.away_logo)" class="w-4 h-4 object-contain" />
+                  <span>Roster {{ g.away }}</span>
+                </h4>
+
+                <div class="flex flex-col gap-2">
+                  @for (p of d?.players; track p.name) {
+                    @if (p.team_side === 'away') {
+                      <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
+                        <div class="flex items-center gap-3">
+                          <img 
+                            [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                            class="w-11 h-11 rounded-xl object-cover bg-slate-900 border border-[var(--border)] shrink-0" 
+                            (error)="onPlayerImgError($event, p.name)" 
+                          />
+                          <div>
+                            <strong class="block text-white font-semibold">{{ p.name }}</strong>
+                            <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '10' }}</span>
+                          </div>
+                        </div>
+                        <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+
+              <!-- Home Squad -->
+              <div class="p-4 rounded-2xl bg-[var(--surface)] border border-[var(--border)] flex flex-col gap-3">
+                <h4 class="text-xs font-mono font-bold text-white flex items-center gap-2 m-0 border-b border-[var(--border)] pb-2">
+                  <img [src]="getLogo(g.home, g.sport, g.home_logo)" class="w-4 h-4 object-contain" />
+                  <span>Roster {{ g.home }}</span>
+                </h4>
+
+                <div class="flex flex-col gap-2">
+                  @for (p of d?.players; track p.name) {
+                    @if (p.team_side === 'home') {
+                      <div class="flex items-center justify-between p-2 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] text-xs">
+                        <div class="flex items-center gap-3">
+                          <img 
+                            [src]="p.headshot || 'https://ui-avatars.com/api/?name=' + p.name + '&background=0f172a&color=38bdf8&bold=true&size=256'" 
+                            class="w-11 h-11 rounded-xl object-cover bg-slate-900 border border-[var(--border)] shrink-0" 
+                            (error)="onPlayerImgError($event, p.name)" 
+                          />
+                          <div>
+                            <strong class="block text-white font-semibold">{{ p.name }}</strong>
+                            <span class="text-[10px] text-[var(--muted)] font-mono">{{ p.position }} · #{{ p.jersey || '9' }}</span>
+                          </div>
+                        </div>
+                        <span class="text-[11px] font-mono text-[var(--accent)] font-bold">{{ p.display_stat || 'Titular' }}</span>
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+
+            </div>
+          </div>
+        } @else if (!d?.star_players?.length) {
           <div class="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center text-xs text-[var(--muted)]">
-            Alineaciones oficiales pendientes de confirmación técnica para este partido.
+            Alineaciones oficiales y props de jugadores pendientes de confirmación técnica para este partido.
           </div>
         }
       </div>

@@ -368,7 +368,7 @@
                 </span>
                 @if (parlay.status === 'WON') {
                   <span class="text-[10px] font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">
-                    ✓ GANADO (@{{ parlay.combinedOdds.toFixed(2) }})
+                    ✓ GANADO
                   </span>
                 } @else if (parlay.status === 'LOST') {
                   <span class="text-[10px] font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono border border-rose-500/30">
@@ -422,8 +422,8 @@
             </div>
 
             <div class="flex items-center justify-between text-xs pt-2 border-t border-[var(--border)] font-mono">
-              <span class="text-[var(--muted)]">Cuota combinada:</span>
-              <strong class="text-[var(--accent)] font-bold">@{{ parlay.combinedOdds.toFixed(2) }}</strong>
+              <span class="text-[var(--muted)]">Prob. combinada:</span>
+              <strong class="text-[var(--accent)] font-bold">{{ parlay.combinedProb }}%</strong>
             </div>
           </div>
         }
@@ -441,7 +441,7 @@
         </h2>
       </div>
       <span class="text-xs text-[var(--muted)] hidden sm:inline">
-        Actualizados con las cuotas y marcadores oficiales de hoy
+        Actualizados con estadísticas y marcadores oficiales de hoy
       </span>
     </div>
 
@@ -485,8 +485,8 @@
                   }
                 </div>
                 <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] shadow-xs">
-                  <span class="text-[10px] text-[var(--muted)] font-medium">Cuota</span>
-                  <strong class="text-sm font-extrabold text-[var(--accent)] font-mono">{{ parlay.combinedOdds.toFixed(2) }}</strong>
+                  <span class="text-[10px] text-[var(--muted)] font-medium">Probabilidad</span>
+                  <strong class="text-sm font-extrabold text-emerald-400 font-mono">{{ parlay.combinedProb }}%</strong>
                 </div>
               </div>
 
@@ -548,8 +548,8 @@
                       } @else {
                         <span class="text-[11px] font-bold text-emerald-400 font-mono">{{ leg.prob }}%</span>
                       }
-                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--accent)] font-mono border border-[var(--border)]">
-                        @{{ leg.odds.toFixed(2) }}
+                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-emerald-400 font-mono border border-[var(--border)]">
+                        {{ leg.prob }}% conf.
                       </span>
                     </div>
                   </div>
@@ -564,8 +564,8 @@
               (click)="loadParlayIntoTicket(parlay)"
               title="Cargar todas las selecciones directamente a tu ticket"
             >
-              <span>⚡ Apostar este Parlay</span>
-              <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-[11px]">@{{ parlay.combinedOdds.toFixed(2) }}</span>
+              <span>📋 Registra este parlay</span>
+              <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-[11px]">{{ parlay.combinedProb }}% conf.</span>
             </button>
           </article>
         }
@@ -823,7 +823,7 @@
                   title="Añadir esta selección a mi ticket de apuestas"
                 >
                   <span>+ Añadir al Ticket</span>
-                  <span class="font-mono text-[10px] text-[var(--accent)] group-hover:text-white">@{{ (pred.valueBet.cuota_objetivo || pred.bestPick.odds).toFixed(2) }}</span>
+                  <span class="font-mono text-[10px] text-emerald-400 font-bold group-hover:text-white">{{ pred.bestPick.prob }}% conf.</span>
                 </button>
               </div>
 
@@ -878,7 +878,7 @@
                         (click)="addAlternativeOptionToTicket(pred.game, alt)"
                         title="Añadir esta opción al ticket"
                       >
-                        + @{{ alt.target_odd.toFixed(2) }}
+                        + Añadir ({{ alt.probability_pct }}%)
                       </button>
                     </div>
                   }

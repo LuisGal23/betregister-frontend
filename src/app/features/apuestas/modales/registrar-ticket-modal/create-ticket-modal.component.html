@@ -49,6 +49,24 @@
         }
       </div>
 
+      <!-- Prominent Error & Validation Banner -->
+      @if (vm.error()) {
+        <div class="mx-5 sm:mx-7 mt-4 p-3.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 text-xs flex items-center justify-between gap-2 animate-[fadeIn_0.2s_ease-out]">
+          <div class="flex items-center gap-2">
+            <app-icon name="alert" class="w-4 h-4 shrink-0" />
+            <span class="font-medium">{{ vm.error() }}</span>
+          </div>
+          <button type="button" class="text-red-400 hover:text-red-200 bg-transparent border-none cursor-pointer text-sm font-bold p-1 leading-none" (click)="vm.error.set('')">✕</button>
+        </div>
+      }
+
+      @if (vm.data().houses.length === 0) {
+        <div class="mx-5 sm:mx-7 mt-3 p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs flex items-center gap-2">
+          <app-icon name="alert" class="w-4 h-4 shrink-0" />
+          <span>No tienes ninguna casa de apuestas configurada en tu bankroll. Debes agregar al menos una casa para registrar tickets.</span>
+        </div>
+      }
+
       <div class="overflow-y-auto px-5 sm:px-7 py-5 sm:py-6 flex flex-col gap-4 sm:gap-5 max-h-[calc(92vh-190px)]">
         
         <!-- MATCH PICKING SECTION: PARLAY VS SINGLE/SAME_GAME -->
@@ -314,7 +332,7 @@
         <button 
           type="button" 
           class="w-full sm:w-auto py-2.5 px-8 rounded-full bg-[var(--accent)] hover:bg-[#0284c7] text-white text-[13px] font-bold cursor-pointer transition-all duration-200 shadow-[0_4px_16px_rgba(41,184,245,0.35)] hover:shadow-[0_6px_22px_rgba(41,184,245,0.48)] active:scale-95 text-center disabled:opacity-50 disabled:cursor-not-allowed" 
-          [disabled]="vm.busy() || !stake || !odds"
+          [disabled]="vm.busy()"
           (click)="saveTicket()"
         >
           {{ vm.busy() ? 'Guardando ticket…' : 'Registrar ticket' }}

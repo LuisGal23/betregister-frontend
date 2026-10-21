@@ -112,6 +112,71 @@ interface SquadMember {
   headshot?: string;
 }
 
+const KNOWN_PORTRAITS: Record<string, string> = {
+  'kylian mbappe': 'https://r2.thesportsdb.com/images/media/player/cutout/cxrmkm1788114306.png',
+  'kylian mbappé': 'https://r2.thesportsdb.com/images/media/player/cutout/cxrmkm1788114306.png',
+  'vinicius jr': 'https://r2.thesportsdb.com/images/media/player/cutout/z5o9zt1788114155.png',
+  'vinícius jr': 'https://r2.thesportsdb.com/images/media/player/cutout/z5o9zt1788114155.png',
+  'vinicius jr.': 'https://r2.thesportsdb.com/images/media/player/cutout/z5o9zt1788114155.png',
+  'vinícius jr.': 'https://r2.thesportsdb.com/images/media/player/cutout/z5o9zt1788114155.png',
+  'jude bellingham': 'https://r2.thesportsdb.com/images/media/player/cutout/s5886m1726509930.png',
+  'rodrygo': 'https://r2.thesportsdb.com/images/media/player/cutout/2q55231788114227.png',
+  'lamine yamal': 'https://r2.thesportsdb.com/images/media/player/cutout/m9n4ja1761512633.png',
+  'raphinha': 'https://r2.thesportsdb.com/images/media/player/cutout/w94spe1726510018.png',
+  'pedri': 'https://r2.thesportsdb.com/images/media/player/cutout/srwppu1424795582.png',
+  'dani olmo': 'https://r2.thesportsdb.com/images/media/player/cutout/s9hzoh1725611346.png',
+  'gavi': 'https://r2.thesportsdb.com/images/media/player/cutout/29005498.png',
+  'fermin lopez': 'https://r2.thesportsdb.com/images/media/player/cutout/4skahz1761512602.png',
+  'fermín lópez': 'https://r2.thesportsdb.com/images/media/player/cutout/4skahz1761512602.png',
+  'gabriel jesus': 'https://r2.thesportsdb.com/images/media/player/cutout/jcifyz1789725894.png',
+  'jobe bellingham': 'https://r2.thesportsdb.com/images/media/player/cutout/f9hado1756325855.png',
+  'marcel sabitzer': 'https://r2.thesportsdb.com/images/media/player/cutout/m0if0e1756326525.png',
+  'emre can': 'https://r2.thesportsdb.com/images/media/player/cutout/grs3841756326161.png',
+  'carney chukwuemeka': 'https://r2.thesportsdb.com/images/media/player/cutout/oa3p4i1741868651.png',
+  'ousmane dembele': 'https://r2.thesportsdb.com/images/media/player/cutout/oa3p4i1741868651.png',
+  'ousmane dembélé': 'https://r2.thesportsdb.com/images/media/player/cutout/oa3p4i1741868651.png',
+  'erling haaland': 'https://r2.thesportsdb.com/images/media/player/cutout/30349887.png',
+  'kevin de bruyne': 'https://r2.thesportsdb.com/images/media/player/cutout/w513qf1725611225.png',
+  'phil foden': 'https://r2.thesportsdb.com/images/media/player/cutout/f55x6u1725611299.png',
+  'bukayo saka': 'https://r2.thesportsdb.com/images/media/player/cutout/f55x6u1725611299.png',
+  'martin odegaard': 'https://r2.thesportsdb.com/images/media/player/cutout/19jeyo1726510167.png',
+  'martin ødegaard': 'https://r2.thesportsdb.com/images/media/player/cutout/19jeyo1726510167.png',
+  'mohamed salah': 'https://r2.thesportsdb.com/images/media/player/cutout/19jeyo1726510167.png',
+  'harry kane': 'https://r2.thesportsdb.com/images/media/player/cutout/y64qsm1726510228.png',
+  'antoine griezmann': 'https://r2.thesportsdb.com/images/media/player/cutout/ph0a3h1688640332.png',
+  'julian alvarez': 'https://r2.thesportsdb.com/images/media/player/cutout/jcifyz1789725894.png',
+  'julián álvarez': 'https://r2.thesportsdb.com/images/media/player/cutout/jcifyz1789725894.png',
+  'lebron james': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/1966.png&w=350&h=254',
+  'anthony davis': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/6583.png&w=350&h=254',
+  'stephen curry': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3975.png&w=350&h=254',
+  'luka doncic': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3945274.png&w=350&h=254',
+  'luka dončić': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3945274.png&w=350&h=254',
+  'nikola jokic': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3112335.png&w=350&h=254',
+  'nikola jokić': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3112335.png&w=350&h=254',
+  'giannis antetokounmpo': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3032977.png&w=350&h=254',
+  'jayson tatum': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4065648.png&w=350&h=254',
+  'jaylen brown': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/3917376.png&w=350&h=254',
+  'patrick mahomes': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3139477.png&w=350&h=254',
+  'lamar jackson': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3916387.png&w=350&h=254',
+  'josh allen': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3918298.png&w=350&h=254',
+  'jalen hurts': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4040715.png&w=350&h=254',
+  'brock purdy': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4361741.png&w=350&h=254',
+  'christian mccaffrey': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3117251.png&w=350&h=254',
+  'jayden daniels': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4426348.png&w=350&h=254',
+  'terry mclaurin': 'https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/3121422.png&w=350&h=254',
+  'henry martin': 'https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/196614.png&w=350&h=254',
+  'henry martín': 'https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/196614.png&w=350&h=254',
+  'roberto alvarado': 'https://a.espncdn.com/combiner/i?img=/i/headshots/soccer/players/full/252971.png&w=350&h=254',
+};
+
+export function getKnownPlayerHeadshot(name: string): string {
+  const norm = (name || '').toLowerCase().trim();
+  if (KNOWN_PORTRAITS[norm]) return KNOWN_PORTRAITS[norm];
+  const clean = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  if (KNOWN_PORTRAITS[clean]) return KNOWN_PORTRAITS[clean];
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'Jugador')}&background=0f172a&color=38bdf8&bold=true&size=256`;
+}
+
 // Authentic team catalogs: each club has ONLY their own verified players
 const VERIFIED_CLUB_SQUADS: Record<string, SquadMember[]> = {
   // Real Madrid
@@ -484,7 +549,7 @@ export function getVerifiedTeamStars(teamName: string, sport: string, side: 'hom
       return members.slice(0, 2).map((m: any) => ({
         name: m.name,
         athlete_id: m.athlete_id,
-        headshot: m.headshot,
+        headshot: m.headshot || getKnownPlayerHeadshot(m.name),
         jersey: m.jersey,
         team: teamName,
         team_side: side,
@@ -1172,8 +1237,11 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       });
     }
   } else {
-    // Basketball / NFL: Over / Under Points & Spreads
-    const isBasketball = game.sport === 'Baloncesto';
+    // Basketball / NFL / MLB: Points, Spreads and Runs (Never BTTS or Goles!)
+    const isBasketball = game.sport === 'Baloncesto' || game.sport === 'Básquetbol' || game.league === 'nba';
+    const isNFL = game.sport === 'Americano' || game.league === 'nfl';
+    const isBaseball = game.sport === 'Béisbol' || game.league === 'mlb' || game.league === 'kbo';
+
     if (isBasketball) {
       const line = 216.5 + (seed % 10);
       const isOver = seed % 2 === 0;
@@ -1188,18 +1256,44 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         implProb: imp,
         aiProb: ai,
         edge,
-        marketType: isOver ? 'over_2_5' : 'under_2_5',
-        reasoning: `[Discrepancia Cuantitativa]: Proyección de posesiones otorga +${edge}% EV a la línea de ${line} puntos (@${odd}). [Forma y Ritmo]: Eficiencia de tiro exterior proyectada. [Historial H2H]: Tendencia clara en enfrentamientos directos.`
+        marketType: isOver ? 'over_points' : 'under_points',
+        reasoning: `[Discrepancia Cuantitativa]: Proyección de ritmo y posesiones otorga +${edge}% EV a la línea de ${line} puntos. [Forma y Ritmo]: Eficiencia de tiro exterior proyectada. [Historial H2H]: Tendencia clara en enfrentamientos directos.`
       });
-    } else {
-      // NFL / MLB Spreads
+
       const isHome = homeProb >= awayProb;
       const spreadTeam = isHome ? game.home : game.away;
-      const spreadPts = isHome ? '-3.5' : '+3.5';
+      const spreadPts = isHome ? '-4.5' : '+4.5';
+      candidates.push({
+        market: `Spread ${spreadTeam} ${spreadPts}`,
+        targetOdd: 1.90,
+        bookmaker: 'Pinnacle (Bajo Margen)',
+        implProb: 52.6,
+        aiProb: 59.0,
+        edge: 12.1,
+        marketType: 'spread',
+        reasoning: `[Discrepancia Cuantitativa]: Ventaja matemática en spread de puntos (+12.1% EV). [Forma y Bajas]: Diferencial de quintetos iniciales favorable a ${spreadTeam}.`
+      });
+    } else if (isNFL) {
+      const line = 43.5 + (seed % 8);
+      const isOver = seed % 2 === 0;
       const odd = 1.91;
       const imp = 52.4;
       const ai = 58.0;
       const edge = Number(((ai / 100.0 * odd - 1.0) * 100).toFixed(1));
+      candidates.push({
+        market: `${isOver ? 'Más de' : 'Menos de'} ${line} Puntos`,
+        targetOdd: odd,
+        bookmaker: 'Pinnacle (Bajo Margen)',
+        implProb: imp,
+        aiProb: ai,
+        edge,
+        marketType: isOver ? 'over_points' : 'under_points',
+        reasoning: `[Discrepancia Cuantitativa]: Proyección de yardas y posesiones otorga +${edge}% EV en ${line} puntos totales. [Ritmo]: Eficiencia en zona roja proyectada.`
+      });
+
+      const isHome = homeProb >= awayProb;
+      const spreadTeam = isHome ? game.home : game.away;
+      const spreadPts = isHome ? '-3.5' : '+3.5';
       candidates.push({
         market: `Spread ${spreadTeam} ${spreadPts}`,
         targetOdd: odd,
@@ -1208,7 +1302,37 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: ai,
         edge,
         marketType: 'spread',
-        reasoning: `[Discrepancia Cuantitativa]: Ventaja en la línea de spread (+${edge}% EV) frente a la línea de apertura. [Forma y Bajas]: Balance de yardas y posesiones favorable a ${spreadTeam}. [Historial H2H]: Margen de victoria cubierto con frecuencia.`
+        reasoning: `[Discrepancia Cuantitativa]: Ventaja en la línea de spread (+${edge}% EV) frente a la línea de apertura. [Forma y Bajas]: Balance de yardas y posesiones favorable a ${spreadTeam}.`
+      });
+    } else if (isBaseball) {
+      const line = 7.5 + (seed % 4);
+      const isOver = seed % 2 === 0;
+      const odd = 1.90;
+      const imp = 52.6;
+      const ai = 58.5;
+      const edge = 11.1;
+      candidates.push({
+        market: `${isOver ? 'Más de' : 'Menos de'} ${line} Carreras`,
+        targetOdd: odd,
+        bookmaker: 'Pinnacle (Bajo Margen)',
+        implProb: imp,
+        aiProb: ai,
+        edge,
+        marketType: isOver ? 'over_runs' : 'under_runs',
+        reasoning: `[Discrepancia Cuantitativa]: Análisis de pitcheo abridor y bullpen otorga +11.1% EV a la línea de ${line} carreras.`
+      });
+
+      const isHome = homeProb >= awayProb;
+      const team = isHome ? game.home : game.away;
+      candidates.push({
+        market: `Run Line ${team} ${isHome ? '-1.5' : '+1.5'}`,
+        targetOdd: 1.88,
+        bookmaker: 'Pinnacle',
+        implProb: 53.2,
+        aiProb: 59.0,
+        edge: 10.9,
+        marketType: 'spread',
+        reasoning: `[Discrepancia Cuantitativa]: Superioridad de bateo de contacto y ERA proyectado favorable a ${team}.`
       });
     }
   }
@@ -1281,8 +1405,16 @@ export function evaluatePrediction(
     };
   }
 
-  const hScore = Number(game.home_score ?? 0);
-  const aScore = Number(game.away_score ?? 0);
+  if (game.home_score == null || game.away_score == null) {
+    return {
+      status: 'PENDING',
+      actualResult: 'Marcador pendiente',
+      profitUnits: 0,
+    };
+  }
+
+  const hScore = Number(game.home_score);
+  const aScore = Number(game.away_score);
   const total = hScore + aScore;
   const targetOdd = Number(prediction.target_odd || 1.90);
 
@@ -1291,31 +1423,60 @@ export function evaluatePrediction(
   const homeNorm = (game.home || '').toLowerCase();
   const awayNorm = (game.away || '').toLowerCase();
 
+  const isSoccer = game.sport === 'Fútbol' || ['premier', 'laliga', 'champions', 'seriea', 'bundesliga', 'ligue1', 'europa', 'ligamx', 'mls', 'nations', 'concacaf-nations', 'friendlies'].includes(game.league);
+
   let won = false;
 
-  if (mType === 'home_win' || (mText.includes(homeNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
-    won = hScore > aScore;
-  } else if (mType === 'away_win' || (mText.includes(awayNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
-    won = aScore > hScore;
-  } else if (mType === 'draw' || mText.includes('empate') || mText.includes('draw')) {
-    won = hScore === aScore;
-  } else if (mType === 'over_2_5' || mText.includes('over 2.5') || mText.includes('más de 2.5') || mText.includes('+2.5')) {
-    won = total > 2.5;
-  } else if (mType === 'under_2_5' || mText.includes('under 2.5') || mText.includes('menos de 2.5') || mText.includes('-2.5')) {
-    won = total < 2.5;
-  } else if (mType === 'btts_yes' || (mText.includes('ambos') && mText.includes('sí')) || mText.includes('btts')) {
-    won = hScore > 0 && aScore > 0;
+  // 1. Ambos equipos anotan (BTTS) - Strictly verified only for Soccer
+  if (mType === 'btts_yes' || (mText.includes('ambos') && mText.includes('sí')) || mText.includes('btts')) {
+    won = isSoccer && (hScore > 0 && aScore > 0);
   } else if (mType === 'btts_no' || (mText.includes('ambos') && mText.includes('no'))) {
-    won = hScore === 0 || aScore === 0;
-  } else {
-    // Contextual fallback: check if home was favored
-    if (mText.includes(homeNorm)) {
-      won = hScore > aScore;
-    } else if (mText.includes(awayNorm)) {
-      won = aScore > hScore;
+    won = isSoccer && (hScore === 0 || aScore === 0);
+  } 
+  // 2. Over / Totales (Más de) - parses exact numerical line (e.g. 218.5, 44.5, 2.5)
+  else if (mType.includes('over') || mText.includes('más de') || mText.includes('over')) {
+    const match = mText.match(/(?:más de|over)\s+([\d.]+)/i);
+    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
+    won = total > line;
+  }
+  // 3. Under / Totales (Menos de)
+  else if (mType.includes('under') || mText.includes('menos de') || mText.includes('under')) {
+    const match = mText.match(/(?:menos de|under)\s+([\d.]+)/i);
+    const line = match ? parseFloat(match[1]) : (isSoccer ? 2.5 : 218.5);
+    won = total < line;
+  }
+  // 4. Spread / Handicap / Run Line
+  else if (mType === 'spread' || mText.includes('spread') || mText.includes('hándicap') || mText.includes('handicap') || mText.includes('run line')) {
+    const isAway = mText.includes(awayNorm);
+    const isHome = mText.includes(homeNorm);
+    const match = mText.match(/([+-]?\d+(?:\.\d+)?)/);
+    const spreadLine = match ? parseFloat(match[1]) : 0;
+
+    if (isAway && !isHome) {
+      won = (aScore + spreadLine) > hScore;
     } else {
-      won = hScore > aScore;
+      won = (hScore + spreadLine) > aScore;
     }
+  }
+  // 5. Draw / Empate
+  else if (mType === 'draw' || mText.includes('empate') || mText.includes('draw')) {
+    won = isSoccer && (hScore === aScore);
+  }
+  // 6. Away Win (Visitante)
+  else if (mType === 'away_win' || (mText.includes(awayNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+    won = aScore > hScore;
+  }
+  // 7. Home Win (Local)
+  else if (mType === 'home_win' || (mText.includes(homeNorm) && (mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana')))) {
+    won = hScore > aScore;
+  }
+  // 8. Strict fallback: Never default to automatic win!
+  else if (mText.includes(awayNorm) && !mText.includes(homeNorm)) {
+    won = aScore > hScore;
+  } else if (mText.includes(homeNorm) && !mText.includes(awayNorm)) {
+    won = hScore > aScore;
+  } else {
+    won = false;
   }
 
   const actualScore = `${game.away} ${aScore} – ${hScore} ${game.home}`;

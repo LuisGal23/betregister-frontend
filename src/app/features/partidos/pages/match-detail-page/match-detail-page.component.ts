@@ -209,10 +209,39 @@ export class MatchDetailPageComponent implements OnInit {
     return getTeamLogo(teamName, sport) || '';
   }
 
+  getPropForPlayer(p: any): { label: string; market: string; pick: string; line: number; prob: number } {
+    const sport = this.game()?.sport || 'Fútbol';
+    const isBasketball = sport === 'Baloncesto' || sport === 'Básquetbol' || this.game()?.league === 'nba';
+    const isNFL = sport === 'Americano' || this.game()?.league === 'nfl';
+
+    if (isBasketball) {
+      const isPlaymaker = (p.role || '').toLowerCase().includes('base') || (p.position || '') === 'G';
+      if (isPlaymaker) {
+        return { label: `Más de 6.5 Asistencias (${p.name})`, market: 'Asistencias de jugador', pick: 'Más de', line: 6.5, prob: 64 };
+      }
+      return { label: `Más de 24.5 Puntos (${p.name})`, market: 'Puntos de jugador', pick: 'Más de', line: 24.5, prob: 62 };
+    }
+
+    if (isNFL) {
+      const isQB = (p.role || '').toLowerCase().includes('quarterback') || (p.position || '') === 'QB';
+      if (isQB) {
+        return { label: `Más de 1.5 Pases de TD (${p.name})`, market: 'Pases de TD de jugador', pick: 'Más de', line: 1.5, prob: 65 };
+      }
+      return { label: `Más de 64.5 Yardas totales (${p.name})`, market: 'Yardas de jugador', pick: 'Más de', line: 64.5, prob: 61 };
+    }
+
+    // Soccer
+    const isForward = (p.role || '').toLowerCase().includes('delantero') || (p.role || '').toLowerCase().includes('extremo') || (p.position || '') === 'DEL';
+    if (isForward) {
+      return { label: `Más de 1.5 Tiros a puerta (${p.name})`, market: 'Tiros a puerta de jugador', pick: 'Más de', line: 1.5, prob: 66 };
+    }
+    return { label: `Más de 48.5 Pases completados (${p.name})`, market: 'Pases de jugador', pick: 'Más de', line: 48.5, prob: 68 };
+  }
+
   onPlayerImgError(event: Event, name?: string) {
     const img = event.target as HTMLImageElement;
     if (!img || img.src.includes('ui-avatars.com')) return;
     const clean = (name || 'Jugador').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(clean)}&background=1e293b&color=10b981&bold=true&size=256`;
+    img.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(clean)}&background=0f172a&color=38bdf8&bold=true&size=256`;
   }
 }

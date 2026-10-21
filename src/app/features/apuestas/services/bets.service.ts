@@ -37,15 +37,22 @@ export class BetsService {
     const cleanMarketTag = toDatabaseMarketTag(data.market_tag || 'Sin clasificar');
     const cleanLeagueTag = data.league_tag || 'Sin clasificar';
 
-    const cleanDetails = (data.selection_details || []).map((d) => ({
-      sport: d.sport || 'Fútbol',
-      market: d.market || 'Otro',
-      pick: d.pick || '',
-      line: d.line !== undefined && d.line !== null ? Number(d.line) : null,
-      description: (d.description || '').slice(0, 200),
-      game_id: d.game_id || '',
-      event_label: (d.event_label || '').slice(0, 120),
-    }));
+    const cleanDetails = (data.selection_details || []).map((d) => {
+      let sport = d.sport || 'Fútbol';
+      const linked = (data.linked_games || []).find((g) => g.id === d.game_id);
+      if (linked?.sport) {
+        sport = linked.sport;
+      }
+      return {
+        sport,
+        market: d.market || 'Otro',
+        pick: d.pick || '',
+        line: d.line !== undefined && d.line !== null ? Number(d.line) : null,
+        description: (d.description || '').slice(0, 200),
+        game_id: d.game_id || '',
+        event_label: (d.event_label || '').slice(0, 120),
+      };
+    });
 
     const finalPayload = {
       ...apiPayload,
