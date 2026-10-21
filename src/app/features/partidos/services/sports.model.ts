@@ -15,16 +15,98 @@ export interface GameReference {
   away_id?: string;
   provider: string;
 }
+export interface ProbabilitiesContract {
+  model: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  market_implied: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  edge?: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  };
+  live?: {
+    home: number | null;
+    draw: number | null;
+    away: number | null;
+  } | null;
+  confidence: {
+    score: number;
+    level: 'ALTA' | 'MEDIA' | 'BAJA';
+    label: string;
+    agreement_pct?: number;
+    participating_models?: number;
+  };
+  calculated_at?: string | null;
+  model_version?: string;
+  source?: string;
+}
+
+export interface AnalyticsBucket {
+  key: string;
+  sample_size: number;
+  won: number;
+  lost: number;
+  void: number;
+  staked: number;
+  net_profit: number;
+  win_rate: number;
+  roi_pct: number;
+  small_sample_warning: boolean;
+}
+
+export interface PersonalVsAiAnalytics {
+  by_market: AnalyticsBucket[];
+  by_league: AnalyticsBucket[];
+  by_sport: AnalyticsBucket[];
+  by_odds_range: AnalyticsBucket[];
+  best_markets: AnalyticsBucket[];
+  worst_markets: AnalyticsBucket[];
+  followed_ai_vs_independent: {
+    followed_ai: AnalyticsBucket;
+    independent: AnalyticsBucket;
+  };
+  comparison_by_market: {
+    market: string;
+    user_sample_size: number;
+    user_win_rate: number;
+    user_roi_pct: number;
+    user_net_profit: number;
+    user_small_sample_warning: boolean;
+    ai_sample_size: number;
+    ai_win_rate: number;
+    ai_won: number;
+    ai_lost: number;
+  }[];
+}
+
 export interface SportsGame extends GameReference {
   home_score: string | null;
   away_score: string | null;
   state: 'scheduled' | 'live' | 'final' | 'postponed' | 'unknown';
   detail: string;
+  clock?: string | null;
   updated_at?: string | null;
   stale?: boolean;
   message?: string;
   home_record?: string;
   away_record?: string;
+  odds?: MatchOdds | null;
+  home_odds?: number | null;
+  away_odds?: number | null;
+  draw_odds?: number | null;
+  home_team_id?: string;
+  away_team_id?: string;
+  home_logo_mirrored?: string;
+  away_logo_mirrored?: string;
+  probabilities?: any;
+  probabilities_contract?: ProbabilitiesContract | null;
 }
 export interface League { id: string; sport: string; name: string; source: string; configured: boolean }
 export interface Scoreboard {
@@ -301,7 +383,7 @@ export interface ValueBetAnalysis {
   nivel_confianza: 1 | 2 | 3 | 4 | 5;
   stake_sugerido_porcentaje: number; // Criterio Kelly fraccional (1.0% - 5.0%)
   justificacion_tactica: string;
-  super_contexto: {
+  super_contexto?: {
     cuotas: {
       pinnacle?: number;
       bet365?: number;
@@ -314,11 +396,47 @@ export interface ValueBetAnalysis {
     };
     h2h_reciente: string;
     lesiones_clave: { jugador: string; equipo: string; estado: string; impacto: string }[];
-  };
+  } | null;
+}
+
+export interface AlternativeMarketOption {
+  prediction_id?: number;
+  market: string;
+  canonical_market?: '1X2' | 'BTTS' | 'OVER_UNDER' | 'DOUBLE_CHANCE' | 'SPREAD';
+  selection?: string;
+  line?: number | null;
+  target_odd: number;
+  probability_pct: number;
+  expected_value_pct: number;
+  market_type?: string;
+  status?: 'PENDING' | 'WON' | 'LOST' | 'VOID';
+  locked_at?: string | null;
+  graded_at?: string | null;
+  tag?: string;
+  reasoning?: string;
+}
+
+export interface ResultSnapshot {
+  match_id?: string;
+  home_team_id?: string;
+  away_team_id?: string;
+  home_score?: number | null;
+  away_score?: number | null;
+  api_status?: string;
+  detail?: string;
+  score_basis?: string;
+  source?: string;
+  rule_applied?: string;
+  timestamp_utc?: string;
 }
 
 export interface AIValueBetResponse {
+  prediction_id?: number;
+  match_id?: string;
   recommended_market: string;
+  market?: '1X2' | 'BTTS' | 'OVER_UNDER' | 'DOUBLE_CHANCE' | 'SPREAD';
+  selection?: string;
+  line?: number | null;
   target_odd: number;
   bookmaker: string;
   implicit_probability_pct: number;
@@ -328,8 +446,96 @@ export interface AIValueBetResponse {
   confidence_level: 1 | 2 | 3 | 4 | 5;
   suggested_stake_pct: number;
   tactical_reasoning: string;
+  market_type?: string;
+  consensus_models?: string[];
+  consensus_agreement_pct?: number;
+  alternative_options?: AlternativeMarketOption[];
+  status?: 'PENDING' | 'WON' | 'LOST' | 'VOID';
+  locked_at?: string | null;
+  graded_at?: string | null;
+  needs_review?: boolean;
+  result_snapshot?: ResultSnapshot | null;
+  home_team_id?: string;
+  away_team_id?: string;
+  home_team_name?: string;
+  away_team_name?: string;
   _cached?: boolean;
+  _immutable?: boolean;
   _cache_age_seconds?: number;
+  probabilities?: ProbabilitiesContract | null;
+}
+
+export interface PredictionEvaluation {
+  status: 'WON' | 'LOST' | 'PENDING' | 'VOID';
+  actualResult: string;
+  margin?: string;
+  profitUnits?: number;
+  ruleApplied?: string;
+  lockedAt?: string | null;
+  gradedAt?: string | null;
+  needsReview?: boolean;
+  predictionId?: number;
+}
+
+export interface AuditKpiSummary {
+  total: number;
+  total_resolved: number;
+  won: number;
+  lost: number;
+  pending: number;
+  void: number;
+  needs_review?: number;
+  win_rate: number;
+  invariant_check?: boolean;
+  has_evaluations: boolean;
+}
+
+export interface AuditVerificationProof {
+  prediction_id: number;
+  match_id: string;
+  immutable_lock: {
+    is_locked: boolean;
+    created_at: string;
+    locked_at: string;
+    model_version: string;
+  };
+  frozen_prediction: {
+    home_team_id: string;
+    away_team_id: string;
+    home_team_name: string;
+    away_team_name: string;
+    market: string;
+    selection: string;
+    line: number | null;
+    display_label: string;
+    probability: number;
+    confidence: number;
+    is_primary: boolean;
+    ai_votes: Record<string, any>;
+  };
+  official_result_snapshot: ResultSnapshot | null;
+  deterministic_verification: {
+    status: 'WON' | 'LOST' | 'VOID' | 'PENDING';
+    market: string;
+    selection: string;
+    line: number | null;
+    home_score: number | null;
+    away_score: number | null;
+    match_state: string;
+    score_basis: string;
+    rule_applied: string;
+  };
+  status: 'WON' | 'LOST' | 'VOID' | 'PENDING';
+  graded_at: string | null;
+  needs_review: boolean;
+  audit_trail: {
+    id: number;
+    action: string;
+    old_status: string | null;
+    new_status: string;
+    payload: Record<string, any>;
+    created_at: string;
+  }[];
 }
 
 export interface MatchDetails {

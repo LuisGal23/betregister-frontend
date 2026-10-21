@@ -272,21 +272,60 @@ export function marketLabel(market: string) {
       : market;
 }
 
-export function toDatabaseMarketTag(market: string): string {
+export function toDatabaseMarketTag(market: string, league?: string): string {
   if (!market) return 'Sin clasificar';
-  const m = market.toLowerCase();
-  if (m === 'ml' || m.includes('moneyline') || m.includes('1x2') || m.includes('ganador')) return 'ML';
-  if (m.includes('ambos')) return 'Ambos anotan';
+  const m = market.toLowerCase().trim();
+  const l = (league || '').trim();
+
+  // If NBA, avoid returning 'Puntos' which backend bet_tags.py SPECIFIC_MARKETS strictly binds to 'Americano'
+  if (l === 'NBA') {
+    if (m.includes('tripl')) return 'Triples';
+    if (m.includes('rebot')) return 'Rebotes';
+    if (m.includes('asist')) return 'Asistencias';
+    if (m.includes('punt') || m.includes('prop')) return 'Props jugador';
+    if (m.includes('over')) return 'Over';
+    if (m.includes('under')) return 'Under';
+    if (m === 'ml' || m.includes('moneyline') || m.includes('ganad') || m.includes('victor')) return 'ML';
+    if (m.includes('hándicap') || m.includes('handicap') || m.includes('spread')) return 'Hándicap';
+    return 'Otro';
+  }
+
+  if (m === 'ml' || m.includes('moneyline') || m.includes('1x2') || m.includes('ganador') || m.includes('victoria')) return 'ML';
+  if (m.includes('ambos') || m.includes('btts')) return 'Ambos anotan';
   if (m.includes('córner') || m.includes('corner')) return 'Córners';
   if (m.includes('tarjeta')) return 'Tarjetas';
   if (m.includes('asiático') || m.includes('asiatico')) return 'Hándicap asiático';
   if (m.includes('hándicap') || m.includes('handicap') || m.includes('spread') || m.includes('run line')) return 'Hándicap';
   if (m.includes('gol')) return 'Goles';
   if (m.includes('carrera')) return 'Carreras';
-  if (m.includes('punto')) return 'Puntos';
+  if (m.includes('yarda')) return 'Yardas';
+  if (m.includes('tripl')) return 'Triples';
+  if (m.includes('rebot')) return 'Rebotes';
+  if (m.includes('asist')) return 'Asistencias';
+  if (m.includes('hit')) return 'Hits';
+  if (m.includes('ponch')) return 'Ponches';
+  if (m.includes('punto')) return l === 'NFL' ? 'Puntos' : 'Props jugador';
+  if (m.includes('prop')) return 'Props jugador';
   if (m.includes('mixto')) return 'Mixto';
   if (m.includes('over')) return 'Over';
   if (m.includes('under')) return 'Under';
   if (m.includes('empate')) return 'Empate';
+  return 'Otro';
+}
+
+export function toDatabaseLeagueTag(league: string): string {
+  if (!league) return 'Sin clasificar';
+  const l = league.trim();
+  if (LEAGUE_TAGS.includes(l)) return l;
+  const lLower = l.toLowerCase();
+  if (lLower === 'nba' || lLower.includes('basket') || lLower.includes('baloncest')) return 'NBA';
+  if (lLower === 'nfl' || lLower.includes('american')) return 'NFL';
+  if (lLower === 'mlb' || lLower.includes('beisbol') || lLower.includes('béisbol')) return 'MLB';
+  if (lLower === 'kbo') return 'KBO';
+  if (lLower === 'mls') return 'MLS';
+  if (lLower.includes('mx') || lLower.includes('liga mx')) return 'Liga MX';
+  if (lLower.includes('selecci') || lLower.includes('nation') || lLower.includes('friendl') || lLower.includes('world') || lLower.includes('euro') || lLower.includes('copa')) return 'Selecciones';
+  if (lLower.includes('premier') || lLower.includes('laliga') || lLower.includes('seriea') || lLower.includes('bundes') || lLower.includes('ligue') || lLower.includes('champ') || lLower.includes('europ')) return 'Fútbol Europeo';
+  if (lLower === 'mixto') return 'Mixto';
   return 'Otro';
 }

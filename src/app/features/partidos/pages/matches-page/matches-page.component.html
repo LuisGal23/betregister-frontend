@@ -104,6 +104,20 @@
         }
       </button>
 
+      <!-- Hide Finished Toggle -->
+      <button 
+        type="button" 
+        class="inline-flex items-center gap-1.5 py-2 px-3 rounded-full bg-surface border border-border text-xs font-medium cursor-pointer transition-all duration-200 hover:text-accent hover:border-accent/40 active:scale-95"
+        [class.bg-accent/15]="hideFinished()"
+        [class.border-accent/50]="hideFinished()"
+        [class.text-accent]="hideFinished()"
+        [class.font-bold]="hideFinished()"
+        (click)="hideFinished.set(!hideFinished())"
+        title="Ocultar o mostrar partidos que ya finalizaron"
+      >
+        <span>{{ hideFinished() ? '✓ Ocultando finalizados' : 'Ocultar finalizados' }}</span>
+      </button>
+
       <!-- Refresh -->
       <button type="button" class="w-9 h-9 rounded-full bg-surface border border-border text-muted flex items-center justify-center cursor-pointer transition-all duration-200 hover:text-accent hover:border-accent hover:scale-105 active:scale-95 disabled:opacity-50" [disabled]="loading()" (click)="loadMatches()" aria-label="Actualizar partidos">
         <app-icon name="arrow" />
@@ -204,6 +218,19 @@
 
   <!-- SKELETON LOADING STATE (Forma idéntica de las tarjetas) -->
   @if (loading()) {
+    <div class="flex items-center justify-between p-4 rounded-2xl bg-surface border border-accent/30 shadow-lg mb-2">
+      <div class="flex items-center gap-3">
+        <div class="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin shrink-0"></div>
+        <div>
+          <span class="text-xs sm:text-sm font-bold text-text block">Cargando partidos y analizando predicciones IA...</span>
+          <span class="text-[11px] text-muted block">Sincronizando análisis estadístico en vivo, probabilidades y datos de jugadores</span>
+        </div>
+      </div>
+      <span class="text-[11px] font-mono text-accent font-semibold px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 hidden sm:inline-block">
+        Procesando datos
+      </span>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6" aria-label="Cargando partidos...">
       @for (i of [1,2,3,4,5,6]; track i) {
         <div class="flex flex-col gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xl animate-pulse">
@@ -259,6 +286,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
       @for (game of filteredGames(); track game.id) {
         @let analysis = analyzeGame(game);
+        @let pred = getGamePrediction(game);
+        @let evalRes = getPredictionEvaluation(game);
         <article class="relative flex flex-col gap-3.5 sm:gap-4 p-4 sm:p-6 rounded-2xl bg-surface border border-border shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-accent/40 hover:shadow-2xl" [ngStyle]="cardAuraStyle(game)">
           <!-- Animated Team Color Gradient Aura Backdrop -->
           <div class="card-ambient-aura" aria-hidden="true"></div>
@@ -353,6 +382,72 @@
                 <div class="bg-amber-400 transition-all duration-300" [style.width.%]="analysis.drawProb"></div>
               }
               <div class="bg-gradient-to-r from-sky-400 to-[#38bdf8] rounded-r-full transition-all duration-300" [style.width.%]="analysis.homeProb"></div>
+            </div>
+          </div>
+
+          <!-- AI Prediction & Post-Match Audit Banner (Verde / Rojo / Pendiente) -->
+          <div class="p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs relative z-1 transition-all"
+               [class.bg-emerald-500/10]="evalRes.status === 'WON'"
+               [class.border-emerald-500/40]="evalRes.status === 'WON'"
+               [class.bg-rose-500/10]="evalRes.status === 'LOST'"
+               [class.border-rose-500/40]="evalRes.status === 'LOST'"
+               [class.bg-surface-high/60]="evalRes.status === 'PENDING'"
+               [class.border-border]="evalRes.status === 'PENDING'">
+            
+            <div class="flex items-center gap-2.5 min-w-0">
+              @if (evalRes.status === 'WON') {
+                <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black text-xs grid place-items-center shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.5)]">
+                  ✓
+                </span>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase font-mono text-emerald-400 block tracking-wider">
+                    PRONÓSTICO ACERTADO (VERDE)
+                  </span>
+                  <strong class="text-xs font-bold text-text truncate block">
+                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }}
+                  </strong>
+                </div>
+              } @else if (evalRes.status === 'LOST') {
+                <span class="w-6 h-6 rounded-full bg-rose-500 text-white font-black text-xs grid place-items-center shrink-0 shadow-[0_0_12px_rgba(244,63,94,0.5)]">
+                  ✕
+                </span>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase font-mono text-rose-400 block tracking-wider">
+                    PRONÓSTICO NO LOGRADO (ROJO)
+                  </span>
+                  <strong class="text-xs font-bold text-text truncate block">
+                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }}
+                  </strong>
+                </div>
+              } @else {
+                <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 font-bold text-xs grid place-items-center shrink-0">
+                  🎯
+                </span>
+                <div class="min-w-0">
+                  <span class="text-[10px] font-black uppercase font-mono text-cyan-400 block tracking-wider">
+                    RECOMENDACIÓN IA SHARP (+{{ pred.expected_value_pct }}% EV)
+                  </span>
+                  <strong class="text-xs font-bold text-text truncate block">
+                    {{ formatRecommendedMarket(pred.recommended_market, game, pred) }}
+                  </strong>
+                </div>
+              }
+            </div>
+
+            <div class="flex items-center gap-2 shrink-0 sm:self-center">
+              @if (evalRes.status === 'WON') {
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
+                  Acierto Verificado
+                </span>
+              } @else if (evalRes.status === 'LOST') {
+                <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
+                  Fallo
+                </span>
+              } @else {
+                <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-400 font-mono text-[10px] font-bold border border-cyan-500/30">
+                  {{ pred.ai_estimated_probability_pct }}% conf.
+                </span>
+              }
             </div>
           </div>
 

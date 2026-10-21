@@ -1,10 +1,10 @@
-import type { SelectionDetail } from './selection-detail';
+import { toDatabaseSelectionDetail, type SelectionDetail } from './selection-detail';
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../core/services/api.service';
 import { LedgerState } from '../../../core/services/ledger-state.service';
 import type { CreateBet, BetResult } from './bet.model';
 import { decimalOdds } from '../../../shared/utils/odds.utils';
-import { toDatabaseMarketTag } from './bet-tags';
+import { toDatabaseMarketTag, toDatabaseLeagueTag } from './bet-tags';
 
 @Injectable({ providedIn: 'root' })
 export class BetsService {
@@ -12,13 +12,17 @@ export class BetsService {
   private state = inject(LedgerState);
 
   tags(id: number, revision: number, league_tag: string, market_tag: string, selection_details?: SelectionDetail[]) {
+    const cleanLeague = toDatabaseLeagueTag(league_tag || 'Sin clasificar');
+    const cleanMarket = toDatabaseMarketTag(market_tag || 'Sin clasificar', cleanLeague);
+    const cleanDetails = selection_details ? selection_details.map((d) => toDatabaseSelectionDetail(d)) : undefined;
+
     return this.state.mutate(
       () =>
         this.api.request(`/bets/${id}/tags`, {
           revision,
-          league_tag,
-          market_tag: toDatabaseMarketTag(market_tag),
-          ...(selection_details?.length ? { selection_details } : {}),
+          league_tag: cleanLeague,
+          market_tag: cleanMarket,
+          ...(cleanDetails?.length ? { selection_details: cleanDetails } : {}),
         }),
       'Etiquetas actualizadas.',
     );
@@ -34,18 +38,11 @@ export class BetsService {
   create(data: CreateBet) {
     // Keep linked_games locally and strip it from the REST payload to avoid unknown column errors
     const { linked_games, ...apiPayload } = data;
-    const cleanMarketTag = toDatabaseMarketTag(data.market_tag || 'Sin clasificar');
-    const cleanLeagueTag = data.league_tag || 'Sin clasificar';
-
-    const cleanDetails = (data.selection_details || []).map((d) => ({
-      sport: d.sport || 'Fútbol',
-      market: d.market || 'Otro',
-      pick: d.pick || '',
-      line: d.line !== undefined && d.line !== null ? Number(d.line) : null,
-      description: (d.description || '').slice(0, 200),
-      game_id: d.game_id || '',
-      event_label: (d.event_label || '').slice(0, 120),
-    }));
+    const cleanLeagueTag = toDatabaseLeagueTag(data.league_tag || 'Sin clasificar');
+    const cleanMarketTag = toDatabaseMarketTag(data.market_tag || 'Sin clasificar', cleanLeagueTag);
+    const cleanDetails = (data.selection_details || []).map((d) =>
+      toDatabaseSelectionDetail(d, data.linked_games)
+    );
 
     const finalPayload = {
       ...apiPayload,

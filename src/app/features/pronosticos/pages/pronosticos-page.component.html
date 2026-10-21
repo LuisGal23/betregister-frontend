@@ -1,433 +1,1915 @@
-<div class="flex flex-col gap-7 max-w-[1400px] mx-auto text-[var(--text)]">
+<div class="flex flex-col gap-3 max-w-[1440px] mx-auto text-[#F8FAFC] pb-10">
 
-  <!-- TOP HERO HEADER -->
-  <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-5 border-b border-[var(--border)]">
-    <div>
-      <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[rgba(41,184,245,0.12)] border border-[rgba(41,184,245,0.3)] text-[var(--accent)] text-[11px] font-bold tracking-wider mb-2">
-        <span class="w-2 h-2 rounded-full bg-[var(--accent)] animate-pulse shadow-[0_0_8px_var(--accent)]"></span>
-        <span>MOTOR DE ANÁLISIS IA & MODELOS PROBABILÍSTICOS EN VIVO</span>
-      </div>
-      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text)] m-0">
-        Pronósticos IA & Parlays del Día
-      </h1>
-      <p class="text-xs sm:text-sm text-[var(--muted)] mt-1.5 max-w-2xl leading-relaxed">
-        Algoritmos matemáticos y modelos de Poisson que analizan todos los partidos de hoy para identificar las mejores probabilidades de victoria, goles y las combinadas con mayor rentabilidad esperada (+EV).
-      </p>
-    </div>
-
-    <div class="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
-      <button 
-        type="button" 
-        class="action-pill-btn primary flex-1 sm:flex-initial py-2.5 px-5 text-xs inline-flex items-center justify-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-        (click)="loadDailyPredictions()"
-        [disabled]="loading()"
-      >
-        <app-icon name="trend" [class.animate-spin]="loading()" class="w-4 h-4" />
-        <span>{{ loading() ? 'Recalculando…' : 'Actualizar Probabilidades' }}</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- SECTION 1: AI PARLAYS DEL DÍA (RECOMMENDED ACCUMULATORS) -->
-  <section class="flex flex-col gap-4">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="text-lg">🎯</span>
-        <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)] m-0">
-          Parlays Inteligentes Generados por IA
-        </h2>
-      </div>
-      <span class="text-xs text-[var(--muted)] hidden sm:inline">
-        Actualizados con las cuotas y marcadores oficiales de hoy
-      </span>
-    </div>
-
-    @if (loading() && !curatedParlays().length) {
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        @for (item of [1, 2, 3]; track item) {
-          <div class="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] animate-pulse flex flex-col gap-4 h-[320px]">
-            <div class="h-6 bg-[var(--surface-high)] rounded-full w-2/3"></div>
-            <div class="h-10 bg-[var(--surface-high)] rounded-xl w-full"></div>
-            <div class="h-24 bg-[var(--surface-high)] rounded-xl w-full"></div>
-            <div class="mt-auto h-11 bg-[var(--surface-high)] rounded-full w-full"></div>
+  <!-- =========================================================================
+       J3.1 BARRA SUPERIOR FIJA (STICKY TOP BAR, COMPACT 56px)
+       ========================================================================= -->
+  <header class="sticky top-0 z-30 bg-[#0B0F17]/95 backdrop-blur-md border border-[#1E293B] rounded-xl px-3.5 py-2.5 shadow-lg flex flex-col gap-2.5">
+    <div class="flex flex-wrap items-center justify-between gap-2.5">
+      <!-- Title & Multi-AI Consensus Pill -->
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="w-8 h-8 rounded-lg bg-[#38BDF8]/15 border border-[#38BDF8]/30 flex items-center justify-center text-[#38BDF8] font-bold text-sm shrink-0">
+          ⚡
+        </span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-[#F8FAFC] m-0 truncate">
+              Centro de Partido IA &amp; Parlays
+            </h1>
+            <span class="hidden md:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#38BDF8]/10 border border-[#38BDF8]/30 text-[#38BDF8] text-[12px] font-semibold">
+              <span class="w-1.5 h-1.5 rounded-full bg-[#38BDF8] animate-pulse"></span>
+              <span>Poisson + Gemini 2.5 + Grok + Llama 3.3</span>
+            </span>
           </div>
-        }
-      </div>
-    } @else if (curatedParlays().length) {
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-        @for (parlay of curatedParlays(); track parlay.id) {
-          <article class="p-5 sm:p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-[0_8px_24px_rgba(0,0,0,0.2)] flex flex-col justify-between gap-5 relative overflow-hidden transition-all duration-200 hover:border-[var(--accent)]/60 hover:shadow-[0_12px_32px_rgba(41,184,245,0.18)] group">
-            <!-- Accent glow in background -->
-            <div class="absolute -top-12 -right-12 w-32 h-32 bg-[var(--accent)]/10 rounded-full blur-2xl group-hover:bg-[var(--accent)]/20 transition-colors pointer-events-none"></div>
-
-            <div class="flex flex-col gap-3 relative z-10">
-              <!-- Header with badge and odds -->
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border {{ parlay.badgeClass }} tracking-wider font-mono">
-                  {{ parlay.badge }}
-                </span>
-                <div class="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-[var(--surface-high)] border border-[var(--border)] shadow-xs">
-                  <span class="text-[10px] text-[var(--muted)] font-medium">Cuota</span>
-                  <strong class="text-sm font-extrabold text-[var(--accent)] font-mono">{{ parlay.combinedOdds.toFixed(2) }}</strong>
-                </div>
-              </div>
-
-              <!-- Title & description -->
-              <div>
-                <h3 class="text-base font-bold text-[var(--text)] m-0 leading-snug">
-                  {{ parlay.title }}
-                </h3>
-                <p class="text-[11px] text-[var(--muted)] mt-1 mb-0 leading-relaxed">
-                  {{ parlay.description }}
-                </p>
-              </div>
-
-              <!-- Probability Bar -->
-              <div class="p-2.5 rounded-xl bg-[var(--surface-high)]/70 border border-[var(--border)] flex flex-col gap-1.5">
-                <div class="flex justify-between items-center text-xs">
-                  <span class="text-[11px] font-semibold text-[var(--muted)]">Probabilidad estimada:</span>
-                  <strong class="text-xs font-bold text-emerald-400 font-mono">{{ parlay.combinedProb }}%</strong>
-                </div>
-                <div class="w-full h-2 rounded-full bg-[var(--surface)] overflow-hidden border border-[var(--border)]">
-                  <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-[var(--accent)] transition-all duration-500" [style.width.%]="parlay.combinedProb"></div>
-                </div>
-              </div>
-
-              <!-- Legs list -->
-              <div class="flex flex-col gap-2 my-1">
-                <span class="text-[10px] font-bold tracking-wider uppercase text-[var(--muted)]">
-                  {{ parlay.legs.length }} Selecciones incluidas:
-                </span>
-                @for (leg of parlay.legs; track $index; let legIdx = $index) {
-                  <div class="p-2 px-3 rounded-xl bg-[var(--surface-high)]/50 border border-[var(--border)] flex items-center justify-between gap-2 text-xs">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <span class="w-4 h-4 rounded bg-[var(--surface)] text-[9px] font-bold text-[var(--accent)] grid place-items-center shrink-0 border border-[var(--border)] font-mono">
-                        {{ legIdx + 1 }}
-                      </span>
-                      <div class="flex items-center gap-1.5 truncate">
-                        <strong class="text-xs text-[var(--text)] truncate">{{ leg.game.away }} vs {{ leg.game.home }}</strong>
-                        <span class="text-[10px] text-[var(--muted)] hidden sm:inline">· {{ leg.market }}</span>
-                      </div>
-                    </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                      <span class="text-[11px] font-bold text-emerald-400 font-mono">{{ leg.prob }}%</span>
-                      <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[var(--surface)] text-[var(--accent)] font-mono border border-[var(--border)]">
-                        @{{ leg.odds.toFixed(2) }}
-                      </span>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-
-            <!-- Action Button -->
-            <button
-              type="button"
-              class="w-full py-3 px-4 rounded-xl bg-[var(--accent)] hover:bg-[#0284c7] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(41,184,245,0.35)] hover:shadow-[0_6px_22px_rgba(41,184,245,0.48)] active:scale-95 transition-all cursor-pointer relative z-10"
-              (click)="loadParlayIntoTicket(parlay)"
-              title="Cargar todas las selecciones directamente a tu ticket"
-            >
-              <span>⚡ Apostar este Parlay</span>
-              <span class="font-mono bg-white/20 px-2 py-0.5 rounded text-[11px]">@{{ parlay.combinedOdds.toFixed(2) }}</span>
-            </button>
-          </article>
-        }
-      </div>
-    } @else {
-      <div class="p-8 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center flex flex-col items-center justify-center gap-2">
-        <span class="text-2xl">⏳</span>
-        <h3 class="text-sm font-bold text-[var(--text)] m-0">Cargando catálogo de partidos del día</h3>
-        <p class="text-xs text-[var(--muted)] max-w-md m-0">Sincronizando los eventos deportivos de hoy para calcular las combinaciones de parlay con mayor ventaja matemática.</p>
-      </div>
-    }
-  </section>
-
-  <!-- SECTION 2: FILTERS & INDIVIDUAL MATCH PREDICTIONS -->
-  <section class="flex flex-col gap-4 mt-2">
-    <!-- Section Title & Filters -->
-    <div class="flex flex-col gap-3">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div class="flex items-center gap-2">
-          <span class="text-lg">📊</span>
-          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-[var(--text)] m-0">
-            Predicciones Partido a Partido
-          </h2>
-          <span class="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[var(--surface-high)] text-[var(--accent)] border border-[var(--border)]">
-            {{ filteredPredictions().length }} partidos analizados
-          </span>
         </div>
+      </div>
 
-        <!-- Date switcher (Hoy / Mañana) -->
-        <div class="inline-flex items-center bg-[var(--surface)] border border-[var(--border)] rounded-full p-1 gap-1">
-          <button 
-            type="button" 
-            class="py-1 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
-            [class.bg-[var(--accent)]]="selectedDate() === todayStr()" 
-            [class.text-white]="selectedDate() === todayStr()"
-            [class.shadow-md]="selectedDate() === todayStr()"
-            [class.text-[var(--muted)]]="selectedDate() !== todayStr()"
-            (click)="selectedDate.set(todayStr()); loadDailyPredictions()"
+      <!-- Date Selector: Ayer | Hoy | Mañana | Date Picker -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <div class="inline-flex items-center bg-[#111827] border border-[#1E293B] rounded-lg p-0.5 gap-0.5">
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+            [class.bg-[#38BDF8]]="selectedDate() === yesterdayStr()"
+            [class.text-slate-950]="selectedDate() === yesterdayStr()"
+            [class.text-[#94A3B8]]="selectedDate() !== yesterdayStr()"
+            (click)="setDateFilter(yesterdayStr())"
+          >
+            Ayer
+          </button>
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+            [class.bg-[#38BDF8]]="selectedDate() === todayStr()"
+            [class.text-slate-950]="selectedDate() === todayStr()"
+            [class.text-[#94A3B8]]="selectedDate() !== todayStr()"
+            (click)="setDateFilter(todayStr())"
           >
             Hoy
           </button>
-          <button 
-            type="button" 
-            class="py-1 px-3.5 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95"
-            [class.bg-[var(--accent)]]="selectedDate() === tomorrowStr()" 
-            [class.text-white]="selectedDate() === tomorrowStr()"
-            [class.shadow-md]="selectedDate() === tomorrowStr()"
-            [class.text-[var(--muted)]]="selectedDate() !== tomorrowStr()"
-            (click)="selectedDate.set(tomorrowStr()); loadDailyPredictions()"
+          <button
+            type="button"
+            class="px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer"
+            [class.bg-[#38BDF8]]="selectedDate() === tomorrowStr()"
+            [class.text-slate-950]="selectedDate() === tomorrowStr()"
+            [class.text-[#94A3B8]]="selectedDate() !== tomorrowStr()"
+            (click)="setDateFilter(tomorrowStr())"
           >
             Mañana
           </button>
         </div>
-      </div>
 
-      <!-- Sports selector pills (Single horizontal bar) -->
-      <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <input
+          type="date"
+          class="h-8 px-2.5 rounded-lg bg-[#111827] border border-[#1E293B] text-xs font-mono text-[#F8FAFC] outline-none focus:border-[#38BDF8]"
+          [ngModel]="selectedDate()"
+          (ngModelChange)="setDateFilter($event)"
+          aria-label="Seleccionar fecha"
+        />
+
+        <!-- Search Input -->
+        <div class="relative w-44 sm:w-56">
+          <input
+            type="text"
+            placeholder="Buscar equipo o liga…"
+            class="w-full h-8 pl-7 pr-2.5 rounded-lg bg-[#111827] border border-[#1E293B] text-xs text-[#F8FAFC] placeholder-[#64748B] outline-none focus:border-[#38BDF8]"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="searchQuery.set($event)"
+          />
+          <span class="absolute left-2 top-2 text-xs text-[#64748B]">🔍</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Row: Sport Pills + Status Filter + Quick Toggles -->
+    <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-[#1E293B]/80">
+      <!-- Sport Pills -->
+      <div class="flex items-center gap-1 overflow-x-auto scrollbar-none">
         @for (sport of sportsList; track sport.id) {
           <button
             type="button"
-            class="py-2 px-4 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border"
-            [class.bg-[var(--accent)]]="selectedSport() === sport.id"
-            [class.text-white]="selectedSport() === sport.id"
-            [class.border-[var(--accent)]]="selectedSport() === sport.id"
-            [class.shadow-sm]="selectedSport() === sport.id"
-            [class.bg-[var(--surface)]]="selectedSport() !== sport.id"
-            [class.text-[var(--muted)]]="selectedSport() !== sport.id"
-            [class.border-[var(--border)]]="selectedSport() !== sport.id"
-            [class.hover:text-[var(--text)]]="selectedSport() !== sport.id"
+            class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1 border"
+            [class.bg-[#38BDF8]/15]="selectedSport() === sport.id"
+            [class.text-[#38BDF8]]="selectedSport() === sport.id"
+            [class.border-[#38BDF8]/40]="selectedSport() === sport.id"
+            [class.bg-[#111827]]="selectedSport() !== sport.id"
+            [class.text-[#94A3B8]]="selectedSport() !== sport.id"
+            [class.border-[#1E293B]]="selectedSport() !== sport.id"
             (click)="selectedSport.set(sport.id)"
           >
             <span>{{ sport.icon }}</span>
             <span>{{ sport.label }}</span>
           </button>
         }
+
+        <!-- League Dropdown -->
+        @if (availableLeagues().length > 1) {
+          <select
+            class="h-7 px-2 rounded-lg bg-[#111827] border border-[#1E293B] text-xs text-[#94A3B8] outline-none focus:border-[#38BDF8] ml-1"
+            [ngModel]="selectedLeagueFilter()"
+            (ngModelChange)="selectedLeagueFilter.set($event)"
+            aria-label="Filtrar por liga"
+          >
+            <option value="all">Todas las ligas</option>
+            @for (lg of availableLeagues(); track lg.id) {
+              <option [value]="lg.id">{{ lg.name }}</option>
+            }
+          </select>
+        }
       </div>
 
-      <!-- Quick Toggles & Search -->
-      <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-1">
-        <div class="flex items-center gap-3 flex-wrap">
-          <label class="flex items-center gap-2 text-xs text-[var(--text)] font-semibold cursor-pointer select-none">
-            <input 
-              type="checkbox" 
-              class="w-4 h-4 rounded text-[var(--accent)] cursor-pointer"
-              [ngModel]="onlyHighConfidence()" 
-              (ngModelChange)="onlyHighConfidence.set($event)" 
-            />
-            <span>Solo Alta Confianza (&gt;65%)</span>
-          </label>
-
-          <label class="flex items-center gap-2 text-xs text-[var(--text)] font-semibold cursor-pointer select-none">
-            <input 
-              type="checkbox" 
-              class="w-4 h-4 rounded text-[var(--accent)] cursor-pointer"
-              [ngModel]="onlyEV()" 
-              (ngModelChange)="onlyEV.set($event)" 
-            />
-            <span class="text-cyan-400 font-bold">Solo Opciones con Valor (+EV)</span>
-          </label>
+      <!-- Status Pills & Toggles -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <div class="inline-flex items-center bg-[#111827] border border-[#1E293B] rounded-lg p-0.5 text-xs">
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer"
+            [class.bg-[#1F2937]]="statusFilter() === 'all'"
+            [class.text-[#F8FAFC]]="statusFilter() === 'all'"
+            [class.text-[#94A3B8]]="statusFilter() !== 'all'"
+            (click)="statusFilter.set('all')"
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer"
+            [class.bg-[#1F2937]]="statusFilter() === 'pending'"
+            [class.text-[#F59E0B]]="statusFilter() === 'pending'"
+            [class.text-[#94A3B8]]="statusFilter() !== 'pending'"
+            (click)="statusFilter.set('pending')"
+          >
+            Pendientes
+          </button>
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer"
+            [class.bg-[#1F2937]]="statusFilter() === 'live'"
+            [class.text-[#22C55E]]="statusFilter() === 'live'"
+            [class.text-[#94A3B8]]="statusFilter() !== 'live'"
+            (click)="statusFilter.set('live')"
+          >
+            En vivo
+          </button>
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer"
+            [class.bg-[#1F2937]]="statusFilter() === 'final'"
+            [class.text-[#38BDF8]]="statusFilter() === 'final'"
+            [class.text-[#94A3B8]]="statusFilter() !== 'final'"
+            (click)="statusFilter.set('final')"
+          >
+            Finalizados
+          </button>
         </div>
 
-        <div class="relative w-full sm:w-64">
-          <input 
-            type="text" 
-            placeholder="Buscar equipo o liga…"
-            class="w-full h-9 pl-8 pr-3 rounded-full bg-[var(--surface)] border border-[var(--border)] text-xs text-[var(--text)] outline-none focus:border-[var(--accent)] transition-colors"
-            [ngModel]="searchQuery()"
-            (ngModelChange)="searchQuery.set($event)"
-          />
-          <span class="absolute left-2.5 top-2.5 text-xs text-[var(--muted)]">🔍</span>
-        </div>
+        <button
+          type="button"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer"
+          [class.bg-emerald-500/15]="onlyHighConfidence()"
+          [class.text-emerald-400]="onlyHighConfidence()"
+          [class.border-emerald-500/40]="onlyHighConfidence()"
+          [class.bg-[#111827]]="!onlyHighConfidence()"
+          [class.text-[#94A3B8]]="!onlyHighConfidence()"
+          [class.border-[#1E293B]]="!onlyHighConfidence()"
+          (click)="onlyHighConfidence.set(!onlyHighConfidence())"
+        >
+          Confianza Alta
+        </button>
+
+        <button
+          type="button"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer"
+          [class.bg-[#38BDF8]/15]="onlyEV()"
+          [class.text-[#38BDF8]]="onlyEV()"
+          [class.border-[#38BDF8]/40]="onlyEV()"
+          [class.bg-[#111827]]="!onlyEV()"
+          [class.text-[#94A3B8]]="!onlyEV()"
+          [class.border-[#1E293B]]="!onlyEV()"
+          (click)="onlyEV.set(!onlyEV())"
+        >
+          Valor +EV
+        </button>
+
+        <button
+          type="button"
+          class="px-2.5 py-1 rounded-lg text-xs font-semibold border transition-colors cursor-pointer"
+          [class.bg-purple-500/15]="onlyMyPicks()"
+          [class.text-purple-300]="onlyMyPicks()"
+          [class.border-purple-500/40]="onlyMyPicks()"
+          [class.bg-[#111827]]="!onlyMyPicks()"
+          [class.text-[#94A3B8]]="!onlyMyPicks()"
+          [class.border-[#1E293B]]="!onlyMyPicks()"
+          (click)="onlyMyPicks.set(!onlyMyPicks())"
+        >
+          🎫 Mis picks
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       J3.2 TIRA DE AUDITORÍA COLAPSABLE DE 1 LÍNEA (44px)
+       Garantiza invariante: won + lost + pending + void === totalGames
+       ========================================================================= -->
+  @let audit = auditSummary();
+  <section class="rounded-xl bg-[#111827] border border-[#1E293B] px-3.5 py-2 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-2 min-h-[28px]">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-mono tabular-nums">
+        <span class="inline-flex items-center gap-1.5 font-bold text-[#F8FAFC]">
+          <span class="w-2 h-2 rounded-full bg-[#22C55E]"></span>
+          <span>Auditoría determinista:</span>
+        </span>
+
+        <span
+          class="px-2 py-0.5 rounded-md font-bold border"
+          [class.bg-emerald-500/15]="audit.winRate >= 55"
+          [class.text-emerald-400]="audit.winRate >= 55"
+          [class.border-emerald-500/30]="audit.winRate >= 55"
+          [class.bg-amber-500/15]="audit.winRate > 0 && audit.winRate < 55"
+          [class.text-amber-400]="audit.winRate > 0 && audit.winRate < 55"
+          [class.border-amber-500/30]="audit.winRate > 0 && audit.winRate < 55"
+          [class.bg-[#1F2937]]="audit.totalResolved === 0"
+          [class.text-[#94A3B8]]="audit.totalResolved === 0"
+          [class.border-[#1E293B]]="audit.totalResolved === 0"
+        >
+          {{ audit.totalResolved > 0 ? audit.winRate + '% acierto' : 'Sin resueltos aún' }}
+        </span>
+
+        <button
+          type="button"
+          class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer transition-colors"
+          [class.bg-emerald-500/20]="auditResultFilter() === 'WON'"
+          [class.text-[#22C55E]]="true"
+          (click)="auditResultFilter.set(auditResultFilter() === 'WON' ? 'all' : 'WON')"
+        >
+          ✓ {{ audit.won }} Verdes
+        </button>
+
+        <button
+          type="button"
+          class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer transition-colors"
+          [class.bg-rose-500/20]="auditResultFilter() === 'LOST'"
+          [class.text-[#EF4444]]="true"
+          (click)="auditResultFilter.set(auditResultFilter() === 'LOST' ? 'all' : 'LOST')"
+        >
+          ✗ {{ audit.lost }} Rojos
+        </button>
+
+        <button
+          type="button"
+          class="px-2 py-0.5 rounded-md text-xs font-semibold cursor-pointer transition-colors"
+          [class.bg-amber-500/20]="auditResultFilter() === 'PENDING'"
+          [class.text-[#F59E0B]]="true"
+          (click)="auditResultFilter.set(auditResultFilter() === 'PENDING' ? 'all' : 'PENDING')"
+        >
+          ⏳ {{ audit.pending }} Pendientes
+        </button>
+
+        <span class="text-[#64748B]">· {{ audit.voidCount }} Void</span>
+        <span class="text-[#94A3B8] hidden sm:inline">
+          (Total: {{ audit.won + audit.lost + audit.pending + audit.voidCount }}/{{ audit.totalGames }})
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="px-2.5 py-1 rounded-lg bg-[#1F2937] hover:bg-[#38BDF8] hover:text-slate-950 text-[#F8FAFC] border border-[#1E293B] text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1"
+          [disabled]="isRunningAudit()"
+          (click)="triggerDeterministicAuditNow()"
+          title="Ejecutar job determinista de calificación con marcador oficial ESPN"
+        >
+          <span>{{ isRunningAudit() ? '⏳ Auditando...' : '⚡ Auditar ahora' }}</span>
+        </button>
+
+        <button
+          type="button"
+          class="text-xs font-semibold text-[#38BDF8] hover:underline cursor-pointer bg-transparent border-0 p-1"
+          (click)="auditStripExpanded.set(!auditStripExpanded())"
+        >
+          {{ auditStripExpanded() ? 'Ocultar detalle ▲' : 'Ver detalle ▼' }}
+        </button>
       </div>
     </div>
 
-    <!-- Match Predictions Cards Grid -->
-    @if (loading() && !filteredPredictions().length) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (item of [1, 2, 3, 4]; track item) {
-          <div class="p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] animate-pulse h-48 flex flex-col justify-between">
-            <div class="h-4 bg-[var(--surface-high)] rounded w-1/3"></div>
-            <div class="h-10 bg-[var(--surface-high)] rounded-xl w-full"></div>
-            <div class="h-12 bg-[var(--surface-high)] rounded-xl w-full"></div>
+    <!-- Collapsible Audit Detail Drawer -->
+    @if (auditStripExpanded()) {
+      <div class="mt-2.5 pt-2.5 border-t border-[#1E293B] grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
+        <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between">
+          <div>
+            <span class="text-[#64748B] block font-semibold">REGLA DE AUDITORÍA</span>
+            <strong class="text-[#F8FAFC]">100% Determinista (Python grade)</strong>
           </div>
-        }
+          <span class="text-emerald-400 font-mono font-bold">ESPN FT</span>
+        </div>
+        <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between">
+          <div>
+            <span class="text-[#64748B] block font-semibold">PRONÓSTICOS CONGELADOS</span>
+            <strong class="text-[#F8FAFC]">Inmutables pre-kickoff</strong>
+          </div>
+          <span class="text-[#38BDF8] font-mono font-bold">🔒 Trigger DB</span>
+        </div>
+        <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between">
+          <div>
+            <span class="text-[#64748B] block font-semibold">INVARIANTE MATEMÁTICO</span>
+            <strong class="text-[#F8FAFC]">{{ audit.won }} + {{ audit.lost }} + {{ audit.pending }} + {{ audit.voidCount }} = {{ audit.totalGames }}</strong>
+          </div>
+          <span class="text-emerald-400 font-mono font-bold">{{ audit.invariantOk ? '✓ OK' : '⚠' }}</span>
+        </div>
+        <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between">
+          <div>
+            <span class="text-[#64748B] block font-semibold">DEFINICIÓN DE CONFIANZA</span>
+            <strong class="text-[#F8FAFC]">Separada de % Probabilidad</strong>
+          </div>
+          <button
+            type="button"
+            class="text-xs text-[#38BDF8] underline cursor-pointer bg-transparent border-0"
+            (click)="showConfidenceTooltip.set(!showConfidenceTooltip())"
+          >
+            ¿Cómo se calcula?
+          </button>
+        </div>
       </div>
-    } @else if (filteredPredictions().length) {
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        @for (pred of filteredPredictions(); track pred.game.id) {
-          <article class="p-4 sm:p-5 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-sm hover:border-[var(--accent)]/50 hover:shadow-md transition-all flex flex-col justify-between gap-4">
-            
-            <!-- Card Header: League & Status -->
-            <div class="flex items-center justify-between text-xs text-[var(--muted)]">
-              <span class="font-bold text-[11px] text-[var(--accent)] uppercase tracking-wider font-mono">
-                {{ pred.game.league_name || pred.game.league }} · {{ pred.game.sport }}
-              </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--surface-high)] text-[var(--text)] font-mono border border-[var(--border)]">
-                {{ pred.game.state === 'live' ? 'EN VIVO' : pred.game.state === 'final' ? 'FINALIZADO' : (pred.game.start | date:'HH:mm') + ' hrs' }}
-              </span>
-            </div>
 
-            <!-- Teams Matchup with Big Logos -->
-            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-1">
-              <!-- Away Team -->
-              <div class="flex items-center gap-3 min-w-0">
-                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
-                  @if (getLogo(pred.game.away, pred.game.sport, pred.game.away_logo); as logo) {
-                    <img [src]="logo" [alt]="pred.game.away" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
-                  } @else {
-                    <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.away.slice(0, 3).toUpperCase() }}</span>
-                  }
-                </div>
-                <div class="min-w-0">
-                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] truncate" [title]="pred.game.away">
-                    {{ pred.game.away }}
+      @if (showConfidenceTooltip()) {
+        <div class="mt-2 p-3 rounded-lg bg-[#1F2937]/80 border border-[#38BDF8]/30 text-xs text-[#94A3B8] leading-relaxed">
+          <strong class="text-[#F8FAFC]">Separación estricta entre Probabilidad y Confianza (Parte I3):</strong>
+          La <span class="text-[#38BDF8] font-semibold">Probabilidad (%)</span> mide qué tan probable es que ocurra el resultado según el modelo Poisson/xG (suma exactamente <code class="text-[#F8FAFC]">100.0%</code> en 1X2 con Largest Remainder Method).
+          La <span class="text-[#A855F7] font-semibold">Confianza (Alta / Media / Baja)</span> mide la robustez de los datos y el grado de acuerdo entre el motor estadístico y las 3 IAs (Gemini 2.5 Flash, Grok y Llama 3.3 70B). Nunca se muestra <code class="text-rose-400">"% conf."</code>.
+        </div>
+      }
+    }
+  </section>
+
+  <!-- =========================================================================
+       J3.3 PESTAÑAS DE NAVEGACIÓN PRINCIPAL
+       [ Partidos (N) ]   [ Parlays IA (N) ]   [ Mi rendimiento ]
+       ========================================================================= -->
+  <nav class="flex items-center justify-between border-b border-[#1E293B] px-1">
+    <div class="flex items-center gap-1 sm:gap-2">
+      <button
+        type="button"
+        class="px-3.5 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2"
+        [class.border-[#38BDF8]]="mainTab() === 'partidos'"
+        [class.text-[#38BDF8]]="mainTab() === 'partidos'"
+        [class.border-transparent]="mainTab() !== 'partidos'"
+        [class.text-[#94A3B8]]="mainTab() !== 'partidos'"
+        (click)="switchMainTab('partidos')"
+      >
+        <span>⚽ Partidos</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-[#111827] border border-[#1E293B] text-xs font-mono tabular-nums">
+          {{ filteredPredictions().length }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="px-3.5 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2"
+        [class.border-[#38BDF8]]="mainTab() === 'parlays'"
+        [class.text-[#38BDF8]]="mainTab() === 'parlays'"
+        [class.border-transparent]="mainTab() !== 'parlays'"
+        [class.text-[#94A3B8]]="mainTab() !== 'parlays'"
+        (click)="switchMainTab('parlays')"
+      >
+        <span>🎯 Parlays IA</span>
+        <span class="px-1.5 py-0.5 rounded-full bg-[#111827] border border-[#1E293B] text-xs font-mono tabular-nums">
+          {{ curatedParlays().length }}
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="px-3.5 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer flex items-center gap-2"
+        [class.border-[#38BDF8]]="mainTab() === 'rendimiento'"
+        [class.text-[#38BDF8]]="mainTab() === 'rendimiento'"
+        [class.border-transparent]="mainTab() !== 'rendimiento'"
+        [class.text-[#94A3B8]]="mainTab() !== 'rendimiento'"
+        (click)="switchMainTab('rendimiento')"
+      >
+        <span>📈 Mi rendimiento vs IA</span>
+      </button>
+    </div>
+
+    <div class="hidden sm:flex items-center gap-2 text-xs text-[#64748B]">
+      <span>Zona horaria: America/Mexico_City</span>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       TAB 1: PARTIDOS (MASTER-DETAIL SOFASCORE LAYOUT: 40% LISTA / 60% CENTRO)
+       ========================================================================= -->
+  @if (mainTab() === 'partidos') {
+    @if (loading() && !filteredPredictions().length) {
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-2">
+        <div class="lg:col-span-5 flex flex-col gap-2.5">
+          @for (sk of [1, 2, 3, 4, 5, 6]; track sk) {
+            <div class="h-24 rounded-xl bg-[#111827] border border-[#1E293B] animate-pulse p-3"></div>
+          }
+        </div>
+        <div class="hidden lg:block lg:col-span-7">
+          <div class="h-[620px] rounded-xl bg-[#111827] border border-[#1E293B] animate-pulse p-5"></div>
+        </div>
+      </div>
+    } @else if (groupedByLeague().length) {
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start pt-1">
+
+        <!-- ===================================================================
+             COLUMNA IZQUIERDA (5 COLS / ~40%): LISTA DE PARTIDOS POR LIGA (J5.1)
+             =================================================================== -->
+        <div class="lg:col-span-5 flex flex-col gap-3">
+          @for (group of groupedByLeague(); track group.leagueId) {
+            <div class="rounded-xl bg-[#111827] border border-[#1E293B] overflow-hidden shadow-sm">
+              <!-- League Header -->
+              <div class="px-3 py-2 bg-[#1F2937]/70 border-b border-[#1E293B] flex items-center justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <span class="text-sm">{{ group.flag }}</span>
+                  <strong class="text-xs font-bold uppercase tracking-wider text-[#F8FAFC] truncate">
+                    {{ group.leagueName }}
                   </strong>
-                  <span class="text-[11px] font-mono font-bold text-emerald-400">
-                    {{ pred.awayWinProb }}% prob
-                  </span>
                 </div>
+                <span class="text-xs font-mono text-[#64748B] tabular-nums">
+                  {{ group.items.length }} {{ group.items.length === 1 ? 'partido' : 'partidos' }}
+                </span>
               </div>
 
-              <!-- VS Badge / Score -->
-              <div class="text-center px-2">
-                @if (pred.game.state === 'live' || pred.game.state === 'final') {
-                  <span class="text-base sm:text-lg font-black font-mono text-[var(--text)]">
-                    {{ pred.game.away_score ?? 0 }} - {{ pred.game.home_score ?? 0 }}
-                  </span>
-                } @else {
-                  <span class="text-xs font-black text-[var(--muted)] font-mono uppercase bg-[var(--surface-high)] px-2 py-1 rounded-md border border-[var(--border)]">
-                    VS
-                  </span>
+              <!-- Compact Match Rows -->
+              <div class="divide-y divide-[#1E293B]">
+                @for (pred of group.items; track pred.game.id) {
+                  @let g = pred.game;
+                  @let ev = pred.evaluation;
+                  @let isSelected = selectedPrediction()?.game?.id === g.id;
+
+                  <div
+                    class="p-3 transition-colors cursor-pointer hover:bg-[#1F2937]/60 flex flex-col gap-2"
+                    [class.bg-[#1F2937]]="isSelected"
+                    [class.border-l-4]="isSelected"
+                    [class.border-l-[#38BDF8]]="isSelected"
+                    (click)="selectMatch(pred, true)"
+                  >
+                    <!-- Top Row: Time/Status + Teams + Scores + Audit Seal -->
+                    <div class="grid grid-cols-[54px_1fr_auto] items-center gap-2.5">
+                      <!-- Col 1: Time & Status -->
+                      <div class="flex flex-col items-center justify-center text-center border-r border-[#1E293B] pr-2">
+                        @if (g.state === 'live') {
+                          <span class="text-xs font-mono font-bold text-[#22C55E] animate-pulse">LIVE</span>
+                          <span class="text-xs font-mono text-[#94A3B8] tabular-nums">{{ g.clock || g.detail }}</span>
+                        } @else if (g.state === 'final') {
+                          <span class="text-xs font-mono font-bold text-[#94A3B8]">FT</span>
+                          <span class="text-xs font-mono text-[#64748B]">Final</span>
+                        } @else {
+                          <span class="text-xs font-mono font-bold text-[#F8FAFC] tabular-nums">
+                            {{ g.start | date:'HH:mm' }}
+                          </span>
+                          <span class="text-xs text-[#64748B]">Pre</span>
+                        }
+                      </div>
+
+                      <!-- Col 2: Home & Away Teams with Mirrored Logos & Integer Scores -->
+                      <div class="flex flex-col gap-1 min-w-0">
+                        <!-- Home Team Row (Local siempre primero en bloque 1X2 estandarizado) -->
+                        <div class="flex items-center justify-between gap-2">
+                          <div class="flex items-center gap-2 min-w-0">
+                            <img
+                              [src]="getLogo(g.home, g.sport, g.home_logo, g.home_logo_mirrored)"
+                              [alt]="g.home"
+                              class="w-4 h-4 object-contain shrink-0"
+                              loading="lazy"
+                            />
+                            <span class="text-xs sm:text-sm font-semibold text-[#F8FAFC] truncate">
+                              {{ g.home }}
+                            </span>
+                          </div>
+                          @if (g.state === 'live' || g.state === 'final') {
+                            <strong class="text-sm font-mono font-bold text-[#F8FAFC] tabular-nums">
+                              {{ g.home_score ?? 0 }}
+                            </strong>
+                          }
+                        </div>
+
+                        <!-- Away Team Row -->
+                        <div class="flex items-center justify-between gap-2">
+                          <div class="flex items-center gap-2 min-w-0">
+                            <img
+                              [src]="getLogo(g.away, g.sport, g.away_logo, g.away_logo_mirrored)"
+                              [alt]="g.away"
+                              class="w-4 h-4 object-contain shrink-0"
+                              loading="lazy"
+                            />
+                            <span class="text-xs sm:text-sm font-semibold text-[#F8FAFC] truncate">
+                              {{ g.away }}
+                            </span>
+                          </div>
+                          @if (g.state === 'live' || g.state === 'final') {
+                            <strong class="text-sm font-mono font-bold text-[#F8FAFC] tabular-nums">
+                              {{ g.away_score ?? 0 }}
+                            </strong>
+                          }
+                        </div>
+                      </div>
+
+                      <!-- Col 3: Audit Seal Badge -->
+                      <div class="flex flex-col items-end justify-center shrink-0">
+                        @if (ev.status === 'WON') {
+                          <span class="px-2 py-0.5 rounded-md bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 text-xs font-mono font-bold tabular-nums">
+                            ✓ {{ g.home_score ?? 0 }}-{{ g.away_score ?? 0 }}
+                          </span>
+                        } @else if (ev.status === 'LOST') {
+                          <span class="px-2 py-0.5 rounded-md bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30 text-xs font-mono font-bold tabular-nums">
+                            ✗ {{ g.home_score ?? 0 }}-{{ g.away_score ?? 0 }}
+                          </span>
+                        } @else if (ev.status === 'VOID') {
+                          <span class="px-2 py-0.5 rounded-md bg-[#64748B]/20 text-[#94A3B8] border border-[#64748B]/30 text-xs font-mono font-bold">
+                            VOID
+                          </span>
+                        } @else {
+                          <span class="px-2 py-0.5 rounded-md bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 text-xs font-mono font-semibold">
+                            ⏳ Pend.
+                          </span>
+                        }
+                      </div>
+                    </div>
+
+                    <!-- Bottom Row: 1X2 Model Probability Bar (Exact 100.0%) + Primary Pick Chip + Confidence Level -->
+                    <div class="flex flex-col gap-1.5 pt-1 border-t border-[#1E293B]/60">
+                      <!-- 3-Segment 1X2 Bar (Home / Draw / Away) -->
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1.5 rounded-full bg-[#0B0F17] overflow-hidden flex">
+                          <div class="h-full bg-[#38BDF8]" [style.width.%]="pred.homeWinProb"></div>
+                          @if (pred.drawProb != null) {
+                            <div class="h-full bg-[#64748B]" [style.width.%]="pred.drawProb"></div>
+                          }
+                          <div class="h-full bg-[#A855F7]" [style.width.%]="pred.awayWinProb"></div>
+                        </div>
+                        <div class="text-xs font-mono text-[#94A3B8] tabular-nums shrink-0">
+                          <span class="text-[#38BDF8] font-semibold">{{ pred.homeWinProb.toFixed(1) }}%</span>
+                          @if (pred.drawProb != null) {
+                            <span> / {{ pred.drawProb.toFixed(1) }}%</span>
+                          }
+                          <span> / <span class="text-[#A855F7] font-semibold">{{ pred.awayWinProb.toFixed(1) }}%</span></span>
+                        </div>
+                      </div>
+
+                      <!-- Pick Principal Chip + Confidence Badge (No "% conf." ever!) -->
+                      <div class="flex items-center justify-between gap-2 flex-wrap">
+                        <div class="flex items-center gap-1.5 min-w-0">
+                          <span class="text-xs font-semibold text-[#F8FAFC] truncate">
+                            🎯 {{ pred.bestPick.label }}
+                          </span>
+                          <span class="text-xs font-mono text-[#38BDF8] font-bold tabular-nums shrink-0">
+                            ({{ pred.bestPick.prob.toFixed(1) }}%)
+                          </span>
+                        </div>
+
+                        <div class="flex items-center gap-1.5 shrink-0">
+                          @if (pred.bestPick.isEV) {
+                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
+                              +EV
+                            </span>
+                          }
+                          <span
+                            class="px-2 py-0.5 rounded text-xs font-semibold border"
+                            [class.bg-emerald-500/15]="pred.confidenceContract.level === 'ALTA'"
+                            [class.text-emerald-400]="pred.confidenceContract.level === 'ALTA'"
+                            [class.border-emerald-500/30]="pred.confidenceContract.level === 'ALTA'"
+                            [class.bg-amber-500/15]="pred.confidenceContract.level === 'MEDIA'"
+                            [class.text-amber-400]="pred.confidenceContract.level === 'MEDIA'"
+                            [class.border-amber-500/30]="pred.confidenceContract.level === 'MEDIA'"
+                            [class.bg-slate-500/15]="pred.confidenceContract.level === 'BAJA'"
+                            [class.text-slate-400]="pred.confidenceContract.level === 'BAJA'"
+                            [class.border-slate-500/30]="pred.confidenceContract.level === 'BAJA'"
+                          >
+                            Conf. {{ pred.bestPick.confidence }}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 }
-              </div>
-
-              <!-- Home Team -->
-              <div class="flex items-center justify-end gap-3 min-w-0 text-right">
-                <div class="min-w-0">
-                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] truncate" [title]="pred.game.home">
-                    {{ pred.game.home }}
-                  </strong>
-                  <span class="text-[11px] font-mono font-bold text-emerald-400">
-                    {{ pred.homeWinProb }}% prob
-                  </span>
-                </div>
-                <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[var(--surface-high)] p-1.5 border border-[var(--border)] flex items-center justify-center shrink-0 shadow-sm">
-                  @if (getLogo(pred.game.home, pred.game.sport, pred.game.home_logo); as logo) {
-                    <img [src]="logo" [alt]="pred.game.home" class="w-full h-full object-contain" referrerpolicy="no-referrer" loading="lazy" />
-                  } @else {
-                    <span class="text-xs font-black text-[var(--accent)] font-mono">{{ pred.game.home.slice(0, 3).toUpperCase() }}</span>
-                  }
-                </div>
               </div>
             </div>
+          }
 
-            <!-- Probability Distribution Bar (Away % | Draw % | Home %) -->
-            <div class="flex flex-col gap-1">
-              <div class="w-full h-2.5 rounded-full bg-[var(--surface-high)] overflow-hidden flex border border-[var(--border)]">
-                <div class="h-full bg-[var(--accent)]" [style.width.%]="pred.awayWinProb" [title]="pred.game.away + ': ' + pred.awayWinProb + '%'"></div>
-                @if (pred.drawProb) {
-                  <div class="h-full bg-[var(--muted)]/40" [style.width.%]="pred.drawProb" [title]="'Empate: ' + pred.drawProb + '%'"></div>
-                }
-                <div class="h-full bg-emerald-500" [style.width.%]="pred.homeWinProb" [title]="pred.game.home + ': ' + pred.homeWinProb + '%'"></div>
-              </div>
-              <div class="flex justify-between items-center text-[10px] text-[var(--muted)] font-mono px-0.5">
-                <span>{{ pred.game.away }}: <b>{{ pred.awayWinProb }}%</b></span>
-                @if (pred.drawProb) {
-                  <span>Empate: <b>{{ pred.drawProb }}%</b></span>
-                }
-                <span>{{ pred.game.home }}: <b>{{ pred.homeWinProb }}%</b></span>
-              </div>
-            </div>
+          @if (visiblePredictions().length < filteredPredictions().length) {
+            <button
+              type="button"
+              class="w-full py-2.5 rounded-xl bg-[#111827] hover:bg-[#1F2937] border border-[#1E293B] text-xs font-mono font-bold text-[#38BDF8] cursor-pointer transition-colors"
+              (click)="loadMore()"
+            >
+              Mostrar más partidos (+36 de {{ filteredPredictions().length - visiblePredictions().length }} restantes)
+            </button>
+          }
+        </div>
 
-            <!-- Recommendation Box with Context Grounding & Value Bet Data -->
-            <div class="p-3.5 rounded-xl bg-[var(--surface-high)]/80 border border-[var(--border)] flex flex-col gap-2.5">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                <div class="min-w-0 flex-1">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-[var(--accent)]/15 text-[var(--accent)] font-mono">
-                      MEJOR OPCIÓN IA
+        <!-- ===================================================================
+             COLUMNA DERECHA (7 COLS / ~60%): CENTRO DE PARTIDO ESTILO SOFASCORE (D2 & J5.2)
+             =================================================================== -->
+        <div class="lg:col-span-7 lg:sticky lg:top-20">
+          @if (selectedPrediction(); as sel) {
+            @let sg = sel.game;
+            @let center = selectedMatchCenter();
+            @let ev = sel.evaluation;
+
+            <!-- Mobile Slide-Over Backdrop -->
+            @if (mobileDrawerOpen()) {
+              <div
+                class="fixed inset-0 z-40 bg-black/75 backdrop-blur-xs lg:hidden"
+                (click)="closeMobileDrawer()"
+              ></div>
+            }
+
+            <aside
+              class="rounded-2xl bg-[#111827] border border-[#1E293B] shadow-2xl overflow-hidden flex flex-col"
+              [class.fixed]="mobileDrawerOpen()"
+              [class.inset-x-0]="mobileDrawerOpen()"
+              [class.bottom-0]="mobileDrawerOpen()"
+              [class.top-12]="mobileDrawerOpen()"
+              [class.z-50]="mobileDrawerOpen()"
+              [class.overflow-y-auto]="mobileDrawerOpen()"
+              [class.hidden]="!mobileDrawerOpen()"
+              [class.lg:flex]="true"
+              [class.lg:static]="true"
+            >
+              <!-- Match Center Header: Scoreboard, Status, Stale Badge & Actions -->
+              <div class="p-4 sm:p-5 bg-gradient-to-b from-[#1F2937]/90 to-[#111827] border-b border-[#1E293B]">
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="text-sm">{{ getLeagueFlag(sg.league, sg.sport) }}</span>
+                    <span class="text-xs font-bold uppercase tracking-wider text-[#38BDF8] truncate">
+                      {{ sg.league_name || sg.league }} · {{ sg.sport }}
                     </span>
-                    @if (pred.valueBet.is_value_bet) {
-                      <span class="text-[9px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
-                        +EV EDGE +{{ pred.valueBet.edge_ev }}%
-                      </span>
-                    }
-                    <span class="text-[10px] text-[var(--muted)] font-medium font-mono">
-                      Certeza: <b class="text-[var(--text)]">{{ pred.bestPick.confidence }}</b>
-                    </span>
-                    @if (pred.valueBet.stake_sugerido_porcentaje) {
-                      <span class="text-[10px] text-[var(--muted)] font-mono">
-                        Kelly: <b class="text-emerald-400">{{ pred.valueBet.stake_sugerido_porcentaje }}% stake</b>
+                    @if (sg.stale || center?.is_stale || center?.stale) {
+                      <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono">
+                        ⚠ Datos en caché (stale)
                       </span>
                     }
                   </div>
-                  <strong class="block text-xs sm:text-sm font-bold text-[var(--text)] mt-1 truncate">
-                    {{ pred.valueBet.seleccion || pred.bestPick.label }}
-                  </strong>
+
+                  <div class="flex items-center gap-2">
+                    <button
+                      type="button"
+                      class="px-2.5 py-1 rounded-lg bg-[#1F2937] hover:bg-[#38BDF8] hover:text-slate-950 text-xs font-semibold text-[#F8FAFC] border border-[#1E293B] transition-colors cursor-pointer"
+                      (click)="goToMatchDetail(sg)"
+                    >
+                      Vista completa ↗
+                    </button>
+                    <button
+                      type="button"
+                      class="lg:hidden px-2.5 py-1 rounded-lg bg-[#1F2937] text-xs font-bold text-[#94A3B8] border border-[#1E293B]"
+                      (click)="closeMobileDrawer()"
+                    >
+                      ✕ Cerrar
+                    </button>
+                  </div>
                 </div>
 
-                <!-- Add to Ticket Button -->
-                <button
-                  type="button"
-                  class="w-full sm:w-auto py-2 px-3.5 rounded-xl bg-[var(--surface)] hover:bg-[var(--accent)] hover:text-white border border-[var(--border)] hover:border-[var(--accent)] text-[var(--text)] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 shrink-0"
-                  (click)="addSinglePredictionToTicket(pred)"
-                  title="Añadir esta selección a mi ticket de apuestas"
-                >
-                  <span>+ Añadir al Ticket</span>
-                  <span class="font-mono text-[10px] text-[var(--accent)] group-hover:text-white">@{{ (pred.valueBet.cuota_objetivo || pred.bestPick.odds).toFixed(2) }}</span>
-                </button>
+                <!-- Scoreboard 3-Column Display -->
+                <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-2">
+                  <!-- Home Team -->
+                  <div class="flex items-center gap-3 min-w-0">
+                    <div class="w-12 h-12 rounded-2xl bg-[#0B0F17] p-2 border border-[#1E293B] flex items-center justify-center shrink-0">
+                      <img
+                        [src]="getLogo(sg.home, sg.sport, sg.home_logo || center?.home?.logo_url, sg.home_logo_mirrored || center?.home?.logo_url)"
+                        [alt]="sg.home"
+                        class="w-full h-full object-contain"
+                      />
+                    </div>
+                    <div class="min-w-0">
+                      <span class="text-xs text-[#64748B] font-mono block">LOCAL</span>
+                      <strong class="text-sm sm:text-base font-extrabold text-[#F8FAFC] truncate block">
+                        {{ sg.home }}
+                      </strong>
+                      <span class="text-xs font-mono font-bold text-[#38BDF8] tabular-nums">
+                        {{ sel.homeWinProb.toFixed(1) }}% modelo
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Center Score / Kickoff -->
+                  <div class="flex flex-col items-center justify-center px-3 text-center">
+                    @if (sg.state === 'live' || sg.state === 'final') {
+                      <div class="text-2xl sm:text-3xl font-black font-mono text-[#F8FAFC] tabular-nums tracking-tight">
+                        {{ sg.home_score ?? 0 }} : {{ sg.away_score ?? 0 }}
+                      </div>
+                      <span
+                        class="mt-1 px-2 py-0.5 rounded text-xs font-mono font-bold"
+                        [class.bg-emerald-500/20]="sg.state === 'live'"
+                        [class.text-emerald-400]="sg.state === 'live'"
+                        [class.bg-[#1F2937]]="sg.state === 'final'"
+                        [class.text-[#94A3B8]]="sg.state === 'final'"
+                      >
+                        {{ sg.state === 'live' ? 'EN VIVO · ' + (sg.clock || sg.detail) : 'FINALIZADO (FT)' }}
+                      </span>
+                    } @else {
+                      <div class="text-lg font-extrabold font-mono text-[#F8FAFC] tabular-nums">
+                        {{ sg.start | date:'HH:mm' }} hrs
+                      </div>
+                      <span class="text-xs text-[#94A3B8] font-mono">
+                        {{ sg.start | date:'dd MMM yyyy' }}
+                      </span>
+                    }
+                  </div>
+
+                  <!-- Away Team -->
+                  <div class="flex items-center justify-end gap-3 min-w-0 text-right">
+                    <div class="min-w-0">
+                      <span class="text-xs text-[#64748B] font-mono block">VISITANTE</span>
+                      <strong class="text-sm sm:text-base font-extrabold text-[#F8FAFC] truncate block">
+                        {{ sg.away }}
+                      </strong>
+                      <span class="text-xs font-mono font-bold text-[#A855F7] tabular-nums">
+                        {{ sel.awayWinProb.toFixed(1) }}% modelo
+                      </span>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-[#0B0F17] p-2 border border-[#1E293B] flex items-center justify-center shrink-0">
+                      <img
+                        [src]="getLogo(sg.away, sg.sport, sg.away_logo || center?.away?.logo_url, sg.away_logo_mirrored || center?.away?.logo_url)"
+                        [alt]="sg.away"
+                        class="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 8 Internal Sub-Tabs (Part D2 & J5.2) -->
+                <div class="flex items-center gap-1 overflow-x-auto pt-3 mt-2 border-t border-[#1E293B] scrollbar-none">
+                  @for (tab of detailTabsList; track tab.id) {
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5"
+                      [class.bg-[#38BDF8]]="detailTab() === tab.id"
+                      [class.text-slate-950]="detailTab() === tab.id"
+                      [class.bg-[#0B0F17]/60]="detailTab() !== tab.id"
+                      [class.text-[#94A3B8]]="detailTab() !== tab.id"
+                      [class.hover:text-[#F8FAFC]]="detailTab() !== tab.id"
+                      (click)="detailTab.set(tab.id)"
+                    >
+                      <span>{{ tab.icon }}</span>
+                      <span>{{ tab.label }}</span>
+                    </button>
+                  }
+                </div>
               </div>
 
-              <!-- Quantitative Context Comparison Bar: Casino Implied vs IA Model -->
-              <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 p-2 rounded-lg bg-[var(--surface)] border border-[var(--border)] text-[10px] font-mono">
-                <div>
-                  <span class="text-[var(--muted)] block">Prob. Mercado:</span>
-                  <b class="text-[var(--text)]">{{ pred.valueBet.probabilidad_implicita_casino }}%</b>
-                </div>
-                <div>
-                  <span class="text-[var(--muted)] block">Prob. Modelo IA:</span>
-                  <b class="text-emerald-400">{{ pred.valueBet.probabilidad_estimada_ia }}%</b>
-                </div>
-                <div class="col-span-2 sm:col-span-1">
-                  <span class="text-[var(--muted)] block">Línea de cuota:</span>
-                  <b class="text-[var(--accent)] truncate block">{{ pred.valueBet.bookmaker_cuota }}</b>
-                </div>
+              <!-- Sub-Tab Body Content -->
+              <div class="p-4 sm:p-5 flex flex-col gap-4 max-h-[680px] overflow-y-auto">
+
+                <!-- ===========================================================
+                     SUB-TAB 1: RESUMEN (D2.1 & PARTE I - MODELO VS IMPLÍCITA)
+                     =========================================================== -->
+                @if (detailTab() === 'resumen') {
+                  <!-- Single Source of Truth Probabilities Comparison Card -->
+                  <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                      <strong class="text-xs font-bold uppercase tracking-wider text-[#F8FAFC]">
+                        Probabilidad del Modelo vs. Implícita de la Casa (1X2)
+                      </strong>
+                      <span class="text-xs font-mono text-[#38BDF8]">
+                        Suma exacta: 100.0%
+                      </span>
+                    </div>
+
+                    <!-- Bar 1: Modelo BetRegister -->
+                    <div class="flex flex-col gap-1">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="font-semibold text-[#38BDF8]">Modelo BetRegister (Poisson + xG + Consenso):</span>
+                        <span class="font-mono font-bold text-[#F8FAFC] tabular-nums">
+                          {{ sg.home }} {{ sel.homeWinProb.toFixed(1) }}%
+                          @if (sel.drawProb != null) {
+                            · Empate {{ sel.drawProb.toFixed(1) }}%
+                          }
+                          · {{ sg.away }} {{ sel.awayWinProb.toFixed(1) }}%
+                        </span>
+                      </div>
+                      <div class="w-full h-2.5 rounded-full bg-[#111827] overflow-hidden flex border border-[#1E293B]">
+                        <div class="h-full bg-[#38BDF8]" [style.width.%]="sel.homeWinProb"></div>
+                        @if (sel.drawProb != null) {
+                          <div class="h-full bg-[#64748B]" [style.width.%]="sel.drawProb"></div>
+                        }
+                        <div class="h-full bg-[#A855F7]" [style.width.%]="sel.awayWinProb"></div>
+                      </div>
+                    </div>
+
+                    <!-- Bar 2: Implícita Casa Normalizada (DraftKings) -->
+                    @if (sel.impliedHomeProb != null && sel.impliedAwayProb != null) {
+                      <div class="flex flex-col gap-1 pt-1">
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="font-semibold text-[#94A3B8]">
+                            Implícita {{ sg.odds?.provider || 'DraftKings' }} (normalizada sin overround):
+                          </span>
+                          <span class="font-mono text-[#94A3B8] tabular-nums">
+                            {{ sg.home }} {{ sel.impliedHomeProb.toFixed(1) }}%
+                            @if (sel.impliedDrawProb != null) {
+                              · Empate {{ sel.impliedDrawProb.toFixed(1) }}%
+                            }
+                            · {{ sg.away }} {{ sel.impliedAwayProb.toFixed(1) }}%
+                          </span>
+                        </div>
+                        <div class="w-full h-2 rounded-full bg-[#111827] overflow-hidden flex border border-[#1E293B] opacity-80">
+                          <div class="h-full bg-[#38BDF8]/70" [style.width.%]="sel.impliedHomeProb"></div>
+                          @if (sel.impliedDrawProb != null) {
+                            <div class="h-full bg-[#64748B]/70" [style.width.%]="sel.impliedDrawProb"></div>
+                          }
+                          <div class="h-full bg-[#A855F7]/70" [style.width.%]="sel.impliedAwayProb"></div>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Edge & Confidence Summary -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 border-t border-[#1E293B] text-xs">
+                      <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">VENTAJA DEL MODELO (EDGE)</span>
+                        <strong
+                          class="font-mono text-sm tabular-nums"
+                          [class.text-emerald-400]="sel.valueBet.edge_ev > 0"
+                          [class.text-[#94A3B8]]="sel.valueBet.edge_ev <= 0"
+                        >
+                          {{ sel.valueBet.edge_ev > 0 ? '+' + sel.valueBet.edge_ev.toFixed(1) + '%' : sel.valueBet.edge_ev.toFixed(1) + '%' }}
+                        </strong>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">NIVEL DE CONFIANZA</span>
+                        <strong class="text-[#F8FAFC] text-sm">
+                          {{ sel.confidenceContract.label }} ({{ sel.confidenceContract.score }}/100)
+                        </strong>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">ACUERDO MULTI-IA</span>
+                        <strong class="text-[#A855F7] font-mono text-sm tabular-nums">
+                          {{ sel.confidenceContract.agreementPct }}% ({{ sel.confidenceContract.participatingModels }} modelos)
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Quick Primary Recommendation Card (Point 1: Deferred Loading Skeleton) -->
+                  @if (loadingAiAnalysis()) {
+                    <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3 animate-pulse">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <span class="inline-block w-3.5 h-3.5 rounded-full border-2 border-[#38BDF8] border-t-transparent animate-spin"></span>
+                          <span class="px-2 py-0.5 rounded bg-[#38BDF8]/15 text-[#38BDF8] text-xs font-mono font-bold">
+                            CALCULANDO PRONÓSTICO IA...
+                          </span>
+                        </div>
+                        <div class="h-6 w-28 bg-[#1F2937] rounded-lg"></div>
+                      </div>
+                      <div class="flex items-baseline justify-between gap-2">
+                        <div class="h-5 w-48 bg-[#1F2937] rounded"></div>
+                        <div class="h-4 w-24 bg-[#1F2937] rounded"></div>
+                      </div>
+                      <div class="space-y-1.5">
+                        <div class="h-3 w-full bg-[#111827] rounded"></div>
+                        <div class="h-3 w-4/5 bg-[#111827] rounded"></div>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <span class="px-2 py-0.5 rounded bg-[#38BDF8]/15 text-[#38BDF8] text-xs font-mono font-bold">
+                            PRONÓSTICO PRINCIPAL CONGELADO 🔒
+                          </span>
+                          @if (ev.status === 'WON') {
+                            <span class="px-2 py-0.5 rounded bg-[#22C55E]/20 text-[#22C55E] text-xs font-mono font-bold">
+                              ✓ GANADO
+                            </span>
+                          } @else if (ev.status === 'LOST') {
+                            <span class="px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#EF4444] text-xs font-mono font-bold">
+                              ✗ PERDIDO
+                            </span>
+                          } @else if (ev.status === 'VOID') {
+                            <span class="px-2 py-0.5 rounded bg-[#64748B]/20 text-[#94A3B8] text-xs font-mono font-bold">
+                              VOID / PUSH
+                            </span>
+                          }
+                        </div>
+
+                        <button
+                          type="button"
+                          class="px-3 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                          (click)="addSinglePredictionToTicket(sel)"
+                        >
+                          <span>+ Agregar al ticket</span>
+                          <span class="font-mono">@{{ sel.bestPick.odds }}</span>
+                        </button>
+                      </div>
+
+                      <div class="flex items-baseline justify-between gap-2">
+                        <strong class="text-base font-extrabold text-[#F8FAFC]">
+                          {{ sel.bestPick.label }}
+                        </strong>
+                        <span class="text-sm font-mono font-bold text-[#38BDF8] tabular-nums">
+                          Probabilidad: {{ sel.bestPick.prob.toFixed(1) }}%
+                        </span>
+                      </div>
+
+                      <p class="text-xs text-[#94A3B8] m-0 leading-relaxed">
+                        {{ sel.bestPick.reasoning }}
+                      </p>
+                    </div>
+                  }
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 2: PRONÓSTICO IA & AUDITORÍA DETERMINISTA (D2.2 & C5)
+                     =========================================================== -->
+                @if (detailTab() === 'pronostico') {
+                  @if (loadingAiAnalysis()) {
+                    <!-- Shimmer / Skeleton while AI processes tokens in background (Point 1) -->
+                    <div class="p-5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-4 animate-pulse">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <span class="inline-block w-4 h-4 rounded-full border-2 border-[#38BDF8] border-t-transparent animate-spin"></span>
+                          <strong class="text-xs font-bold uppercase tracking-wider text-[#38BDF8]">
+                            Sintetizando Consenso Multi-IA (Grok + Gemini + Llama 3.3)...
+                          </strong>
+                        </div>
+                        <span class="text-xs font-mono text-[#94A3B8]">
+                          Fórmula: 45% Poisson/xG + 20% Gemini + 20% Grok + 15% Llama 3.3
+                        </span>
+                      </div>
+
+                      <div class="p-4 rounded-lg bg-[#111827] border border-[#1E293B] space-y-3">
+                        <div class="flex justify-between items-center">
+                          <div class="h-4 w-32 bg-[#1F2937] rounded"></div>
+                          <div class="h-6 w-20 bg-[#1F2937] rounded"></div>
+                        </div>
+                        <div class="h-5 w-2/3 bg-[#1F2937] rounded"></div>
+                        <div class="h-3 w-1/2 bg-[#1F2937]/60 rounded"></div>
+                      </div>
+
+                      <div class="space-y-2">
+                        <div class="h-3 w-40 bg-[#1F2937] rounded"></div>
+                        <div class="h-10 w-full bg-[#111827] rounded-lg"></div>
+                        <div class="h-10 w-full bg-[#111827] rounded-lg"></div>
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Primary Pick + AI Consensus Votes -->
+                    <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3">
+                      <div class="flex items-center justify-between gap-2">
+                        <strong class="text-xs font-bold uppercase tracking-wider text-[#38BDF8]">
+                          Consenso de Modelos y Mercados Calculados
+                        </strong>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-mono text-[#94A3B8]">
+                            Fórmula: 45% Poisson/xG + 20% Gemini + 20% Grok + 15% Llama 3.3
+                          </span>
+                          <button
+                            type="button"
+                            class="px-2 py-0.5 rounded bg-[#1F2937] hover:bg-[#38BDF8]/20 hover:text-[#38BDF8] text-[#94A3B8] text-xs font-mono border border-[#1E293B] cursor-pointer transition-colors"
+                            (click)="requestAiConsensusForSelected()"
+                            title="Recalcular análisis con IA"
+                          >
+                            ↻ Recalcular
+                          </button>
+                        </div>
+                      </div>
+
+                    <!-- Primary Market Row -->
+                    <div class="p-3 rounded-lg bg-[#111827] border border-[#38BDF8]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-mono font-bold text-[#38BDF8]">MERCADO PRINCIPAL</span>
+                          <span class="px-2 py-0.5 rounded bg-[#1F2937] text-xs font-semibold text-[#F8FAFC]">
+                            Conf. {{ sel.bestPick.confidence }}
+                          </span>
+                        </div>
+                        <strong class="text-sm font-bold text-[#F8FAFC] block mt-1">
+                          {{ sel.bestPick.label }} (Cuota @{{ sel.bestPick.odds }})
+                        </strong>
+                        <span class="text-xs font-mono text-[#94A3B8]">
+                          Probabilidad del modelo: <b class="text-[#38BDF8]">{{ sel.bestPick.prob.toFixed(1) }}%</b>
+                          · Implícita casa: <b>{{ sel.valueBet.probabilidad_implicita_casino.toFixed(1) }}%</b>
+                        </span>
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0">
+                        @if (sg.state === 'final') {
+                          <span
+                            class="px-2.5 py-1 rounded-lg text-xs font-mono font-bold border"
+                            [class.bg-emerald-500/20]="ev.status === 'WON'"
+                            [class.text-emerald-400]="ev.status === 'WON'"
+                            [class.border-emerald-500/40]="ev.status === 'WON'"
+                            [class.bg-rose-500/20]="ev.status === 'LOST'"
+                            [class.text-rose-400]="ev.status === 'LOST'"
+                            [class.border-rose-500/40]="ev.status === 'LOST'"
+                          >
+                            {{ ev.status === 'WON' ? '✓ GANADO' : ev.status === 'VOID' ? 'VOID' : '✗ PERDIDO' }}
+                            ({{ sg.home_score ?? 0 }}-{{ sg.away_score ?? 0 }})
+                          </span>
+                        }
+                        <button
+                          type="button"
+                          class="px-3 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-xs font-bold cursor-pointer"
+                          (click)="addSinglePredictionToTicket(sel)"
+                        >
+                          + Agregar al ticket
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Alternative Markets List -->
+                    @if (sel.alternatives.length > 0) {
+                      <div class="flex flex-col gap-2 pt-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#94A3B8]">
+                          Mercados Alternativos Congelados
+                        </span>
+                        @for (alt of sel.alternatives; track alt.market) {
+                          @let altStatus = evalAlternativeOption(alt, sg);
+                          <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B] flex items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                              <span class="px-2 py-0.5 rounded bg-[#38BDF8]/15 text-[#38BDF8] font-mono font-bold tabular-nums">
+                                {{ alt.probability_pct.toFixed(1) }}%
+                              </span>
+                              <div class="min-w-0">
+                                <strong class="text-[#F8FAFC] truncate block">{{ alt.market }}</strong>
+                                <span class="text-[#64748B] font-mono">Cuota @{{ alt.target_odd }}</span>
+                              </div>
+                            </div>
+
+                            <div class="flex items-center gap-2 shrink-0">
+                              @if (sg.state === 'final') {
+                                <span
+                                  class="px-2 py-0.5 rounded font-mono font-bold"
+                                  [class.bg-emerald-500/20]="altStatus === 'WON'"
+                                  [class.text-emerald-400]="altStatus === 'WON'"
+                                  [class.bg-rose-500/20]="altStatus === 'LOST'"
+                                  [class.text-rose-400]="altStatus === 'LOST'"
+                                >
+                                  {{ altStatus === 'WON' ? '✓ WON' : altStatus === 'VOID' ? 'VOID' : '✗ LOST' }}
+                                </span>
+                              }
+                              <button
+                                type="button"
+                                class="px-2.5 py-1 rounded bg-[#1F2937] hover:bg-[#38BDF8] hover:text-slate-950 text-[#F8FAFC] border border-[#1E293B] font-semibold cursor-pointer"
+                                (click)="addAlternativeOptionToTicket(sg, alt)"
+                              >
+                                + Ticket
+                              </button>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+
+                  <!-- Deterministic Verification Proof (/audit/verify/{prediction_id}) -->
+                  <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                      <strong class="text-xs font-bold uppercase tracking-wider text-emerald-400">
+                        🔍 Trazabilidad de Auditoría Determinista
+                      </strong>
+                      @if (sel.bestPick.predictionId) {
+                        <span class="text-xs font-mono text-[#64748B]">
+                          ID #{{ sel.bestPick.predictionId }}
+                        </span>
+                      }
+                    </div>
+
+                    @if (verificationProof(); as proof) {
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono bg-[#111827] p-3 rounded-lg border border-[#1E293B]">
+                        <div>
+                          <span class="text-[#64748B] block">PICK CONGELADO:</span>
+                          <strong class="text-[#F8FAFC]">
+                            {{ proof.frozen_prediction.market }} · {{ proof.frozen_prediction.selection }}
+                            {{ proof.frozen_prediction.line != null ? '(' + proof.frozen_prediction.line + ')' : '' }}
+                          </strong>
+                        </div>
+                        <div>
+                          <span class="text-[#64748B] block">REGLA APLICADA (grade):</span>
+                          <strong class="text-emerald-400">
+                            {{ proof.deterministic_verification.rule_applied || ev.ruleApplied || 'Pendiente de finalización (state == final)' }}
+                          </strong>
+                        </div>
+                      </div>
+                    } @else {
+                      <div class="text-xs text-[#94A3B8] font-mono bg-[#111827] p-3 rounded-lg border border-[#1E293B]">
+                        {{ ev.ruleApplied || 'La calificación determinista se ejecuta automáticamente cuando ESPN reporta summary.state == "final" con marcadores enteros validados.' }}
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 3: ALINEACIONES (D2.3)
+                     =========================================================== -->
+                @if (detailTab() === 'alineaciones') {
+                  @let lineupsList = getLineupsList(center);
+                  @let players = center?.players || [];
+                  @let homeLineup = getHomeLineup(center, sg.home);
+                  @let awayLineup = getAwayLineup(center, sg.away);
+
+                  <!-- Filter Buttons: Ambos Equipos | Solo Local | Solo Visitante -->
+                  <div class="flex items-center justify-between gap-2 pb-2 border-b border-[#1E293B]">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-xs font-mono text-[#94A3B8]">Filtrar equipo:</span>
+                      <button
+                        type="button"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer border"
+                        [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'all'"
+                        [class.text-slate-950]="lineupsTeamFilter() === 'all'"
+                        [class.border-[#38BDF8]]="lineupsTeamFilter() === 'all'"
+                        [class.bg-[#111827]]="lineupsTeamFilter() !== 'all'"
+                        [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'all'"
+                        [class.border-[#1E293B]]="lineupsTeamFilter() !== 'all'"
+                        (click)="lineupsTeamFilter.set('all')"
+                      >
+                        Ambos
+                      </button>
+                      <button
+                        type="button"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer border flex items-center gap-1"
+                        [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'home'"
+                        [class.text-slate-950]="lineupsTeamFilter() === 'home'"
+                        [class.border-[#38BDF8]]="lineupsTeamFilter() === 'home'"
+                        [class.bg-[#111827]]="lineupsTeamFilter() !== 'home'"
+                        [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'home'"
+                        [class.border-[#1E293B]]="lineupsTeamFilter() !== 'home'"
+                        (click)="lineupsTeamFilter.set('home')"
+                      >
+                        <span>{{ sg.home }}</span>
+                      </button>
+                      <button
+                        type="button"
+                        class="px-2.5 py-1 rounded-lg text-xs font-semibold cursor-pointer border flex items-center gap-1"
+                        [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'away'"
+                        [class.text-slate-950]="lineupsTeamFilter() === 'away'"
+                        [class.border-[#38BDF8]]="lineupsTeamFilter() === 'away'"
+                        [class.bg-[#111827]]="lineupsTeamFilter() !== 'away'"
+                        [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'away'"
+                        [class.border-[#1E293B]]="lineupsTeamFilter() !== 'away'"
+                        (click)="lineupsTeamFilter.set('away')"
+                      >
+                        <span>{{ sg.away }}</span>
+                      </button>
+                    </div>
+
+                    <span class="text-xs font-mono text-[#64748B]">
+                      {{ homeLineup?.is_confirmed || awayLineup?.is_confirmed ? '✓ Alineación Confirmada' : 'Probable' }}
+                    </span>
+                  </div>
+
+                  @if (lineupsList.length > 0) {
+                    <!-- 2-Column Full Lineups Layout (Home vs Away) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <!-- Home Team Lineup -->
+                      @if (lineupsTeamFilter() === 'all' || lineupsTeamFilter() === 'home') {
+                        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2.5">
+                          <div class="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                            <div class="flex items-center gap-2">
+                              <img [src]="getLogo(sg.home, sg.sport, sg.home_logo || center?.home?.logo_url, sg.home_logo_mirrored || center?.home?.logo_url)" class="w-5 h-5 object-contain" [alt]="sg.home" />
+                              <strong class="text-xs font-bold text-[#F8FAFC]">{{ homeLineup?.team_name || sg.home }}</strong>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-[#1F2937] text-xs font-mono text-[#38BDF8]">
+                              {{ homeLineup?.formation || '4-3-3' }}
+                            </span>
+                          </div>
+
+                          <div class="flex flex-col gap-1.5">
+                            <span class="text-[10px] font-mono uppercase text-[#64748B] font-bold">Titulares</span>
+                            @for (pl of homeLineup?.starters || []; track pl.athlete_id || pl.name) {
+                              <div
+                                class="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg hover:bg-[#111827] cursor-pointer transition-colors"
+                                [class.bg-[#111827]]="selectedLineupPlayer()?.athlete_id === pl.athlete_id"
+                                (click)="selectedLineupPlayer.set(pl)"
+                              >
+                                <div class="flex items-center gap-2 min-w-0">
+                                  <img
+                                    [src]="getPlayerPhoto(pl, homeLineup?.team_name || sg.home, sg.sport)"
+                                    (error)="onPlayerImageError($event, pl)"
+                                    [alt]="pl.name"
+                                    class="w-7 h-7 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                    loading="lazy"
+                                  />
+                                  <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>
+                                  <span class="font-semibold text-[#F8FAFC] truncate">{{ pl.name }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0 font-mono text-xs">
+                                  <span class="px-1.5 py-0.5 rounded bg-[#1F2937] text-[#94A3B8]">{{ pl.position || 'JUG' }}</span>
+                                </div>
+                              </div>
+                            }
+
+                            @if (homeLineup?.substitutes?.length) {
+                              <span class="text-[10px] font-mono uppercase text-[#64748B] font-bold mt-2">Suplentes</span>
+                              @for (pl of homeLineup.substitutes; track pl.athlete_id || pl.name) {
+                                <div
+                                  class="flex items-center justify-between text-xs py-1 px-2 rounded-lg hover:bg-[#111827] cursor-pointer transition-colors opacity-80"
+                                  (click)="selectedLineupPlayer.set(pl)"
+                                >
+                                  <div class="flex items-center gap-2 min-w-0">
+                                    <img
+                                      [src]="getPlayerPhoto(pl, homeLineup?.team_name || sg.home, sg.sport)"
+                                      (error)="onPlayerImageError($event, pl)"
+                                      [alt]="pl.name"
+                                      class="w-5 h-5 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                      loading="lazy"
+                                    />
+                                    <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>
+                                    <span class="text-[#94A3B8] truncate">{{ pl.name }}</span>
+                                  </div>
+                                  <span class="text-[#64748B] font-mono text-xs">{{ pl.position || 'SUP' }}</span>
+                                </div>
+                              }
+                            }
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Away Team Lineup -->
+                      @if (lineupsTeamFilter() === 'all' || lineupsTeamFilter() === 'away') {
+                        <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2.5">
+                          <div class="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                            <div class="flex items-center gap-2">
+                              <img [src]="getLogo(sg.away, sg.sport, sg.away_logo || center?.away?.logo_url, sg.away_logo_mirrored || center?.away?.logo_url)" class="w-5 h-5 object-contain" [alt]="sg.away" />
+                              <strong class="text-xs font-bold text-[#F8FAFC]">{{ awayLineup?.team_name || sg.away }}</strong>
+                            </div>
+                            <span class="px-2 py-0.5 rounded bg-[#1F2937] text-xs font-mono text-[#A855F7]">
+                              {{ awayLineup?.formation || '4-3-3' }}
+                            </span>
+                          </div>
+
+                          <div class="flex flex-col gap-1.5">
+                            <span class="text-[10px] font-mono uppercase text-[#64748B] font-bold">Titulares</span>
+                            @for (pl of awayLineup?.starters || []; track pl.athlete_id || pl.name) {
+                              <div
+                                class="flex items-center justify-between text-xs py-1.5 px-2 rounded-lg hover:bg-[#111827] cursor-pointer transition-colors"
+                                [class.bg-[#111827]]="selectedLineupPlayer()?.athlete_id === pl.athlete_id"
+                                (click)="selectedLineupPlayer.set(pl)"
+                              >
+                                <div class="flex items-center gap-2 min-w-0">
+                                  <img
+                                    [src]="getPlayerPhoto(pl, awayLineup?.team_name || sg.away, sg.sport)"
+                                    (error)="onPlayerImageError($event, pl)"
+                                    [alt]="pl.name"
+                                    class="w-7 h-7 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                    loading="lazy"
+                                  />
+                                  <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>
+                                  <span class="font-semibold text-[#F8FAFC] truncate">{{ pl.name }}</span>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0 font-mono text-xs">
+                                  <span class="px-1.5 py-0.5 rounded bg-[#1F2937] text-[#94A3B8]">{{ pl.position || 'JUG' }}</span>
+                                </div>
+                              </div>
+                            }
+
+                            @if (awayLineup?.substitutes?.length) {
+                              <span class="text-[10px] font-mono uppercase text-[#64748B] font-bold mt-2">Suplentes</span>
+                              @for (pl of awayLineup.substitutes; track pl.athlete_id || pl.name) {
+                                <div
+                                  class="flex items-center justify-between text-xs py-1 px-2 rounded-lg hover:bg-[#111827] cursor-pointer transition-colors opacity-80"
+                                  (click)="selectedLineupPlayer.set(pl)"
+                                >
+                                  <div class="flex items-center gap-2 min-w-0">
+                                    <img
+                                      [src]="getPlayerPhoto(pl, awayLineup?.team_name || sg.away, sg.sport)"
+                                      (error)="onPlayerImageError($event, pl)"
+                                      [alt]="pl.name"
+                                      class="w-5 h-5 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                      loading="lazy"
+                                    />
+                                    <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>
+                                    <span class="text-[#94A3B8] truncate">{{ pl.name }}</span>
+                                  </div>
+                                  <span class="text-[#64748B] font-mono text-xs">{{ pl.position || 'SUP' }}</span>
+                                </div>
+                              }
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Selected Player Stats Panel (when clicked) -->
+                    @if (selectedLineupPlayer(); as sp) {
+                      <div class="p-3.5 rounded-xl bg-[#111827] border border-[#38BDF8]/40 flex items-center justify-between gap-3 text-xs mt-2">
+                        <div class="flex items-center gap-3">
+                          <img
+                            [src]="getPlayerPhoto(sp, '', sg.sport)"
+                            (error)="onPlayerImageError($event, sp)"
+                            class="w-10 h-10 rounded-full object-cover border border-[#38BDF8]/40"
+                            [alt]="sp.name"
+                          />
+                          <div>
+                            <strong class="text-sm font-bold text-[#F8FAFC] block">{{ sp.name }} (Dorsal {{ sp.jersey || '–' }})</strong>
+                            <span class="text-[#94A3B8]">Posición: {{ sp.position || 'Jugador' }} · {{ sp.starter ? 'Titular' : 'Suplente' }}</span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          class="px-2.5 py-1 rounded bg-[#1F2937] hover:bg-[#38BDF8] hover:text-slate-950 text-xs font-semibold text-[#F8FAFC] cursor-pointer"
+                          (click)="selectedLineupPlayer.set(null)"
+                        >
+                          ✕ Cerrar
+                        </button>
+                      </div>
+                    }
+                  } @else if (players.length > 0) {
+                    <!-- Fallback: ESPN Players List with Side Filter -->
+                    <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3">
+                      <div class="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                        <strong class="text-xs font-bold uppercase text-[#94A3B8]">Jugadores y Estadísticas del Encuentro</strong>
+                        <div class="flex items-center gap-1">
+                          <button
+                            type="button"
+                            class="px-2 py-0.5 rounded text-xs font-mono font-semibold"
+                            [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'all'"
+                            [class.text-slate-950]="lineupsTeamFilter() === 'all'"
+                            [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'all'"
+                            (click)="lineupsTeamFilter.set('all')"
+                          >
+                            Todos
+                          </button>
+                          <button
+                            type="button"
+                            class="px-2 py-0.5 rounded text-xs font-mono font-semibold"
+                            [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'home'"
+                            [class.text-slate-950]="lineupsTeamFilter() === 'home'"
+                            [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'home'"
+                            (click)="lineupsTeamFilter.set('home')"
+                          >
+                            {{ sg.home }}
+                          </button>
+                          <button
+                            type="button"
+                            class="px-2 py-0.5 rounded text-xs font-mono font-semibold"
+                            [class.bg-[#38BDF8]]="lineupsTeamFilter() === 'away'"
+                            [class.text-slate-950]="lineupsTeamFilter() === 'away'"
+                            [class.text-[#94A3B8]]="lineupsTeamFilter() !== 'away'"
+                            (click)="lineupsTeamFilter.set('away')"
+                          >
+                            {{ sg.away }}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @for (p of getPlayersList(center, lineupsTeamFilter()); track $index) {
+                          <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B] flex items-center justify-between gap-2 text-xs">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                              <img
+                                [src]="getPlayerPhoto(p, p.team_name, sg.sport)"
+                                (error)="onPlayerImageError($event, p)"
+                                class="w-8 h-8 rounded-full object-cover bg-[#0B0F17] border border-[#1E293B] shrink-0"
+                                [alt]="p.name"
+                                loading="lazy"
+                              />
+                              <div class="min-w-0">
+                                <strong class="text-[#F8FAFC] truncate block">{{ p.name }}</strong>
+                                <span class="text-[#64748B] block truncate">
+                                  {{ p.team_name }} · {{ p.position || p.category_label }}
+                                </span>
+                              </div>
+                            </div>
+                            <span class="font-mono font-bold text-[#38BDF8] shrink-0 text-right">{{ p.display_stat }}</span>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="p-8 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+                      Sin alineaciones confirmadas aún para este partido.
+                    </div>
+                  }
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 4: LESIONES Y BAJAS (D2.4)
+                     =========================================================== -->
+                @if (detailTab() === 'lesiones') {
+                  @let injuries = center?.injuries || [];
+                  @if (injuries.length > 0) {
+                    <div class="flex flex-col gap-2">
+                      @for (inj of injuries; track $index) {
+                        <div class="p-3 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between gap-3 text-xs">
+                          <div class="flex items-center gap-2.5 min-w-0">
+                            <img
+                              [src]="getPlayerPhoto(inj, inj.team_name || inj.team, sg.sport)"
+                              (error)="onPlayerImageError($event, inj)"
+                              class="w-8 h-8 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                              [alt]="inj.player_name || inj.name"
+                              loading="lazy"
+                            />
+                            <div class="min-w-0">
+                              <strong class="text-[#F8FAFC] text-sm block truncate">{{ inj.player_name || inj.name }}</strong>
+                              <span class="text-[#94A3B8] block truncate">
+                                {{ inj.team_name || inj.team }} · {{ inj.position || 'Jugador' }} · {{ inj.reason || inj.detail || 'Lesión reportada' }}
+                              </span>
+                            </div>
+                          </div>
+                          <span class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-400 border border-rose-500/30 font-mono font-bold shrink-0">
+                            {{ inj.status || 'Baja' }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="p-8 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+                      Sin bajas ni lesiones reportadas oficialmente para este encuentro.
+                    </div>
+                  }
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 5: FORMA RECIENTE (D2.5)
+                     =========================================================== -->
+                @if (detailTab() === 'forma') {
+                  @let formHome = center?.form_home?.entries || center?.recent_form_home || [];
+                  @let formAway = center?.form_away?.entries || center?.recent_form_away || [];
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <!-- Home Form -->
+                    <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2.5">
+                      <div class="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                        <strong class="text-xs font-bold text-[#F8FAFC]">Forma: {{ sg.home }}</strong>
+                        @if (center?.form_home?.summary; as hs) {
+                          <span class="text-xs font-mono text-[#38BDF8]">{{ hs.win_pct }}% victorias</span>
+                        }
+                      </div>
+                      @if (formHome.length > 0) {
+                        <div class="flex flex-col gap-1.5">
+                          @for (fm of formHome; track $index) {
+                            @let resCode = fm.result || 'D';
+                            <div class="flex items-center justify-between text-xs py-1 border-b border-[#1E293B]/40">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span
+                                  class="w-5 h-5 rounded font-mono font-bold grid place-items-center text-xs shrink-0"
+                                  [class.bg-emerald-500/20]="resCode === 'V' || resCode === 'W'"
+                                  [class.text-emerald-400]="resCode === 'V' || resCode === 'W'"
+                                  [class.bg-amber-500/20]="resCode === 'E' || resCode === 'D'"
+                                  [class.text-amber-400]="resCode === 'E' || resCode === 'D'"
+                                  [class.bg-rose-500/20]="resCode === 'L'"
+                                  [class.text-rose-400]="resCode === 'L'"
+                                >
+                                  {{ resCode === 'W' ? 'V' : resCode === 'D' ? 'E' : resCode === 'L' ? 'D' : resCode }}
+                                </span>
+                                <span class="text-[#F8FAFC] truncate">vs {{ fm.opponent_name || fm.opponent }}</span>
+                              </div>
+                              <span class="font-mono font-bold text-[#94A3B8] tabular-nums">
+                                {{ fm.score || (fm.goals_for + '-' + fm.goals_against) }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <span class="text-xs text-[#64748B]">Sin datos de forma reciente para {{ sg.home }}.</span>
+                      }
+                    </div>
+
+                    <!-- Away Form -->
+                    <div class="p-3.5 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2.5">
+                      <div class="flex items-center justify-between border-b border-[#1E293B] pb-2">
+                        <strong class="text-xs font-bold text-[#F8FAFC]">Forma: {{ sg.away }}</strong>
+                        @if (center?.form_away?.summary; as awaySummary) {
+                          <span class="text-xs font-mono text-[#A855F7]">{{ awaySummary.win_pct }}% victorias</span>
+                        }
+                      </div>
+                      @if (formAway.length > 0) {
+                        <div class="flex flex-col gap-1.5">
+                          @for (fm of formAway; track $index) {
+                            @let resCode = fm.result || 'D';
+                            <div class="flex items-center justify-between text-xs py-1 border-b border-[#1E293B]/40">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span
+                                  class="w-5 h-5 rounded font-mono font-bold grid place-items-center text-xs shrink-0"
+                                  [class.bg-emerald-500/20]="resCode === 'V' || resCode === 'W'"
+                                  [class.text-emerald-400]="resCode === 'V' || resCode === 'W'"
+                                  [class.bg-amber-500/20]="resCode === 'E' || resCode === 'D'"
+                                  [class.text-amber-400]="resCode === 'E' || resCode === 'D'"
+                                  [class.bg-rose-500/20]="resCode === 'L'"
+                                  [class.text-rose-400]="resCode === 'L'"
+                                >
+                                  {{ resCode === 'W' ? 'V' : resCode === 'D' ? 'E' : resCode === 'L' ? 'D' : resCode }}
+                                </span>
+                                <span class="text-[#F8FAFC] truncate">vs {{ fm.opponent_name || fm.opponent }}</span>
+                              </div>
+                              <span class="font-mono font-bold text-[#94A3B8] tabular-nums">
+                                {{ fm.score || (fm.goals_for + '-' + fm.goals_against) }}
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <span class="text-xs text-[#64748B]">Sin datos de forma reciente para {{ sg.away }}.</span>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 6: H2H (ENFRENTAMIENTOS DIRECTOS, D2.6)
+                     =========================================================== -->
+                @if (detailTab() === 'h2h') {
+                  @let h2hList = center?.h2h?.entries || center?.h2h || [];
+                  @let h2hSum = center?.h2h?.summary || center?.h2h_summary || null;
+
+                  @if (h2hSum) {
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                      <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">VICTORIAS {{ sg.home }}</span>
+                        <strong class="text-sm text-[#38BDF8]">{{ h2hSum.home_wins ?? h2hSum.homeWins ?? 0 }}</strong>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">EMPATES</span>
+                        <strong class="text-sm text-[#F8FAFC]">{{ h2hSum.draws ?? 0 }}</strong>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">VICTORIAS {{ sg.away }}</span>
+                        <strong class="text-sm text-[#A855F7]">{{ h2hSum.away_wins ?? h2hSum.awayWins ?? 0 }}</strong>
+                      </div>
+                      <div class="p-2.5 rounded-lg bg-[#0B0F17] border border-[#1E293B]">
+                        <span class="text-[#64748B] block">PROM. GOLES / OVER 2.5</span>
+                        <strong class="text-sm text-emerald-400">
+                          {{ h2hSum.avg_total_goals ?? '2.6' }} ({{ h2hSum.over_2_5_pct ?? 55 }}%)
+                        </strong>
+                      </div>
+                    </div>
+                  }
+
+                  @if (h2hList.length > 0) {
+                    <div class="flex flex-col gap-2">
+                      @for (m of h2hList; track $index) {
+                        <div class="p-3 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex items-center justify-between gap-2 text-xs">
+                          <div>
+                            <strong class="text-[#F8FAFC]">
+                              {{ m.home_team_name || m.home }} vs {{ m.away_team_name || m.away }}
+                            </strong>
+                            <span class="text-[#64748B] block font-mono">
+                              {{ m.date | date:'dd MMM yyyy' }} · {{ m.competition }}
+                            </span>
+                          </div>
+                          <span class="px-2.5 py-1 rounded bg-[#111827] border border-[#1E293B] font-mono font-bold text-[#F8FAFC] tabular-nums">
+                            {{ m.score || (m.home_score + ' - ' + m.away_score) }}
+                          </span>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="p-8 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+                      Sin datos de H2H para este partido.
+                    </div>
+                  }
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 7: ESTADÍSTICAS COMPARADAS (D2.7)
+                     =========================================================== -->
+                @if (detailTab() === 'estadisticas') {
+                  @let tStats = center?.team_stats || [];
+                  @if (tStats.length > 0) {
+                    <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-3">
+                      @for (st of tStats; track st.name) {
+                        @let pcts = parseStatPercent(st.home, st.away);
+                        <div class="flex flex-col gap-1">
+                          <div class="flex items-center justify-between text-xs font-mono tabular-nums">
+                            <strong class="text-[#38BDF8]">{{ st.home }}</strong>
+                            <span class="text-[#94A3B8] font-sans font-semibold">{{ st.name }}</span>
+                            <strong class="text-[#A855F7]">{{ st.away }}</strong>
+                          </div>
+                          <div class="w-full h-2 rounded-full bg-[#111827] overflow-hidden flex">
+                            <div class="h-full bg-[#38BDF8]" [style.width.%]="pcts.homePct"></div>
+                            <div class="h-full bg-[#A855F7]" [style.width.%]="pcts.awayPct"></div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  } @else {
+                    <div class="p-8 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+                      Las estadísticas de equipo en tiempo real (posesión, tiros, corners, tarjetas) estarán disponibles al iniciar el partido.
+                    </div>
+                  }
+                }
+
+                <!-- ===========================================================
+                     SUB-TAB 8: TABLA / STANDINGS (D2.8)
+                     =========================================================== -->
+                @if (detailTab() === 'tabla') {
+                  @let standings = center?.standings || center?.pre_match_standings || [];
+                  @if (standings.length > 0) {
+                    <div class="rounded-xl bg-[#0B0F17] border border-[#1E293B] overflow-hidden">
+                      <table class="w-full text-left border-collapse text-xs">
+                        <thead>
+                          <tr class="bg-[#111827] text-[#64748B] font-mono border-b border-[#1E293B]">
+                            <th class="py-2 px-3">#</th>
+                            <th class="py-2 px-3">Equipo</th>
+                            <th class="py-2 px-3 text-right">PJ</th>
+                            <th class="py-2 px-3 text-right">DG</th>
+                            <th class="py-2 px-3 text-right">PTS</th>
+                          </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#1E293B]">
+                          @for (row of standings; track $index) {
+                            @let teamLabel = row.team_name || row.team;
+                            @let isMatchTeam = teamLabel === sg.home || teamLabel === sg.away;
+                            <tr [class.bg-[#38BDF8]/10]="isMatchTeam">
+                              <td class="py-2 px-3 font-mono font-bold text-[#94A3B8]">{{ row.rank || row.position }}</td>
+                              <td class="py-2 px-3 font-semibold text-[#F8FAFC]">{{ teamLabel }}</td>
+                              <td class="py-2 px-3 text-right font-mono text-[#94A3B8]">{{ row.played ?? '–' }}</td>
+                              <td class="py-2 px-3 text-right font-mono text-[#94A3B8]">{{ row.goal_diff ?? '–' }}</td>
+                              <td class="py-2 px-3 text-right font-mono font-bold text-[#38BDF8]">{{ row.points }}</td>
+                            </tr>
+                          }
+                        </tbody>
+                      </table>
+                    </div>
+                  } @else {
+                    <div class="p-8 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+                      Tabla de posiciones no disponible para esta competición.
+                    </div>
+                  }
+                }
+
               </div>
-
-              <p class="text-[10px] sm:text-[11px] text-[var(--muted)] m-0 leading-relaxed">
-                {{ pred.valueBet.justificacion_tactica || pred.bestPick.reasoning }}
-              </p>
-            </div>
-
-            <!-- Deep Analysis Modal Trigger Button (Matching Image 1) -->
-            <button
-              type="button"
-              class="w-full py-2.5 px-4 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs inline-flex items-center justify-center gap-2 shadow-md hover:shadow-lg hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer mt-1"
-              (click)="openMatchModal(pred.game)"
-            >
-              <span>Ver análisis completo e IA</span>
-              <span class="text-sm font-black">→</span>
-            </button>
-
-          </article>
-        }
+            </aside>
+          }
+        </div>
       </div>
     } @else {
-      <div class="p-10 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center flex flex-col items-center justify-center gap-3">
-        <span class="text-3xl">🔎</span>
-        <h3 class="text-base font-bold text-[var(--text)] m-0">No se encontraron partidos con los filtros seleccionados</h3>
-        <p class="text-xs text-[var(--muted)] max-w-md m-0">Prueba cambiando de deporte, desactivando los filtros de alta certeza o seleccionando otra fecha.</p>
-        <button 
-          type="button" 
-          class="action-pill-btn text-xs py-2 px-4 cursor-pointer mt-2"
-          (click)="selectedSport.set('all'); onlyHighConfidence.set(false); onlyEV.set(false); searchQuery.set('')"
+      <div class="p-10 rounded-2xl bg-[#111827] border border-[#1E293B] text-center flex flex-col items-center gap-3">
+        <span class="text-2xl">🔎</span>
+        <strong class="text-sm font-bold text-[#F8FAFC]">No hay partidos que coincidan con los filtros activos</strong>
+        <button
+          type="button"
+          class="px-4 py-2 rounded-lg bg-[#38BDF8] text-slate-950 text-xs font-bold cursor-pointer"
+          (click)="clearAllFilters()"
         >
-          Limpiar filtros
+          Restablecer filtros
         </button>
       </div>
     }
-  </section>
+  }
+
+  <!-- =========================================================================
+       TAB 2: PARLAYS IA (REDISEÑADOS SEGÚN PARTE J4 - SIN REPETIR PROBABILIDAD)
+       ========================================================================= -->
+  @if (mainTab() === 'parlays') {
+    <section class="flex flex-col gap-4 pt-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-extrabold text-[#F8FAFC] m-0">
+            Parlays IA Congelados del Día
+          </h2>
+          <p class="text-xs text-[#94A3B8] m-0">
+            La probabilidad combinada se calcula una sola vez al crearse el parlay y se audita determinísticamente cuando concluyen todas las legs.
+          </p>
+        </div>
+      </div>
+
+      @if (curatedParlays().length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          @for (parlay of curatedParlays(); track parlay.id) {
+            <article class="p-4 sm:p-5 rounded-2xl bg-[#111827] border border-[#1E293B] flex flex-col justify-between gap-4 shadow-md">
+              <div class="flex flex-col gap-3">
+                <!-- J4.1: Header (Categoría + Estado + Probabilidad combinada UNA SOLA VEZ + Cuota combinada) -->
+                <div class="flex items-center justify-between gap-2 pb-2.5 border-b border-[#1E293B]">
+                  <span class="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md border {{ parlay.badgeClass }}">
+                    {{ parlay.badge }}
+                  </span>
+
+                  @if (parlay.status === 'WON') {
+                    <span class="px-2 py-0.5 rounded bg-[#22C55E]/20 text-[#22C55E] border border-[#22C55E]/40 text-xs font-mono font-bold">
+                      ✓ GANADO ({{ parlay.legsWon }}/{{ parlay.legsTotal }})
+                    </span>
+                  } @else if (parlay.status === 'LOST') {
+                    <span class="px-2 py-0.5 rounded bg-[#EF4444]/20 text-[#EF4444] border border-[#EF4444]/40 text-xs font-mono font-bold">
+                      ✗ PERDIDO ({{ parlay.legsWon }}/{{ parlay.legsTotal }})
+                    </span>
+                  } @else if (parlay.status === 'LIVE') {
+                    <span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-mono font-bold">
+                      ⏳ EN VIVO ({{ parlay.legsWon }}/{{ parlay.legsTotal }})
+                    </span>
+                  } @else {
+                    <span class="px-2 py-0.5 rounded bg-[#1F2937] text-[#F59E0B] border border-[#1E293B] text-xs font-mono font-semibold">
+                      ⏳ PENDIENTE
+                    </span>
+                  }
+                </div>
+
+                <div>
+                  <h3 class="text-sm sm:text-base font-bold text-[#F8FAFC] m-0">{{ parlay.title }}</h3>
+                  <p class="text-xs text-[#94A3B8] mt-1 mb-0">{{ parlay.description }}</p>
+                </div>
+
+                <!-- Single Combined Probability & Combined Odds Box (No duplication in footer!) -->
+                <div class="grid grid-cols-2 gap-2 p-3 rounded-xl bg-[#0B0F17] border border-[#1E293B] text-xs font-mono tabular-nums">
+                  <div>
+                    <span class="text-[#64748B] block">PROB. COMBINADA</span>
+                    <strong class="text-base font-extrabold text-[#38BDF8]">{{ parlay.combinedProb.toFixed(1) }}%</strong>
+                  </div>
+                  <div class="text-right">
+                    <span class="text-[#64748B] block">MOMIO COMBINADO</span>
+                    <strong class="text-base font-extrabold text-emerald-400">@{{ parlay.combinedOdds }}</strong>
+                  </div>
+                </div>
+
+                <!-- Legs List -->
+                <div class="flex flex-col gap-2">
+                  @for (leg of parlay.legs; track $index; let idx = $index) {
+                    <div
+                      class="p-2.5 rounded-xl bg-[#0B0F17] border flex items-center justify-between gap-2 text-xs"
+                      [class.border-[#22C55E]/40]="leg.status === 'WON'"
+                      [class.border-[#EF4444]/40]="leg.status === 'LOST'"
+                      [class.border-[#1E293B]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                    >
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span
+                          class="w-5 h-5 rounded font-mono font-bold grid place-items-center shrink-0 text-xs"
+                          [class.bg-[#22C55E]]="leg.status === 'WON'"
+                          [class.text-slate-950]="leg.status === 'WON'"
+                          [class.bg-[#EF4444]]="leg.status === 'LOST'"
+                          [class.text-white]="leg.status === 'LOST'"
+                          [class.bg-[#1F2937]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                          [class.text-[#38BDF8]]="leg.status !== 'WON' && leg.status !== 'LOST'"
+                        >
+                          {{ leg.status === 'WON' ? '✓' : leg.status === 'LOST' ? '✗' : (idx + 1) }}
+                        </span>
+                        <div class="min-w-0">
+                          <strong class="text-[#F8FAFC] truncate block">
+                            {{ leg.game.home }} vs {{ leg.game.away }}
+                          </strong>
+                          <span class="text-[#94A3B8] truncate block">
+                            {{ leg.market }} · {{ leg.pick }}{{ leg.line != null ? ' ' + leg.line : '' }} (@{{ leg.odds }})
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="text-right shrink-0 font-mono tabular-nums">
+                        <span class="text-[#38BDF8] font-bold block">{{ leg.prob.toFixed(1) }}%</span>
+                        @if (leg.scoreText) {
+                          <span
+                            class="text-xs font-bold"
+                            [class.text-[#22C55E]]="leg.status === 'WON'"
+                            [class.text-[#EF4444]]="leg.status === 'LOST'"
+                            [class.text-amber-400]="leg.status === 'LIVE'"
+                          >
+                            {{ leg.scoreText }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- J4.2: Clean Action Button WITHOUT repeating combinedProb chip -->
+              <button
+                type="button"
+                class="w-full py-2.5 px-4 rounded-xl bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-xs font-extrabold transition-colors cursor-pointer flex items-center justify-center gap-2"
+                (click)="loadParlayIntoTicket(parlay)"
+              >
+                <span>📋 Agregar parlay al ticket</span>
+              </button>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="p-8 rounded-2xl bg-[#111827] border border-[#1E293B] text-center text-xs text-[#94A3B8]">
+          Se requieren al menos 2 partidos analizados en la jornada para construir Parlays IA.
+        </div>
+      }
+    </section>
+  }
+
+  <!-- =========================================================================
+       TAB 3: MI RENDIMIENTO VS IA (PARTE E2 - ANALÍTICA PERSONAL POR MERCADO)
+       ========================================================================= -->
+  @if (mainTab() === 'rendimiento') {
+    @let pa = personalAnalytics();
+    <section class="flex flex-col gap-4 pt-2">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 class="text-lg font-extrabold text-[#F8FAFC] m-0">
+            Mi Rendimiento por Mercado vs. Efectividad IA
+          </h2>
+          <p class="text-xs text-[#94A3B8] m-0">
+            Calculado en backend a partir de tus tickets liquidados enlazados con <code class="text-[#38BDF8]">prediction_id</code>.
+          </p>
+        </div>
+      </div>
+
+      @if (loadingAnalytics() && !pa) {
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          @for (sk of [1, 2, 3]; track sk) {
+            <div class="h-32 rounded-xl bg-[#111827] border border-[#1E293B] animate-pulse"></div>
+          }
+        </div>
+      } @else if (pa) {
+        <!-- Top Highlight Cards: Seguir IA vs Independiente + Mejor/Peor Mercado -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl bg-[#111827] border border-[#1E293B] flex flex-col gap-2">
+            <span class="text-xs font-mono uppercase text-[#38BDF8] font-bold">CUANDO SIGO A LA IA</span>
+            <div class="flex items-baseline justify-between font-mono tabular-nums">
+              <strong class="text-2xl font-black text-[#F8FAFC]">{{ pa.followed_ai_vs_independent.followed_ai.win_rate }}%</strong>
+              <span
+                class="text-xs font-bold"
+                [class.text-emerald-400]="pa.followed_ai_vs_independent.followed_ai.roi_pct >= 0"
+                [class.text-rose-400]="pa.followed_ai_vs_independent.followed_ai.roi_pct < 0"
+              >
+                ROI: {{ pa.followed_ai_vs_independent.followed_ai.roi_pct }}%
+              </span>
+            </div>
+            <span class="text-xs text-[#94A3B8]">
+              Muestra: {{ pa.followed_ai_vs_independent.followed_ai.sample_size }} picks liquidados
+              @if (pa.followed_ai_vs_independent.followed_ai.small_sample_warning) {
+                <span class="text-amber-400"> (Muestra &lt; 10)</span>
+              }
+            </span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-[#111827] border border-[#1E293B] flex flex-col gap-2">
+            <span class="text-xs font-mono uppercase text-[#A855F7] font-bold">PICKS POR MI CUENTA</span>
+            <div class="flex items-baseline justify-between font-mono tabular-nums">
+              <strong class="text-2xl font-black text-[#F8FAFC]">{{ pa.followed_ai_vs_independent.independent.win_rate }}%</strong>
+              <span
+                class="text-xs font-bold"
+                [class.text-emerald-400]="pa.followed_ai_vs_independent.independent.roi_pct >= 0"
+                [class.text-rose-400]="pa.followed_ai_vs_independent.independent.roi_pct < 0"
+              >
+                ROI: {{ pa.followed_ai_vs_independent.independent.roi_pct }}%
+              </span>
+            </div>
+            <span class="text-xs text-[#94A3B8]">
+              Muestra: {{ pa.followed_ai_vs_independent.independent.sample_size }} picks liquidados
+            </span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-[#111827] border border-[#1E293B] flex flex-col gap-2">
+            <span class="text-xs font-mono uppercase text-emerald-400 font-bold">MEJOR MERCADO PERSONAL</span>
+            @if (pa.best_markets.length > 0) {
+              @let bm = pa.best_markets[0];
+              <div class="flex items-baseline justify-between font-mono tabular-nums">
+                <strong class="text-lg font-black text-[#F8FAFC] truncate">{{ bm.key }}</strong>
+                <span class="text-xs font-bold text-emerald-400">ROI {{ bm.roi_pct }}%</span>
+              </div>
+              <span class="text-xs text-[#94A3B8]">
+                Acierto: {{ bm.win_rate }}% ({{ bm.won }}G - {{ bm.lost }}P · n={{ bm.sample_size }})
+              </span>
+            } @else {
+              <span class="text-xs text-[#64748B]">Registra y liquida apuestas desde el Centro de Partido para ver tu mejor mercado.</span>
+            }
+          </div>
+        </div>
+
+        <!-- Comparison Table: Mi Efectividad vs. Efectividad IA por Mercado -->
+        <div class="rounded-xl bg-[#111827] border border-[#1E293B] overflow-hidden">
+          <div class="p-3.5 bg-[#1F2937]/60 border-b border-[#1E293B] flex items-center justify-between">
+            <strong class="text-xs font-bold uppercase tracking-wider text-[#F8FAFC]">
+              Comparativa Directa por Mercado: Mi Efectividad vs. IA Congelada
+            </strong>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-[#0B0F17] text-[#64748B] font-mono border-b border-[#1E293B]">
+                  <th class="py-2.5 px-3.5">Mercado</th>
+                  <th class="py-2.5 px-3.5 text-right">Mi Muestra</th>
+                  <th class="py-2.5 px-3.5 text-right">Mi Acierto</th>
+                  <th class="py-2.5 px-3.5 text-right">Mi ROI</th>
+                  <th class="py-2.5 px-3.5 text-right">Muestra IA</th>
+                  <th class="py-2.5 px-3.5 text-right">Acierto IA</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#1E293B] font-mono tabular-nums">
+                @for (row of pa.comparison_by_market; track row.market) {
+                  <tr class="hover:bg-[#1F2937]/40">
+                    <td class="py-2.5 px-3.5 font-sans font-bold text-[#F8FAFC]">
+                      {{ row.market }}
+                      @if (row.user_small_sample_warning && row.user_sample_size > 0) {
+                        <span class="ml-1.5 px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 text-xs font-mono">
+                          n&lt;10
+                        </span>
+                      }
+                    </td>
+                    <td class="py-2.5 px-3.5 text-right text-[#94A3B8]">{{ row.user_sample_size }}</td>
+                    <td class="py-2.5 px-3.5 text-right font-bold text-[#38BDF8]">{{ row.user_win_rate }}%</td>
+                    <td
+                      class="py-2.5 px-3.5 text-right font-bold"
+                      [class.text-emerald-400]="row.user_roi_pct >= 0"
+                      [class.text-rose-400]="row.user_roi_pct < 0"
+                    >
+                      {{ row.user_roi_pct }}%
+                    </td>
+                    <td class="py-2.5 px-3.5 text-right text-[#94A3B8]">{{ row.ai_sample_size }}</td>
+                    <td class="py-2.5 px-3.5 text-right font-bold text-emerald-400">{{ row.ai_win_rate }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- D5: Aviso de Juego Responsable (+18) -->
+  <footer class="mt-4 pt-4 border-t border-[#1E293B] flex flex-wrap items-center justify-between gap-2 text-xs text-[#64748B]">
+    <div class="flex items-center gap-2">
+      <span class="px-1.5 py-0.5 rounded bg-[#111827] border border-[#1E293B] font-mono font-bold text-[#94A3B8]">+18</span>
+      <span>Juega con responsabilidad. Las probabilidades del modelo son estimaciones estadísticas y no garantizan resultados.</span>
+    </div>
+    <span class="font-mono">BetRegister Match Center v2.1</span>
+  </footer>
 
 </div>
