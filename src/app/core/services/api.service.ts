@@ -32,6 +32,10 @@ export class ApiService {
         msg = result.detail
           .map((e: any) => e.msg || e.message || (typeof e === 'string' ? e : JSON.stringify(e)))
           .join(' · ');
+      } else if (result.detail?.errors && Array.isArray(result.detail.errors) && result.detail.errors.length > 0) {
+        msg = result.detail.errors
+          .map((e: any) => (e.message || e.msg || (typeof e === 'string' ? e : JSON.stringify(e))))
+          .join(' · ');
       } else if (result.detail?.message) {
         msg = result.detail.message;
       } else if (typeof result.message === 'string') {

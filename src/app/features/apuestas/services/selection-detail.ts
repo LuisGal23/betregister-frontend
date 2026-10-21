@@ -267,3 +267,181 @@ export function selectionText(d: SelectionDetail): string {
     .filter(Boolean)
     .join(' · ');
 }
+
+export interface CleanSelectionDetailForApi {
+  sport: 'Fútbol' | 'Béisbol' | 'Americano' | 'Básquetbol';
+  market: 'Goles' | 'Córners' | 'Tarjetas' | 'Carreras' | 'Puntos' | 'ML' | 'Hándicap asiático' | 'Hándicap' | 'Ambos anotan' | 'Triples' | 'Rebotes' | 'Asistencias' | 'Yardas' | 'Ponches' | 'Hits' | 'Otro';
+  pick: string;
+  line: number | null;
+  description: string;
+  game_id: string;
+  event_label: string;
+}
+
+export function toDatabaseSelectionDetail(
+  d: SelectionDetail,
+  linkedGames?: { id: string; sport?: string }[]
+): CleanSelectionDetailForApi {
+  let rawSport = d.sport || 'Fútbol';
+  if (d.game_id && linkedGames && linkedGames.length > 0) {
+    const matched = linkedGames.find((g) => g.id === d.game_id);
+    if (matched?.sport) {
+      rawSport = matched.sport;
+    }
+  }
+
+  const sLower = (rawSport || '').toLowerCase().trim();
+  let sport: 'Fútbol' | 'Béisbol' | 'Americano' | 'Básquetbol' = 'Fútbol';
+  if (sLower.includes('baloncest') || sLower.includes('básquet') || sLower.includes('basquet') || sLower === 'nba') {
+    sport = 'Básquetbol';
+  } else if (sLower.includes('american') || sLower === 'nfl') {
+    sport = 'Americano';
+  } else if (sLower.includes('béisbol') || sLower.includes('beisbol') || sLower === 'mlb' || sLower === 'kbo') {
+    sport = 'Béisbol';
+  } else {
+    sport = 'Fútbol';
+  }
+
+  const mRaw = (d.market || '').toLowerCase().trim();
+  const pickRaw = (d.pick || '').toLowerCase().trim();
+  const rawLine = d.line !== undefined && d.line !== null ? Number(d.line) : null;
+
+  let market: 'Goles' | 'Córners' | 'Tarjetas' | 'Carreras' | 'Puntos' | 'ML' | 'Hándicap asiático' | 'Hándicap' | 'Ambos anotan' | 'Triples' | 'Rebotes' | 'Asistencias' | 'Yardas' | 'Ponches' | 'Hits' | 'Otro' = 'Otro';
+  let pick = d.pick || 'Local';
+  let line = rawLine;
+  let description = '';
+
+  if (sport === 'Básquetbol') {
+    if (mRaw.includes('tripl')) {
+      market = 'Triples';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 2.5;
+    } else if (mRaw.includes('rebot')) {
+      market = 'Rebotes';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 7.5;
+    } else if (mRaw.includes('asist')) {
+      market = 'Asistencias';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 6.5;
+    } else if (mRaw.includes('punt') && !mRaw.includes('hándicap') && !mRaw.includes('handicap') && !mRaw.includes('spread')) {
+      market = 'Puntos';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 24.5;
+    } else if (mRaw.includes('hándicap') || mRaw.includes('handicap') || mRaw.includes('spread')) {
+      market = 'Hándicap';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = line != null ? line : 0;
+    } else if (mRaw === 'ml' || mRaw.includes('moneyline') || mRaw.includes('ganad') || mRaw.includes('victor')) {
+      market = 'ML';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = null;
+    } else {
+      market = 'Otro';
+      description = (d.description || d.market || d.pick || 'Mercado NBA').slice(0, 200);
+      if (description.trim().length < 3) description = 'Mercado NBA';
+      pick = d.pick || 'Selección';
+    }
+  } else if (sport === 'Americano') {
+    if (mRaw.includes('yard')) {
+      market = 'Yardas';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 64.5;
+    } else if (mRaw.includes('punt') && !mRaw.includes('hándicap') && !mRaw.includes('handicap') && !mRaw.includes('spread')) {
+      market = 'Puntos';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 45.5;
+    } else if (mRaw.includes('hándicap') || mRaw.includes('handicap') || mRaw.includes('spread')) {
+      market = 'Hándicap';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = line != null ? line : 0;
+    } else if (mRaw === 'ml' || mRaw.includes('moneyline') || mRaw.includes('ganad') || mRaw.includes('victor')) {
+      market = 'ML';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = null;
+    } else {
+      market = 'Otro';
+      description = (d.description || d.market || d.pick || 'Mercado NFL').slice(0, 200);
+      if (description.trim().length < 3) description = 'Mercado NFL';
+      pick = d.pick || 'Selección';
+    }
+  } else if (sport === 'Béisbol') {
+    if (mRaw.includes('ponch') || mRaw.includes('strikeout')) {
+      market = 'Ponches';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 5.5;
+    } else if (mRaw.includes('hit')) {
+      market = 'Hits';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 1.5;
+    } else if (mRaw.includes('carrer') && !mRaw.includes('run line') && !mRaw.includes('hándicap')) {
+      market = 'Carreras';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 8.5;
+    } else if (mRaw.includes('run line') || mRaw.includes('hándicap') || mRaw.includes('handicap')) {
+      market = 'Hándicap';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = line != null ? line : 0;
+    } else if (mRaw === 'ml' || mRaw.includes('moneyline') || mRaw.includes('ganad') || mRaw.includes('victor')) {
+      market = 'ML';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = null;
+    } else {
+      market = 'Otro';
+      description = (d.description || d.market || d.pick || 'Mercado MLB').slice(0, 200);
+      if (description.trim().length < 3) description = 'Mercado MLB';
+      pick = d.pick || 'Selección';
+    }
+  } else {
+    // Fútbol
+    if (mRaw.includes('ambos') || mRaw.includes('btts')) {
+      market = 'Ambos anotan';
+      pick = pickRaw.includes('no') ? 'No' : 'Sí';
+      line = null;
+    } else if (mRaw.includes('córner') || mRaw.includes('corner')) {
+      market = 'Córners';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 9.5;
+    } else if (mRaw.includes('tarjet') || mRaw.includes('card')) {
+      market = 'Tarjetas';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 3.5;
+    } else if (mRaw.includes('gol') && !mRaw.includes('goleador')) {
+      market = 'Goles';
+      pick = pickRaw.includes('men') || pickRaw.includes('under') ? 'Menos de' : 'Más de';
+      line = line != null && line >= 0 ? line : 2.5;
+    } else if (mRaw.includes('asiátic') || mRaw.includes('asiatico')) {
+      market = 'Hándicap asiático';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = line != null ? line : 0;
+    } else if (mRaw.includes('hándicap') || mRaw.includes('handicap')) {
+      market = 'Hándicap';
+      pick = pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = line != null ? line : 0;
+    } else if (mRaw === 'ml' || mRaw.includes('moneyline') || mRaw.includes('ganad') || mRaw.includes('victor') || mRaw.includes('1x2')) {
+      market = 'ML';
+      pick = pickRaw.includes('emp') || pickRaw.includes('draw') ? 'Empate' : pickRaw.includes('vis') ? 'Visitante' : 'Local';
+      line = null;
+    } else {
+      market = 'Otro';
+      description = (d.description || d.market || d.pick || 'Mercado fútbol').slice(0, 200);
+      if (description.trim().length < 3) description = 'Mercado fútbol';
+      pick = d.pick || 'Selección';
+    }
+  }
+
+  // Backend strict rule: description MUST be empty if market != 'Otro'
+  if (market !== 'Otro') {
+    description = '';
+  }
+
+  return {
+    sport,
+    market,
+    pick,
+    line,
+    description,
+    game_id: d.game_id || '',
+    event_label: (d.event_label || '').slice(0, 120),
+  };
+}
