@@ -325,7 +325,7 @@ export function toDatabaseLeagueTag(league: string): string {
   if (lLower === 'mls') return 'MLS';
   if (lLower.includes('mx') || lLower.includes('liga mx')) return 'Liga MX';
   if (lLower.includes('selecci') || lLower.includes('nation') || lLower.includes('friendl') || lLower.includes('world') || lLower.includes('euro') || lLower.includes('copa')) return 'Selecciones';
-  if (lLower.includes('premier') || lLower.includes('laliga') || lLower.includes('seriea') || lLower.includes('bundes') || lLower.includes('ligue') || lLower.includes('champ') || lLower.includes('europ')) return 'Fútbol Europeo';
+  if (lLower.includes('premier') || lLower.includes('laliga') || lLower.includes('la liga') || lLower.includes('la-liga') || lLower.includes('seriea') || lLower.includes('serie a') || lLower.includes('bundes') || lLower.includes('ligue') || lLower.includes('champ') || lLower.includes('europ')) return 'Fútbol Europeo';
   if (lLower === 'mixto') return 'Mixto';
   return 'Otro';
 }

@@ -54,12 +54,12 @@ export class TutorialComponent implements AfterViewInit {
       text: 'En «Mis tickets», abre «Resolver apuesta» para registrar ganada, perdida, anulada o cashout. Los marcadores en vivo son informativos: los resultados del ticket se confirman manualmente.',
     },
     {
-      route: '/insights',
+      route: '/pronosticos',
       title: 'Entiende tu historial',
       text: 'Pulsa un deporte y después un mercado. Alterna con «Por tipo de apuesta». Abre una fila para ver los tickets que explican el resultado; los pendientes todavía no aportan ganancias.',
     },
     {
-      route: '/challenges',
+      route: '/bank',
       title: 'Lleva tus retos por separado',
       text: 'Crea un reto y vincula tickets ya registrados para seguir su progreso. No duplica tus movimientos ni cambia el bank. Puedes repetir este recorrido desde el menú «Más» en móvil o el menú lateral en escritorio.',
     },

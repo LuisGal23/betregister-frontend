@@ -107,6 +107,53 @@ export class EspnLiveService {
             ? 'Béisbol'
             : 'Fútbol';
 
+        const rawOdds = comp.odds?.[0];
+        let parsedOdds: any = undefined;
+        let homeOddDec: number | undefined = undefined;
+        let awayOddDec: number | undefined = undefined;
+        let drawOddDec: number | undefined = undefined;
+
+        if (rawOdds && typeof rawOdds === 'object') {
+          const ml = rawOdds.moneyline || {};
+          const hAm = ml.home?.close?.odds ?? rawOdds.homeTeamOdds?.moneyLine;
+          const aAm = ml.away?.close?.odds ?? rawOdds.awayTeamOdds?.moneyLine;
+          const dAm = ml.draw?.close?.odds ?? rawOdds.drawOdds?.moneyLine;
+          if (hAm != null) homeOddDec = americanToDecimal(hAm);
+          if (aAm != null) awayOddDec = americanToDecimal(aAm);
+          if (dAm != null) drawOddDec = americanToDecimal(dAm);
+
+          const spObj = rawOdds.pointSpread || {};
+          const rawHomeSpread = spObj.home?.close?.line ?? rawOdds.spread;
+          const rawAwaySpread = spObj.away?.close?.line;
+          const homeSpreadLine = rawHomeSpread != null ? parseFloat(String(rawHomeSpread)) : undefined;
+          const awaySpreadLine = rawAwaySpread != null ? parseFloat(String(rawAwaySpread)) : (homeSpreadLine != null ? -homeSpreadLine : undefined);
+
+          const totObj = rawOdds.total || {};
+          const rawTotLine = rawOdds.overUnder ?? totObj.over?.close?.line;
+          const totLineNum = rawTotLine != null ? parseFloat(String(rawTotLine).replace(/^[ou]/i, '')) : undefined;
+
+          parsedOdds = {
+            provider: rawOdds.provider?.name || 'DraftKings',
+            details: rawOdds.details,
+            moneyline: {
+              home_decimal: homeOddDec ?? null,
+              away_decimal: awayOddDec ?? null,
+              draw_decimal: drawOddDec ?? null,
+            },
+            spread: {
+              home_line: !isNaN(Number(homeSpreadLine)) ? Number(homeSpreadLine) : null,
+              home_decimal: americanToDecimal(spObj.home?.close?.odds ?? rawOdds.homeTeamOdds?.spreadOdds),
+              away_line: !isNaN(Number(awaySpreadLine)) ? Number(awaySpreadLine) : null,
+              away_decimal: americanToDecimal(spObj.away?.close?.odds ?? rawOdds.awayTeamOdds?.spreadOdds),
+            },
+            total: {
+              line: !isNaN(Number(totLineNum)) ? Number(totLineNum) : null,
+              over_decimal: americanToDecimal(totObj.over?.close?.odds ?? rawOdds.overOdds),
+              under_decimal: americanToDecimal(totObj.under?.close?.odds ?? rawOdds.underOdds),
+            },
+          };
+        }
+
         return {
           id: String(ev.id),
           league: leagueKey,
@@ -127,6 +174,10 @@ export class EspnLiveService {
           state,
           detail: ev.status?.type?.detail || '',
           provider: 'espn-live',
+          home_odds: homeOddDec,
+          away_odds: awayOddDec,
+          draw_odds: drawOddDec,
+          odds: parsedOdds,
         } as SportsGame;
       });
     } catch (err) {
@@ -771,12 +822,14 @@ export class EspnLiveService {
       const homeNorm = game.home.toLowerCase();
 
       const awayEntry = entries.find((e: any) => {
-        const t = (e.team || '').toLowerCase();
-        return t.includes(awayNorm) || awayNorm.includes(t);
+        const rawTeam = typeof e.team === 'string' ? e.team : (e.team?.displayName || e.team?.name || '');
+        const t = String(rawTeam).toLowerCase();
+        return t && (t.includes(awayNorm) || awayNorm.includes(t));
       });
       const homeEntry = entries.find((e: any) => {
-        const t = (e.team || '').toLowerCase();
-        return t.includes(homeNorm) || homeNorm.includes(t);
+        const rawTeam = typeof e.team === 'string' ? e.team : (e.team?.displayName || e.team?.name || '');
+        const t = String(rawTeam).toLowerCase();
+        return t && (t.includes(homeNorm) || homeNorm.includes(t));
       });
 
       if (awayEntry && homeEntry) {

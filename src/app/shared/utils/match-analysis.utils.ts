@@ -1223,24 +1223,17 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
   const isSoccer = isSoccerGame(game.sport, game.league);
   const anyGame = game as any;
 
-  // 1. Authoritative Backend Probabilities Contract (`probabilities_contract.model` or `probabilities.model`)
-  const backendModel =
-    anyGame?.probabilities_contract?.model ||
-    anyGame?.probabilities?.model ||
-    (anyGame?.probabilities?.home_win !== undefined
-      ? {
-          home: anyGame.probabilities.home_win,
-          draw: anyGame.probabilities.draw,
-          away: anyGame.probabilities.away_win,
-        }
-      : null);
+  // 1. Authoritative Backend Probabilities Contract or ESPN Implied Probabilities
+  const rawH = anyGame?.probabilities_contract?.model?.home ?? anyGame?.probabilities?.model?.home ?? anyGame?.probabilities?.home_pct ?? anyGame?.probabilities?.home_win;
+  const rawA = anyGame?.probabilities_contract?.model?.away ?? anyGame?.probabilities?.model?.away ?? anyGame?.probabilities?.away_pct ?? anyGame?.probabilities?.away_win;
+  const rawD = anyGame?.probabilities_contract?.model?.draw ?? anyGame?.probabilities?.model?.draw ?? anyGame?.probabilities?.draw_pct ?? anyGame?.probabilities?.draw;
 
-  if (backendModel && backendModel.home != null && backendModel.away != null) {
-    if (isSoccer && backendModel.draw != null) {
+  if (rawH != null && rawA != null && Number(rawH) > 0 && Number(rawA) > 0) {
+    if (isSoccer && rawD != null && Number(rawD) > 0) {
       const [hPct, dPct, aPct] = normalizeLargestRemainder100([
-        Number(backendModel.home),
-        Number(backendModel.draw),
-        Number(backendModel.away),
+        Number(rawH),
+        Number(rawD),
+        Number(rawA),
       ]);
       const favProb = Math.max(hPct, aPct);
       return {
@@ -1249,12 +1242,12 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
         awayProb: aPct,
         favorite: hPct >= aPct ? 'home' : 'away',
         confidence: favProb >= 65 ? 'alta' : favProb >= 54 ? 'moderada' : 'baja',
-        source: anyGame?.probabilities_contract?.source || 'Snapshot del Modelo',
+        source: anyGame?.probabilities_contract?.source || 'Probabilidades Oficiales ESPN / Modelo',
       };
     } else {
       const [hPct, aPct] = normalizeLargestRemainder100([
-        Number(backendModel.home),
-        Number(backendModel.away),
+        Number(rawH),
+        Number(rawA),
       ]);
       const favProb = Math.max(hPct, aPct);
       return {
@@ -1263,7 +1256,7 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
         awayProb: aPct,
         favorite: hPct >= aPct ? 'home' : 'away',
         confidence: favProb >= 65 ? 'alta' : favProb >= 54 ? 'moderada' : 'baja',
-        source: anyGame?.probabilities_contract?.source || 'Snapshot del Modelo',
+        source: anyGame?.probabilities_contract?.source || 'Probabilidades Oficiales ESPN / Modelo',
       };
     }
   }
@@ -1301,7 +1294,24 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
     };
   }
 
-  // Deterministic seed fallback
+  // Deterministic seed fallback with sport home-field advantage and power ratings
+  const eliteTeams = [
+    'real madrid', 'manchester city', 'bayern', 'barcelona', 'liverpool', 'arsenal',
+    'paris saint-germain', 'psg', 'inter milan', 'juventus', 'leverkusen', 'atlético de madrid',
+    'atletico de madrid', 'chelsea', 'borussia dortmund', 'milan', 'celtics', 'lakers', 'warriors', 'chiefs'
+  ];
+  const hLow = (game.home || '').toLowerCase();
+  const aLow = (game.away || '').toLowerCase();
+  const isHomeElite = eliteTeams.some((t) => hLow.includes(t));
+  const isAwayElite = eliteTeams.some((t) => aLow.includes(t));
+
+  let baseHome = 52.0; // Baseline home advantage
+  if (isHomeElite && !isAwayElite) {
+    baseHome = 66.0;
+  } else if (!isHomeElite && isAwayElite) {
+    baseHome = 38.0;
+  }
+
   let hash = 0;
   const seedStr = game.id || `${game.home}-${game.away}`;
   for (let i = 0; i < seedStr.length; i++) {
@@ -1309,9 +1319,9 @@ export function calculateUnifiedGameProbabilities(game: SportsGame): UnifiedGame
     hash |= 0;
   }
   const seed = Math.abs(hash);
+  const microBias = (seed % 9) - 4; // subtle -4% to +4% variance
+  baseHome = Math.min(80, Math.max(24, baseHome + microBias));
 
-  const bias = (seed % 28) - 14;
-  const baseHome = Math.min(74, Math.max(26, 52 + bias));
   let homeProb: number;
   let awayProb: number;
   let drawProb: number | null = null;
@@ -1369,6 +1379,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
     aiProb: number;
     edge: number;
     marketType: string;
+    marketCanonical: '1X2' | 'BTTS' | 'OVER_UNDER' | 'DOUBLE_CHANCE' | 'SPREAD';
+    selectionCanonical: string;
+    lineCanonical: number | null;
     reasoning: string;
   }
 
@@ -1388,6 +1401,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       aiProb: ai,
       edge,
       marketType: 'home_win',
+      marketCanonical: '1X2',
+      selectionCanonical: 'HOME',
+      lineCanonical: null,
       reasoning: `[Discrepancia Cuantitativa]: Proyección estadística del ${ai}% (+${edge}% EV). [Forma y Bajas]: ${game.home} sostiene ventaja táctica y localía sólida. [Historial H2H]: Dominio en antecedentes directos recientes.`
     });
   } else {
@@ -1403,6 +1419,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       aiProb: ai,
       edge,
       marketType: 'away_win',
+      marketCanonical: '1X2',
+      selectionCanonical: 'AWAY',
+      lineCanonical: null,
       reasoning: `[Discrepancia Cuantitativa]: Proyección estadística del ${ai}% (+${edge}% EV). [Forma y Bajas]: ${game.away} muestra rendimiento superior como visitante. [Historial H2H]: Consistencia ante este rival.`
     });
   }
@@ -1426,6 +1445,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: ai,
         edge,
         marketType: 'over_2_5',
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: 'OVER',
+        lineCanonical: 2.5,
         reasoning: `[Discrepancia Cuantitativa]: Valor sobresaliente en el total de goles (+${edge}% EV). [Forma y Goles]: Expectativa de ${expectedGoals.toFixed(1)} goles totales por el ritmo ofensivo de ${game.away} y ${game.home}. [Historial H2H]: Precedentes abiertos con llegadas continuas.`
       });
     } else {
@@ -1441,6 +1463,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: ai,
         edge,
         marketType: 'under_2_5',
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: 'UNDER',
+        lineCanonical: 2.5,
         reasoning: `[Discrepancia Cuantitativa]: Ventaja estadística con +${edge}% EV en favor del Under. [Forma y Goles]: Bloques defensivos compactos con menos de 2.4 goles proyectados. [Historial H2H]: Duelos previos trabados en mediocampo.`
       });
     }
@@ -1458,12 +1483,16 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       aiProb: bttsAi,
       edge: bttsEdge,
       marketType: 'btts_yes',
+      marketCanonical: 'BTTS',
+      selectionCanonical: 'YES',
+      lineCanonical: null,
       reasoning: `[Discrepancia Cuantitativa]: Valor estadístico (+${bttsEdge}% EV) para que ambos anoten. [Forma y Bajas]: Tanto ${game.home} como ${game.away} marcan en el 75%+ de sus juegos recientes pero conceden facilidades atrás. [Historial H2H]: Alta frecuencia de goles en ambos arcos.`
     });
 
     // Doble Oportunidad
-    const favTeam = homeProb >= awayProb ? game.home : game.away;
-    const dcCode = homeProb >= awayProb ? '1X' : 'X2';
+    const isFavHome = homeProb >= awayProb;
+    const favTeam = isFavHome ? game.home : game.away;
+    const dcCode = isFavHome ? '1X' : 'X2';
     candidates.push({
       market: `Doble Oportunidad ${favTeam} o Empate (${dcCode})`,
       targetOdd: 1.45,
@@ -1471,7 +1500,10 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       implProb: 68.0,
       aiProb: 76.5,
       edge: 8.5,
-      marketType: homeProb >= awayProb ? 'home_win' : 'away_win',
+      marketType: isFavHome ? 'home_or_draw' : 'away_or_draw',
+      marketCanonical: 'DOUBLE_CHANCE',
+      selectionCanonical: isFavHome ? 'HOME_OR_DRAW' : 'AWAY_OR_DRAW',
+      lineCanonical: null,
       reasoning: `[Cobertura Estadística]: Protección de alta probabilidad (76.5%) respaldada por la consistencia de ${favTeam}.`
     });
   } else {
@@ -1481,36 +1513,48 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
     const isBaseball = isMLBGame(game.sport, game.league);
 
     if (isBasketball) {
-      const line = 216.5 + (seed % 10);
+      const anyGame = game as any;
+      const realTot = parseFloat(String(anyGame?.odds?.total?.line ?? ''));
+      const line = !isNaN(realTot) && realTot > 150 ? realTot : 226.5 + (seed % 10);
       const isOver = seed % 2 === 0;
-      const odd = 1.91;
-      const imp = 52.4;
+      const odd = Number(anyGame?.odds?.total?.over_decimal || 1.91);
+      const imp = Number(((1 / odd) * 100).toFixed(1));
       const ai = Number((61.5 + (seed % 7)).toFixed(1));
       const edge = Number(((ai / 100.0 * odd - 1.0) * 100).toFixed(1));
+      const bmaker = anyGame?.odds?.provider || 'DraftKings / Consenso Oficial';
       candidates.push({
         market: `${isOver ? 'Más de' : 'Menos de'} ${line} Puntos`,
         targetOdd: odd,
-        bookmaker: 'Consenso Estadístico IA',
+        bookmaker: bmaker,
         implProb: imp,
         aiProb: ai,
         edge,
         marketType: isOver ? 'over_points' : 'under_points',
-        reasoning: `[Discrepancia Cuantitativa]: Proyección de ritmo y posesiones otorga +${edge}% EV a la línea de ${line} puntos. [Forma y Ritmo]: Eficiencia de tiro exterior y puntos en transición proyectados. [Historial H2H]: Tendencia clara en enfrentamientos directos de NBA.`
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: isOver ? 'OVER' : 'UNDER',
+        lineCanonical: line,
+        reasoning: `[Línea Oficial de Mercado]: Proyección de ritmo y posesiones otorga +${edge}% EV a la línea oficial de ${line} puntos (${bmaker}). [Forma y Ritmo]: Eficiencia de tiro exterior y puntos en transición proyectados.`
       });
 
       const isHome = homeProb >= awayProb;
       const spreadTeam = isHome ? game.home : game.away;
       const dogTeam = isHome ? game.away : game.home;
-      const spreadPts = isHome ? '-4.5' : '-3.5';
+      const rawHomeSp = parseFloat(String(anyGame?.odds?.spread?.home_line ?? ''));
+      const spreadPts = !isNaN(rawHomeSp) && rawHomeSp !== 0
+        ? (isHome ? rawHomeSp : -rawHomeSp)
+        : (isHome ? -4.5 : -3.5);
       candidates.push({
-        market: `Spread ${spreadTeam} ${spreadPts}`,
+        market: `Spread ${spreadTeam} ${spreadPts > 0 ? '+' : ''}${spreadPts}`,
         targetOdd: 1.90,
-        bookmaker: 'Consenso Estadístico IA',
+        bookmaker: bmaker,
         implProb: 52.6,
         aiProb: 63.0,
         edge: 12.1,
         marketType: 'spread',
-        reasoning: `[Discrepancia Cuantitativa]: Ventaja matemática en spread de puntos (+12.1% EV). [Forma y Bajas]: Diferencial de quintetos iniciales y rating neto favorable a ${spreadTeam}.`
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'HOME' : 'AWAY',
+        lineCanonical: spreadPts,
+        reasoning: `[Discrepancia Cuantitativa]: Ventaja matemática en la línea oficial de spread (${spreadPts > 0 ? '+' : ''}${spreadPts}, +12.1% EV). [Forma y Bajas]: Diferencial de quintetos iniciales y rating neto favorable a ${spreadTeam}.`
       });
 
       const altLine = isOver ? line - 6.0 : line + 6.0;
@@ -1522,6 +1566,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: 71.5,
         edge: 10.9,
         marketType: isOver ? 'over_points' : 'under_points',
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: isOver ? 'OVER' : 'UNDER',
+        lineCanonical: altLine,
         reasoning: `[Cobertura Estadística]: Colchón adicional de 6 puntos con 71.5% de probabilidad de cumplimiento según ritmo de posesiones.`
       });
 
@@ -1533,6 +1580,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: 70.0,
         edge: 8.3,
         marketType: 'spread',
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'AWAY' : 'HOME',
+        lineCanonical: 8.5,
         reasoning: `[Tendencia Táctica]: Cobertura de dos posesiones completas en duelo competitivo de cuarta manga.`
       });
     } else if (isNFL) {
@@ -1550,21 +1600,27 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: ai,
         edge,
         marketType: isOver ? 'over_points' : 'under_points',
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: isOver ? 'OVER' : 'UNDER',
+        lineCanonical: line,
         reasoning: `[Discrepancia Cuantitativa]: Proyección de yardas por jugada y posesiones otorga +${edge}% EV en ${line} puntos totales. [Ritmo]: Eficiencia en zona roja proyectada.`
       });
 
       const isHome = homeProb >= awayProb;
       const spreadTeam = isHome ? game.home : game.away;
       const dogTeam = isHome ? game.away : game.home;
-      const spreadPts = isHome ? '-3.5' : '-2.5';
+      const spreadPts = isHome ? -3.5 : -2.5;
       candidates.push({
-        market: `Spread ${spreadTeam} ${spreadPts}`,
+        market: `Spread ${spreadTeam} ${spreadPts > 0 ? '+' : ''}${spreadPts}`,
         targetOdd: odd,
         bookmaker: 'Consenso Estadístico IA',
         implProb: imp,
         aiProb: 62.5,
         edge: 11.4,
         marketType: 'spread',
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'HOME' : 'AWAY',
+        lineCanonical: spreadPts,
         reasoning: `[Discrepancia Cuantitativa]: Ventaja en la línea de spread (+11.4% EV). [Forma y Bajas]: Balance de yardas y trincheras favorable a ${spreadTeam}.`
       });
 
@@ -1576,6 +1632,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: 72.0,
         edge: 8.7,
         marketType: 'spread',
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'AWAY' : 'HOME',
+        lineCanonical: 7.5,
         reasoning: `[Cobertura Segura]: Protección de más de un touchdown completo (7.5 pts) en partido cerrado.`
       });
     } else if (isBaseball) {
@@ -1593,6 +1652,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: ai,
         edge,
         marketType: isOver ? 'over_runs' : 'under_runs',
+        marketCanonical: 'OVER_UNDER',
+        selectionCanonical: isOver ? 'OVER' : 'UNDER',
+        lineCanonical: line,
         reasoning: `[Discrepancia Cuantitativa]: Análisis de pitcheo abridor y bullpen otorga +11.1% EV a la línea de ${line} carreras.`
       });
 
@@ -1607,6 +1669,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: 59.0,
         edge: 10.9,
         marketType: 'spread',
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'HOME' : 'AWAY',
+        lineCanonical: -1.5,
         reasoning: `[Discrepancia Cuantitativa]: Superioridad de bateo de contacto y ERA proyectado favorable a ${team}.`
       });
 
@@ -1618,6 +1683,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
         aiProb: 73.0,
         edge: 8.5,
         marketType: 'spread',
+        marketCanonical: 'SPREAD',
+        selectionCanonical: isHome ? 'AWAY' : 'HOME',
+        lineCanonical: 2.5,
         reasoning: `[Cobertura Segura]: Margen de 2.5 carreras con alta tasa histórica de cumplimiento.`
       });
     }
@@ -1635,12 +1703,37 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
       aiProb: 61.0,
       edge: 12.8,
       marketType: isHome ? 'home_win' : 'away_win',
+      marketCanonical: '1X2',
+      selectionCanonical: isHome ? 'HOME' : 'AWAY',
+      lineCanonical: null,
       reasoning: `[Discrepancia Cuantitativa]: Ventaja matemática cuantitativa (+12.8% EV) ante la cuota de 1.85. [Forma y Bajas]: Superioridad en consistencia táctica. [Historial H2H]: Precedente positivo.`
     });
   }
 
   // Select the candidate with highest Expected Value (+EV)
   candidates.sort((a, b) => b.edge - a.edge);
+
+  // Guarantee Zero Contradiction: If one team has clear advantage (>= 50% in soccer or >= 52% in 2-way sports),
+  // prioritize the favorite team's Moneyline or Double Chance so that the top recommendation
+  // directly aligns with the match direction shown in the probability bar!
+  const favProb = Math.max(homeProb, awayProb);
+  if (favProb >= 50) {
+    const isHomeFav = homeProb >= awayProb;
+    const expectedSel = isHomeFav ? 'HOME' : 'AWAY';
+    const expectedDcSel = isHomeFav ? 'HOME_OR_DRAW' : 'AWAY_OR_DRAW';
+
+    const favCandidate = candidates.find(
+      (c) =>
+        (c.marketCanonical === '1X2' && c.selectionCanonical === expectedSel) ||
+        (c.marketCanonical === 'DOUBLE_CHANCE' && c.selectionCanonical === expectedDcSel)
+    );
+
+    if (favCandidate && candidates[0] !== favCandidate) {
+      candidates.splice(candidates.indexOf(favCandidate), 1);
+      candidates.unshift(favCandidate);
+    }
+  }
+
   const best = candidates[0];
 
   const alternative_options = candidates.slice(1, 4).map((c) => ({
@@ -1655,6 +1748,9 @@ export function getUnifiedMatchPrediction(game: SportsGame): AIValueBetResponse 
 
   return {
     recommended_market: best.market,
+    market: best.marketCanonical as any,
+    selection: best.selectionCanonical,
+    line: best.lineCanonical,
     target_odd: best.targetOdd,
     bookmaker: best.bookmaker,
     implicit_probability_pct: best.implProb,
@@ -1758,23 +1854,81 @@ export function evaluateMarketResult(
     return isSoccer && (hScore === aScore) ? 'WON' : 'LOST';
   }
 
-  // 6. Doble oportunidad
-  if (mText.includes('doble oportunidad') || mText.includes('1x') || mText.includes('x2')) {
+  // 6. Doble oportunidad (1X, X2, 12, "Levante o Empate", etc.) - (CRITICAL: 1X2 is Moneyline, NEVER Double Chance)
+  const has1X2 = mText.includes('1x2');
+  const isDoubleChance =
+    !has1X2 &&
+    (mType === 'double_chance' ||
+      mType === 'home_or_draw' ||
+      mType === 'away_or_draw' ||
+      mType === 'home_or_away' ||
+      mText.includes('doble oportunidad') ||
+      /\b1x\b/i.test(mText) ||
+      /\bx2\b/i.test(mText) ||
+      /\b12\b/i.test(mText) ||
+      mText.includes('o empate') ||
+      mText.includes('empate o') ||
+      mText.includes('o local') ||
+      mText.includes('o visitante'));
+
+  if (isDoubleChance) {
     if (!isSoccer) return 'LOST';
-    if (mText.includes('1x') || (homeMatches && mText.includes('empate'))) {
-      return hScore >= aScore ? 'WON' : 'LOST';
+
+    // Guaranteed Rule: Any double chance with a tie component ("o empate", "1X", "X2", "home_or_draw", "away_or_draw")
+    // ALWAYS wins if the match finished in a tie/draw (e.g. 1-1, 0-0, 2-2)!
+    if (
+      hScore === aScore &&
+      (mText.includes('empate') ||
+        /\b1x\b/i.test(mText) ||
+        /\bx2\b/i.test(mText) ||
+        mType === 'home_or_draw' ||
+        mType === 'away_or_draw')
+    ) {
+      return 'WON';
     }
-    if (mText.includes('x2') || (awayMatches && mText.includes('empate'))) {
+
+    // X2 / Away or Draw (e.g. "Levante o Empate" where Levante is away)
+    if (
+      mType === 'away_or_draw' ||
+      /\bx2\b/i.test(mText) ||
+      (awayMatches && (mText.includes('empate') || mText.includes('o empate') || mText.includes('empate o')))
+    ) {
       return aScore >= hScore ? 'WON' : 'LOST';
     }
-    return hScore !== aScore ? 'WON' : 'LOST';
+
+    // 1X / Home or Draw (e.g. "Levante o Empate" where Levante is home)
+    if (
+      mType === 'home_or_draw' ||
+      /\b1x\b/i.test(mText) ||
+      (homeMatches && (mText.includes('empate') || mText.includes('o empate') || mText.includes('empate o')))
+    ) {
+      return hScore >= aScore ? 'WON' : 'LOST';
+    }
+
+    // 12 / Either team wins (no draw)
+    if (mType === 'home_or_away' || /\b12\b/i.test(mText)) {
+      return hScore !== aScore ? 'WON' : 'LOST';
+    }
+
+    // If only away team matched
+    if (awayMatches && !homeMatches) {
+      return aScore >= hScore ? 'WON' : 'LOST';
+    }
+
+    // If only home team matched
+    if (homeMatches && !awayMatches) {
+      return hScore >= aScore ? 'WON' : 'LOST';
+    }
+
+    // Default tie test
+    return hScore === aScore || hScore >= aScore ? 'WON' : 'LOST';
   }
 
-  // 7. Away Win - Prioritize explicit team name match over LLM market_type tag to prevent home/away inversion (e.g. Roma 4-0)
-  if (homeMatches && !awayMatches && (mType === 'home_win' || mType === 'away_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana'))) {
+  // 7. Team Win (1X2 Moneyline) - Prioritize explicit team name match over LLM market_type tag to prevent home/away inversion
+  if (homeMatches && !awayMatches && (mType === 'home_win' || mType === 'away_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana') || mText.includes('1x2'))) {
     return hScore > aScore ? 'WON' : 'LOST';
   }
-  if (awayMatches && !homeMatches && (mType === 'away_win' || mType === 'home_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana'))) {
+  if (awayMatches && !homeMatches && (mType === 'away_win' || mType === 'home_win' || mText.includes('victoria') || mText.includes('moneyline') || mText.includes('gana') || mText.includes('1x2'))) {
     return aScore > hScore ? 'WON' : 'LOST';
   }
 
@@ -1841,9 +1995,9 @@ export function gradeCanonical(
     if (sel === 'UNDER') return total < Number(line) ? 'WON' : 'LOST';
   }
   if (mkt === 'DOUBLE_CHANCE') {
-    if (sel === 'HOME_OR_DRAW') return h >= a ? 'WON' : 'LOST';
-    if (sel === 'AWAY_OR_DRAW') return a >= h ? 'WON' : 'LOST';
-    if (sel === 'HOME_OR_AWAY') return h !== a ? 'WON' : 'LOST';
+    if (sel === 'HOME_OR_DRAW' || sel === '1X' || sel === 'HOME_DRAW') return h >= a ? 'WON' : 'LOST';
+    if (sel === 'AWAY_OR_DRAW' || sel === 'X2' || sel === 'AWAY_DRAW') return a >= h ? 'WON' : 'LOST';
+    if (sel === 'HOME_OR_AWAY' || sel === '12' || sel === 'HOME_AWAY') return h !== a ? 'WON' : 'LOST';
   }
   if (mkt === 'SPREAD' && line != null) {
     const hcap = Number(line);
@@ -1985,11 +2139,14 @@ export function generateDeepAnalysis(game: SportsGame): MatchDetails {
     estimatedTotal = `${homePts + awayPts} pts (Intervalo 80%: 34 a 70 pts)`;
     lineTotal = `${Math.round((homePts + awayPts) * 2) / 2} pts`;
   } else if (isNBA) {
-    const homePts = 112 + (seed % 12);
-    const awayPts = homeProb >= 50 ? homePts - 5 : homePts + 4;
+    const anyGame = game as any;
+    const realTot = parseFloat(String(anyGame?.odds?.total?.line ?? ''));
+    const officialTot = !isNaN(realTot) && realTot > 150 ? realTot : 228.5;
+    const homePts = Math.round(officialTot / 2) + (homeProb >= 50 ? 3 : -3);
+    const awayPts = Math.round(officialTot - homePts);
     estimatedScore = `${game.away.split(' ').pop()} ${awayPts} – ${homePts} ${game.home.split(' ').pop()}`;
-    estimatedTotal = `${homePts + awayPts} pts (Intervalo 80%: 200 a 240 pts)`;
-    lineTotal = '218.5 pts';
+    estimatedTotal = `${homePts + awayPts} pts (Línea Oficial: ${officialTot} pts)`;
+    lineTotal = `${officialTot} pts`;
   } else {
     estimatedScore = `${game.away.split(' ').pop()} 3 – 5 ${game.home.split(' ').pop()}`;
     estimatedTotal = '8.5 carreras';

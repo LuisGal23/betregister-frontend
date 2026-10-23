@@ -345,10 +345,10 @@
         aria-controls="workspace-menu"
         [attr.aria-expanded]="sidebarOpen()"
         [class.!text-[var(--accent)]]="
-          path() === '/insights' || path() === '/settings' || path() === '/community' || path() === '/bank'
+          path() === '/settings' || path() === '/profile'
         "
         [class.!bg-[var(--surface-high)]]="
-          path() === '/insights' || path() === '/settings' || path() === '/community' || path() === '/bank'
+          path() === '/settings' || path() === '/profile'
         "
       >
         <app-icon name="menu" class="w-4 h-4 shrink-0" />

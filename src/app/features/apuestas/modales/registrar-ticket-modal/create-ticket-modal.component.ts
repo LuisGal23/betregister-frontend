@@ -7,21 +7,23 @@ import { BetsService } from '../../services/bets.service';
 import { UnitsService } from '../../../../core/services/units.service';
 import { ChallengesService } from '../../../desafios/services/challenges.service';
 import { IconComponent } from '../../../../shared/components/icon/icon.component';
-import { SelectionEditorComponent } from '../../components/selection-editor/selection-editor.component';
-import { TicketProtectionComponent } from '../../components/ticket-protection/ticket-protection.component';
-import { BankAssistantComponent } from '../../components/bank-assistant/bank-assistant.component';
 import { ScreenshotImportComponent, type ScreenshotDraft } from '../../components/screenshot-import/screenshot-import.component';
 import { MatchPickerComponent } from '../../../partidos/components/match-picker/match-picker.component';
 import {
   newSelection,
   selectionText,
-  SELECTION_MARKETS,
   type SelectionDetail,
 } from '../../services/selection-detail';
 import type { GameReference } from '../../../partidos/services/sports.model';
 import type { BetLeg } from '../../services/bet.model';
-import { LEAGUE_TAGS, marketsForLeague, marketLabel, sportForLeague } from '../../services/bet-tags';
+import { LEAGUE_TAGS, sportForLeague } from '../../services/bet-tags';
 import { americanPayout, decimalOdds, type OddsFormat } from '../../../../shared/utils/odds.utils';
+
+export interface ManualLegDraft {
+  event: string;
+  selection: string;
+  odds: number | null;
+}
 
 @Component({
   selector: 'app-create-ticket-modal',
@@ -30,9 +32,6 @@ import { americanPayout, decimalOdds, type OddsFormat } from '../../../../shared
     CommonModule,
     FormsModule,
     IconComponent,
-    SelectionEditorComponent,
-    TicketProtectionComponent,
-    BankAssistantComponent,
     ScreenshotImportComponent,
     MatchPickerComponent,
   ],
@@ -46,32 +45,33 @@ export class CreateTicketModalComponent {
   challengeService = inject(ChallengesService);
 
   readonly Math = Math;
-  betType: 'simple' | 'parlay' | 'same_game' = 'simple';
+  betType: 'simple' | 'parlay' = 'simple';
   selectedHouse = '';
   selectedGames: GameReference[] = [];
-  leagueTag = 'MLS';
+  leagueTag = 'Sin clasificar';
   marketTag = 'Sin clasificar';
   oddsFormat: OddsFormat = 'decimal';
   odds: number | null = null;
   stake: number | null = null;
   bonus: number | null = 0;
   totalOddsMode = false;
-  quickMode = signal(false);
   showPicker = signal(false);
   importWarnings = '';
-  event = '';
-  sameGameSelections = ['', ''];
-  legs: BetLeg[] = [
-    { selection: '', odds: 2, status: 'pending' },
-    { selection: '', odds: 2, status: 'pending' },
+
+  // Manual-First fields
+  manualEvent = '';
+  manualSelection = '';
+  linkedPredictionId: number | null = null;
+
+  manualLegs: ManualLegDraft[] = [
+    { event: '', selection: '', odds: null },
+    { event: '', selection: '', odds: null },
   ];
-  selections: SelectionDetail[] = [newSelection()];
 
   types = [
-    { id: 'simple', label: 'Simple', detail: '1 partido' },
-    { id: 'parlay', label: 'Parlay', detail: 'Varios partidos' },
-    { id: 'same_game', label: 'Mismo partido', detail: '2+ selecciones' },
-  ] as const;
+    { id: 'simple' as const, label: 'Simple', detail: '1 selección' },
+    { id: 'parlay' as const, label: 'Parlay', detail: '2+ selecciones combinadas' },
+  ];
 
   constructor() {
     effect(() => {
@@ -79,44 +79,49 @@ export class CreateTicketModalComponent {
         const initial = this.modal.initialGame();
         const option = this.modal.initialOption();
 
-        if (option?.games && option.games.length > 0) {
+        // 1. Reset defaults
+        this.importWarnings = '';
+        this.linkedPredictionId = option?.predictionId ?? null;
+
+        // 2. Pre-fill from initial match
+        if (initial) {
+          this.selectedGames = [initial];
+          this.manualEvent = `${initial.away} vs ${initial.home}`;
+          this.leagueTag = initial.league || 'Sin clasificar';
+        } else if (option?.games && option.games.length > 0) {
           this.selectedGames = [...option.games];
-          this.syncSelections();
-        } else if (initial) {
-          this.chooseGames([initial]);
+          this.manualEvent = `${option.games[0].away} vs ${option.games[0].home}`;
         }
 
-        if (option?.betType) {
-          this.betType = option.betType;
-          if (option.betType === 'parlay') {
-            this.totalOddsMode = true;
-          }
-        }
-
-        if (option?.selections && option.selections.length > 0) {
-          this.selections = [...option.selections];
-        }
-
-        if (option?.legs && option.legs.length > 0) {
-          this.legs = [...option.legs];
-        }
-
+        // 3. Pre-fill from option / recommendation
         if (option) {
+          if (option.betType === 'parlay') {
+            this.betType = 'parlay';
+          }
           if (option.odds) {
             this.odds = Number(option.odds);
           }
-          if (option.eventLabel) {
-            this.event = option.eventLabel;
+          if (option.stake) {
+            this.stake = Number(option.stake);
           }
-          if (this.selections.length > 0 && !option.selections) {
-            if (option.market) this.selections[0].market = option.market;
-            if (option.pick) this.selections[0].pick = option.pick;
-            if (option.line !== undefined && option.line !== null) this.selections[0].line = option.line;
-            if (option.description) this.selections[0].description = option.description;
-            if (option.predictionId) this.selections[0].prediction_id = option.predictionId;
+          if (option.description || option.market) {
+            this.manualSelection = option.description || option.market || '';
+          } else if (option.pick) {
+            this.manualSelection = option.pick;
+          }
+          if (option.eventLabel) {
+            this.manualEvent = option.eventLabel;
+          }
+          if (option.legs && option.legs.length > 0) {
+            this.manualLegs = option.legs.map((l) => ({
+              event: '',
+              selection: l.selection || '',
+              odds: Number(l.odds) || null,
+            }));
           }
         }
 
+        // 4. Default active house
         if (!this.selectedHouse && this.vm.data().houses.length > 0) {
           this.selectedHouse = String(this.vm.data().houses[0].id);
         }
@@ -132,9 +137,33 @@ export class CreateTicketModalComponent {
     this.showPicker.update((v) => !v);
   }
 
+  chooseGames(games: GameReference[]) {
+    this.selectedGames = games;
+    if (games.length > 0) {
+      if (this.betType === 'simple') {
+        this.manualEvent = `${games[0].away} vs ${games[0].home}`;
+        this.leagueTag = games[0].league || 'Sin clasificar';
+      } else {
+        // Fill empty legs with picked games
+        games.forEach((g, idx) => {
+          if (idx < this.manualLegs.length) {
+            if (!this.manualLegs[idx].event) {
+              this.manualLegs[idx].event = `${g.away} vs ${g.home}`;
+            }
+          } else {
+            this.manualLegs.push({
+              event: `${g.away} vs ${g.home}`,
+              selection: '',
+              odds: null,
+            });
+          }
+        });
+      }
+    }
+  }
+
   removeGame(gameId: string) {
     this.selectedGames = this.selectedGames.filter((g) => g.id !== gameId);
-    this.syncSelections();
   }
 
   close() {
@@ -143,142 +172,68 @@ export class CreateTicketModalComponent {
     this.vm.error.set('');
   }
 
-  setType(type: 'simple' | 'parlay' | 'same_game') {
+  setType(type: 'simple' | 'parlay') {
     this.betType = type;
-    this.totalOddsMode = false;
     this.odds = null;
-    if (type === 'simple') this.selections = this.selections.slice(0, 1);
-    else if (this.selections.length < 2)
-      this.selections.push(newSelection(sportForLeague(this.leagueTag)));
-    this.legs = this.selections.map(
-      (_, i) => this.legs[i] ?? { selection: '', odds: 2, status: 'pending' },
-    );
-    this.updateOdds();
-    this.syncSelections();
-  }
-
-  chooseGames(games: GameReference[]) {
-    this.selectedGames = games;
-    this.syncSelections();
-    if (games.length) {
-      const league = games[0].league;
-      this.setLeague(
-        games.some((g) => g.league !== league)
-          ? 'Mixto'
-          : ({
-              nations: 'Selecciones',
-              'concacaf-nations': 'Selecciones',
-              friendlies: 'Selecciones',
-              worldcup: 'Selecciones',
-              euro: 'Selecciones',
-              'copa-america': 'Selecciones',
-              'gold-cup': 'Selecciones',
-              'qualifiers-uefa': 'Selecciones',
-              'qualifiers-conmebol': 'Selecciones',
-              'qualifiers-concacaf': 'Selecciones',
-              mlb: 'MLB',
-              nfl: 'NFL',
-              nba: 'NBA',
-              mls: 'MLS',
-              kbo: 'KBO',
-              ligamx: 'Liga MX',
-            }[league] ?? 'Fútbol Europeo'),
-      );
+    if (type === 'parlay') {
+      this.updateParlayOdds();
     }
   }
 
-  setLeague(league: string) {
-    this.leagueTag = league;
-    const sport = sportForLeague(league);
-    if (SELECTION_MARKETS[sport])
-      this.selections = this.selections.map((d) =>
-        d.sport === sport
-          ? d
-          : { ...newSelection(sport), game_id: d.game_id, event_label: d.event_label },
-      );
-    if (!marketsForLeague(league).includes(this.marketTag)) this.marketTag = 'Sin clasificar';
+  addManualLeg() {
+    if (this.manualLegs.length < 15) {
+      this.manualLegs.push({ event: '', selection: '', odds: null });
+      this.updateParlayOdds();
+    }
   }
 
-  setSport(sport: string) {
-    if (sportForLeague(this.leagueTag) !== sport)
-      this.setLeague(
-        (
-          { Fútbol: 'MLS', Béisbol: 'MLB', Americano: 'NFL', Básquetbol: 'NBA', Mixto: 'Mixto' } as Record<string, string>
-        )[sport] ?? 'Sin clasificar',
-      );
+  removeManualLeg(idx: number) {
+    if (this.manualLegs.length > 2) {
+      this.manualLegs.splice(idx, 1);
+      this.updateParlayOdds();
+    }
   }
 
-  leagueOptions() {
-    const sport = sportForLeague(this.leagueTag);
-    return ['Fútbol', 'Béisbol', 'Americano', 'Básquetbol'].includes(sport)
-      ? LEAGUE_TAGS.filter((league) => sportForLeague(league) === sport)
-      : LEAGUE_TAGS;
-  }
-
-  sportForLeague = sportForLeague;
-
-  addSelection() {
-    this.selections.push(newSelection(sportForLeague(this.leagueTag)));
-    this.legs.push({ selection: '', odds: 2, status: 'pending' });
-    this.syncSelections();
-  }
-
-  removeSelection(i: number) {
-    this.selections.splice(i, 1);
-    this.legs.splice(i, 1);
-    this.updateOdds();
-  }
-
-  syncSelections() {
-    this.selections.forEach((d, i) => {
-      if (this.selectedGames.length && !this.selectedGames.some((g) => g.id === d.game_id))
-        d.game_id = this.selectedGames[Math.min(i, this.selectedGames.length - 1)].id;
-      if (!this.selectedGames.length) d.game_id = '';
-      const g = this.selectedGames.find((g) => g.id === d.game_id);
-      if (g) {
-        const gameSport = g.sport || sportForLeague(this.leagueTag);
-        if (d.sport !== gameSport) {
-          Object.assign(d, newSelection(gameSport), { game_id: g.id });
-        }
-      }
-    });
-  }
-
-  updateOdds() {
+  updateParlayOdds() {
     if (this.betType === 'parlay' && !this.totalOddsMode) {
-      const dec = this.legs.reduce((acc, leg) => acc * (Number(leg.odds) || 1), 1);
-      this.odds = Number(dec.toFixed(4));
+      const validOdds = this.manualLegs
+        .map((l) => Number(l.odds))
+        .filter((o) => !isNaN(o) && o > 1);
+      if (validOdds.length === this.manualLegs.length && validOdds.length > 0) {
+        const prod = validOdds.reduce((acc, o) => acc * o, 1);
+        this.odds = Number(prod.toFixed(2));
+      }
     }
   }
 
   applyScreenshot(r: ScreenshotDraft) {
-    this.quickMode.set(true);
     this.selectedGames = [];
-    this.betType = r.bet_type ?? (r.selections.length > 1 ? 'parlay' : 'simple');
+    this.betType = r.bet_type === 'parlay' || r.selections.length > 1 ? 'parlay' : 'simple';
     this.totalOddsMode = this.betType === 'parlay';
     this.oddsFormat = 'decimal';
     this.odds = r.odds;
     this.stake = r.stake;
     this.bonus = r.bonus ?? 0;
-    this.selections = r.selections.map((s) =>
-      s.detail
-        ? { ...s.detail, line: s.detail.line === null ? null : Number(s.detail.line) }
-        : {
-            ...newSelection(s.sport ?? 'Fútbol'),
-            market: 'Otro',
-            description: (s.market ?? '').slice(0, 200),
-            event_label: (s.event ?? '').slice(0, 120),
-          },
-    );
-    this.legs = r.selections.map((s) => ({ selection: s.market ?? '', odds: s.odds ?? 0, status: 'pending' }));
-    const sports = [...new Set(this.selections.map((s) => s.sport))];
-    this.leagueTag =
-      sports.length > 1 ? 'Mixto' : sports[0] === 'Béisbol' ? 'MLB' : sports[0] === 'Americano' ? 'NFL' : 'Fútbol Europeo';
+
+    if (this.betType === 'simple') {
+      const s = r.selections[0];
+      this.manualEvent = s?.event || '';
+      this.manualSelection = s?.market || s?.detail?.pick || '';
+    } else {
+      this.manualLegs = r.selections.map((s) => ({
+        event: s.event || '',
+        selection: s.market || '',
+        odds: s.odds || null,
+      }));
+    }
+
     const house = this.vm.data().houses.find(
       (h) => h.name.toLowerCase() === r.house?.toLowerCase() && h.currency === r.currency,
     );
-    this.selectedHouse = house ? String(house.id) : '';
-    this.importWarnings = 'Borrador leído por IA. Revisa los datos antes de guardar.';
+    if (house) {
+      this.selectedHouse = String(house.id);
+    }
+    this.importWarnings = 'Datos leídos por escaneo inteligente. Revisa o edita los campos antes de guardar.';
   }
 
   payout() {
@@ -289,62 +244,96 @@ export class CreateTicketModalComponent {
   }
 
   async saveTicket() {
-    if (this.betType === 'same_game')
-      for (const d of this.selections) d.event_label = this.selections[0].event_label;
-    const labels = this.selections.map((d) => selectionText(d));
-    this.event = this.selections
-      .map((d) => {
-        const g = this.selectedGames.find((g) => g.id === d.game_id);
-        return (g ? g.away + ' vs ' + g.home : d.event_label) + ' · ' + selectionText(d);
-      })
-      .join(' | ')
-      .slice(0, 300);
-    this.sameGameSelections = labels.map((label) => label.slice(0, 200));
-    this.legs = this.selections.map((_, i) => ({
-      ...this.legs[i],
-      selection: labels[i].slice(0, 200),
-    }));
-    const categories = [...new Set(this.selections.map((d) => d.market))];
-    this.marketTag =
-      categories.length === 1 && this.leagueTag !== 'Mixto' ? categories[0] : 'Mixto';
-    this.updateOdds();
+    this.vm.error.set('');
 
+    // Validations
     if (!this.selectedHouse) {
-      this.vm.error.set('Selecciona una casa de apuestas para registrar el ticket.');
+      this.vm.error.set('Selecciona la casa de apuestas donde colocaste tu ticket.');
       return;
     }
     if (this.stake === null || this.stake <= 0) {
-      this.vm.error.set('Indica el importe a apostar (stake mayor a 0).');
+      this.vm.error.set('Indica el importe de tu apuesta (mayor a $0).');
       return;
     }
     if (this.odds === null || this.odds <= 0) {
-      this.vm.error.set('Indica una cuota válida para la apuesta.');
+      this.vm.error.set('Indica la cuota de tu apuesta.');
       return;
     }
     if (decimalOdds(this.odds, this.oddsFormat) === null) {
-      this.vm.error.set(
-        'Cuota inválida. En decimal debe ser mayor que 1.0 (ej. 1.90).',
-      );
+      this.vm.error.set('Cuota inválida. En formato decimal debe ser mayor a 1.0 (ej. 1.85).');
       return;
     }
 
+    let finalEvent = '';
+    let selectionsPayload: SelectionDetail[] = [];
+    let legsPayload: BetLeg[] = [];
+
+    if (this.betType === 'simple') {
+      const evName = this.manualEvent.trim() || 'Partido';
+      const pickName = this.manualSelection.trim() || 'Selección';
+
+      finalEvent = `${evName} · ${pickName}`.slice(0, 300);
+
+      selectionsPayload = [
+        {
+          sport: 'Fútbol',
+          market: 'Otro',
+          pick: pickName,
+          line: null,
+          description: pickName,
+          game_id: this.selectedGames[0]?.id || '',
+          event_label: evName,
+          prediction_id: this.linkedPredictionId ?? undefined,
+        },
+      ];
+    } else {
+      // Parlay
+      for (let i = 0; i < this.manualLegs.length; i++) {
+        const l = this.manualLegs[i];
+        if (!l.selection.trim() && !l.event.trim()) {
+          this.vm.error.set(`Escribe el partido y la selección para la selección #${i + 1} del parlay.`);
+          return;
+        }
+      }
+
+      this.updateParlayOdds();
+
+      finalEvent = this.manualLegs
+        .map((l) => `${l.event.trim() || 'Partido'} · ${l.selection.trim() || 'Selección'}`)
+        .join(' | ')
+        .slice(0, 300);
+
+      legsPayload = this.manualLegs.map((l) => ({
+        selection: `${l.event.trim() ? l.event.trim() + ' - ' : ''}${l.selection.trim() || 'Selección'}`.slice(0, 200),
+        odds: Number(l.odds) || 1.9,
+        status: 'pending',
+      }));
+
+      selectionsPayload = this.manualLegs.map((l, i) => ({
+        sport: 'Fútbol',
+        market: 'Otro',
+        pick: l.selection.trim() || 'Selección',
+        line: null,
+        description: l.selection.trim() || 'Selección',
+        game_id: this.selectedGames[i]?.id || '',
+        event_label: l.event.trim() || 'Partido',
+      }));
+    }
+
     try {
-      const linkedPredictionId =
-        this.modal.initialOption()?.predictionId ??
-        (this.selections.length === 1 ? (this.selections[0].prediction_id ?? null) : null);
       const ok = await this.bets.create({
         public_record: false,
-        prediction_id: linkedPredictionId,
-        selection_details: this.selections,
+        prediction_id: this.linkedPredictionId,
+        selection_details: selectionsPayload,
         odds_format: this.oddsFormat,
-        league_tag: this.leagueTag,
-        market_tag: this.marketTag,
-        same_game_selections: this.betType === 'same_game' ? this.sameGameSelections : [],
+        league_tag: this.betType === 'parlay' ? 'Mixto' : 'Sin clasificar',
+        market_tag: 'Sin clasificar',
+        same_game_selections: [],
         games: this.selectedGames.map((g) => g.id),
         linked_games: this.selectedGames,
-        legs: this.betType === 'parlay' && !this.totalOddsMode ? this.legs : [],
+        legs: this.betType === 'parlay' && !this.totalOddsMode ? legsPayload : [],
         house_id: Number(this.selectedHouse),
-        event: this.event,
+        event: finalEvent,
         odds: this.odds,
         stake: this.stake,
         bet_type: this.betType,
@@ -353,13 +342,13 @@ export class CreateTicketModalComponent {
 
       if (ok) {
         this.close();
-        this.vm.notice.set('¡Ticket registrado exitosamente!');
+        this.vm.notice.set('¡Ticket registrado exitosamente en tu bankroll!');
         setTimeout(() => this.vm.notice.set(''), 4000);
       } else if (!this.vm.error()) {
-        this.vm.error.set('No se pudo guardar el ticket. Revisa el saldo disponible en tu casa de apuestas.');
+        this.vm.error.set('No se pudo guardar el ticket. Revisa el saldo disponible en la casa seleccionada.');
       }
     } catch (e: any) {
-      this.vm.error.set(e?.message || 'Error al guardar el ticket. Revisa los datos.');
+      this.vm.error.set(e?.message || 'Error al guardar el ticket. Revisa los datos ingresados.');
     }
   }
 }
