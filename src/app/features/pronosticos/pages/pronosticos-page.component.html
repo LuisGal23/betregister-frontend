@@ -432,158 +432,217 @@
                 </span>
               </div>
 
-              <!-- Compact Match Rows -->
-              <div class="divide-y divide-[#1E293B]">
+              <!-- Match Cards in Rich "Partidos del Día" Style -->
+              <div class="p-2 sm:p-3 flex flex-col gap-3">
                 @for (pred of group.items; track pred.game.id) {
                   @let g = pred.game;
                   @let ev = pred.evaluation;
                   @let isSelected = selectedPrediction()?.game?.id === g.id;
 
-                  <div
-                    class="p-3 transition-colors cursor-pointer hover:bg-[#1F2937]/60 flex flex-col gap-2"
-                    [class.bg-[#1F2937]]="isSelected"
-                    [class.border-l-4]="isSelected"
-                    [class.border-l-[#38BDF8]]="isSelected"
+                  <article
+                    class="relative flex flex-col gap-3.5 sm:gap-4 p-4 sm:p-5 rounded-2xl bg-[#0F172A] border border-[#1E293B] shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:border-[#38BDF8]/40 hover:shadow-2xl cursor-pointer"
+                    [class.ring-2]="isSelected"
+                    [class.ring-[#38BDF8]]="isSelected"
+                    [class.border-[#38BDF8]]="isSelected"
+                    [ngStyle]="cardAuraStyle(g)"
                     (click)="selectMatch(pred, true)"
                   >
-                    <!-- Top Row: Time/Status + Teams + Scores + Audit Seal -->
-                    <div class="grid grid-cols-[54px_1fr_auto] items-center gap-2.5">
-                      <!-- Col 1: Time & Status -->
-                      <div class="flex flex-col items-center justify-center text-center border-r border-[#1E293B] pr-2">
-                        @if (g.state === 'live') {
-                          <span class="text-xs font-mono font-bold text-[#22C55E] animate-pulse">LIVE</span>
-                          <span class="text-xs font-mono text-[#94A3B8] tabular-nums">{{ g.clock || g.detail }}</span>
-                        } @else if (g.state === 'final') {
-                          <span class="text-xs font-mono font-bold text-[#94A3B8]">FT</span>
-                          <span class="text-xs font-mono text-[#64748B]">Final</span>
+                    <!-- Animated Team Color Gradient Aura Backdrop -->
+                    <div class="card-ambient-aura" aria-hidden="true"></div>
+
+                    <!-- Card Header / Meta (Venue & Pulsing Status) -->
+                    <div class="flex justify-between items-center gap-2 relative z-1 text-xs">
+                      <span class="font-bold uppercase tracking-wider text-[#94A3B8] font-mono text-[10px] sm:text-[11px] truncate">
+                        {{ formatCardTopMeta(g) }}
+                      </span>
+                      <span
+                        class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wide shrink-0 font-mono"
+                        [class.bg-red-500/15]="g.state === 'live'"
+                        [class.text-red-500]="g.state === 'live'"
+                        [class.border]="true"
+                        [class.border-red-500/35]="g.state === 'live'"
+                        [class.bg-[#1E293B]]="g.state === 'final'"
+                        [class.text-[#94A3B8]]="g.state === 'final'"
+                        [class.border-[#334155]]="g.state === 'final'"
+                        [class.bg-emerald-500/10]="g.state === 'scheduled'"
+                        [class.text-emerald-400]="g.state === 'scheduled'"
+                        [class.border-emerald-500/30]="g.state === 'scheduled'"
+                      >
+                        <span class="w-1.5 h-1.5 rounded-full" [class.bg-red-500]="g.state === 'live'" [class.bg-emerald-400]="g.state === 'scheduled'" [class.bg-[#94A3B8]]="g.state === 'final'" [class.animate-pulse]="g.state === 'live' || g.state === 'scheduled'"></span>
+                        {{ g.state === 'live' ? 'EN VIVO' : g.state === 'final' ? 'FINAL' : 'POR JUGARSE' }}
+                      </span>
+                    </div>
+
+                    <!-- Teams Centerpiece with Big Centered Logos & Records (Standard: Local vs Visitante) -->
+                    <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-2.5 sm:gap-4 py-2 relative z-1">
+                      <!-- Home Team (Local) -->
+                      <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+                        <div class="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-[#1E293B]/70 border border-[#334155]/80 shadow-md">
+                          @if (getLogo(g.home, g.sport, g.home_logo, g.home_logo_mirrored); as logo) {
+                            <img [src]="logo" [alt]="g.home" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+                          } @else {
+                            <span class="text-base sm:text-lg font-black text-[#38BDF8] font-mono">{{ shortCode(g.home) }}</span>
+                          }
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span class="text-[11px] sm:text-xs font-black tracking-wider text-[#38BDF8] font-mono truncate">{{ shortCode(g.home) }}</span>
+                          <strong class="text-xs sm:text-sm font-bold text-[#F8FAFC] leading-tight truncate">{{ g.home }}</strong>
+                          <small class="text-[10px] sm:text-[11px] text-[#94A3B8]">{{ getTeamRecord(g, true) }}</small>
+                        </div>
+                      </div>
+
+                      <!-- Score / Versus Center -->
+                      <div class="flex flex-col items-center justify-center shrink-0 min-w-[46px] sm:min-w-[60px] px-1">
+                        @if (g.state === 'live' || g.state === 'final') {
+                          <div class="flex items-center gap-1 text-base sm:text-xl font-black font-mono tracking-tight text-[#F8FAFC]">
+                            <span>{{ g.home_score ?? 0 }}</span>
+                            <span class="text-[#64748B] font-light">–</span>
+                            <span>{{ g.away_score ?? 0 }}</span>
+                          </div>
+                          @if (g.detail || g.clock) {
+                            <small class="text-[9px] sm:text-[10px] text-[#38BDF8] font-semibold mt-0.5 text-center truncate max-w-[70px]">{{ g.clock || g.detail }}</small>
+                          }
                         } @else {
-                          <span class="text-xs font-mono font-bold text-[#F8FAFC] tabular-nums">
-                            {{ g.start | date:'HH:mm' }}
-                          </span>
-                          <span class="text-xs text-[#64748B]">Pre</span>
+                          <span class="text-xs font-black tracking-widest text-[#94A3B8] bg-[#1E293B] px-2 py-0.5 rounded-md border border-[#334155] font-mono">VS</span>
                         }
                       </div>
 
-                      <!-- Col 2: Home & Away Teams with Mirrored Logos & Integer Scores -->
-                      <div class="flex flex-col gap-1 min-w-0">
-                        <!-- Home Team Row (Local siempre primero en bloque 1X2 estandarizado) -->
-                        <div class="flex items-center justify-between gap-2">
-                          <div class="flex items-center gap-2 min-w-0">
-                            <img
-                              [src]="getLogo(g.home, g.sport, g.home_logo, g.home_logo_mirrored)"
-                              [alt]="g.home"
-                              class="w-4 h-4 object-contain shrink-0"
-                              loading="lazy"
-                            />
-                            <span class="text-xs sm:text-sm font-semibold text-[#F8FAFC] truncate">
-                              {{ g.home }}
-                            </span>
-                          </div>
-                          @if (g.state === 'live' || g.state === 'final') {
-                            <strong class="text-sm font-mono font-bold text-[#F8FAFC] tabular-nums">
-                              {{ g.home_score ?? 0 }}
-                            </strong>
-                          }
+                      <!-- Away Team (Visita) -->
+                      <div class="flex items-center justify-end gap-2.5 sm:gap-3.5 min-w-0 text-right">
+                        <div class="flex flex-col min-w-0">
+                          <span class="text-[11px] sm:text-xs font-black tracking-wider text-[#38BDF8] font-mono truncate">{{ shortCode(g.away) }}</span>
+                          <strong class="text-xs sm:text-sm font-bold text-[#F8FAFC] leading-tight truncate">{{ g.away }}</strong>
+                          <small class="text-[10px] sm:text-[11px] text-[#94A3B8]">{{ getTeamRecord(g, false) }}</small>
                         </div>
-
-                        <!-- Away Team Row -->
-                        <div class="flex items-center justify-between gap-2">
-                          <div class="flex items-center gap-2 min-w-0">
-                            <img
-                              [src]="getLogo(g.away, g.sport, g.away_logo, g.away_logo_mirrored)"
-                              [alt]="g.away"
-                              class="w-4 h-4 object-contain shrink-0"
-                              loading="lazy"
-                            />
-                            <span class="text-xs sm:text-sm font-semibold text-[#F8FAFC] truncate">
-                              {{ g.away }}
-                            </span>
-                          </div>
-                          @if (g.state === 'live' || g.state === 'final') {
-                            <strong class="text-sm font-mono font-bold text-[#F8FAFC] tabular-nums">
-                              {{ g.away_score ?? 0 }}
-                            </strong>
+                        <div class="relative w-12 h-12 sm:w-14 sm:h-14 shrink-0 flex items-center justify-center p-2 rounded-2xl bg-[#1E293B]/70 border border-[#334155]/80 shadow-md">
+                          @if (getLogo(g.away, g.sport, g.away_logo, g.away_logo_mirrored); as logo) {
+                            <img [src]="logo" [alt]="g.away" loading="lazy" (error)="onLogoError($event)" class="w-full h-full object-contain filter drop-shadow-md" />
+                          } @else {
+                            <span class="text-base sm:text-lg font-black text-[#38BDF8] font-mono">{{ shortCode(g.away) }}</span>
                           }
                         </div>
                       </div>
+                    </div>
 
-                      <!-- Col 3: Audit Seal Badge -->
-                      <div class="flex flex-col items-end justify-center shrink-0">
+                    <!-- Win Probabilities Bar (Home Sky, Draw Amber, Away Rose) -->
+                    <div class="flex flex-col gap-1.5 pt-2 border-t border-[#1E293B] relative z-1">
+                      <div class="flex justify-between items-center text-xs font-semibold">
+                        <span class="text-[#38bdf8] font-bold font-mono">{{ pred.homeWinProb.toFixed(1) }}% {{ shortCode(g.home) }}</span>
+                        @if (pred.drawProb != null) {
+                          <span class="text-amber-400 font-bold font-mono">{{ pred.drawProb.toFixed(1) }}% Empate</span>
+                        }
+                        <span class="text-[#f43f5e] font-bold font-mono">{{ shortCode(g.away) }} {{ pred.awayWinProb.toFixed(1) }}%</span>
+                      </div>
+
+                      <div class="flex h-2.5 w-full rounded-full overflow-hidden bg-[#0B0F17] gap-0.5 p-0.5 border border-[#1E293B]">
+                        <div class="bg-gradient-to-r from-sky-400 to-[#38bdf8] rounded-l-full transition-all duration-300" [style.width.%]="pred.homeWinProb"></div>
+                        @if (pred.drawProb != null) {
+                          <div class="bg-amber-400 transition-all duration-300" [style.width.%]="pred.drawProb"></div>
+                        }
+                        <div class="bg-gradient-to-r from-rose-500 to-[#f43f5e] rounded-r-full transition-all duration-300" [style.width.%]="pred.awayWinProb"></div>
+                      </div>
+                    </div>
+
+                    <!-- AI Prediction & Post-Match Audit Banner (Verde / Rojo / Pendiente) -->
+                    <div class="p-3 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs relative z-1 transition-all"
+                         [class.bg-emerald-500/10]="ev.status === 'WON'"
+                         [class.border-emerald-500/40]="ev.status === 'WON'"
+                         [class.bg-rose-500/10]="ev.status === 'LOST'"
+                         [class.border-rose-500/40]="ev.status === 'LOST'"
+                         [class.bg-[#1E293B]/60]="ev.status !== 'WON' && ev.status !== 'LOST'"
+                         [class.border-[#334155]]="ev.status !== 'WON' && ev.status !== 'LOST'">
+                      
+                      <div class="flex items-center gap-2.5 min-w-0">
                         @if (ev.status === 'WON') {
-                          <span class="px-2 py-0.5 rounded-md bg-[#22C55E]/15 text-[#22C55E] border border-[#22C55E]/30 text-xs font-mono font-bold tabular-nums">
-                            ✓ {{ g.home_score ?? 0 }}-{{ g.away_score ?? 0 }}
+                          <span class="w-6 h-6 rounded-full bg-emerald-500 text-slate-950 font-black text-xs grid place-items-center shrink-0 shadow-[0_0_12px_rgba(16,185,129,0.5)]">
+                            ✓
+                          </span>
+                          <div class="min-w-0">
+                            <span class="text-[10px] font-black uppercase font-mono text-emerald-400 block tracking-wider">
+                              PRONÓSTICO ACERTADO (VERDE)
+                            </span>
+                            <strong class="text-xs font-bold text-[#F8FAFC] truncate block">
+                              {{ formatRecommendedMarket(pred.bestPick.label, g) }}
+                            </strong>
+                          </div>
+                        } @else if (ev.status === 'LOST') {
+                          <span class="w-6 h-6 rounded-full bg-rose-500 text-white font-black text-xs grid place-items-center shrink-0 shadow-[0_0_12px_rgba(244,63,94,0.5)]">
+                            ✕
+                          </span>
+                          <div class="min-w-0">
+                            <span class="text-[10px] font-black uppercase font-mono text-rose-400 block tracking-wider">
+                              PRONÓSTICO NO LOGRADO (ROJO)
+                            </span>
+                            <strong class="text-xs font-bold text-[#F8FAFC] truncate block">
+                              {{ formatRecommendedMarket(pred.bestPick.label, g) }}
+                            </strong>
+                          </div>
+                        } @else {
+                          <span class="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 font-bold text-xs grid place-items-center shrink-0 shadow-[0_0_10px_rgba(6,182,212,0.3)]">
+                            🎯
+                          </span>
+                          <div class="min-w-0">
+                            <span class="text-[10px] font-black uppercase font-mono text-cyan-400 block tracking-wider">
+                              MEJOR OPCIÓN IA {{ pred.bestPick.isEV ? '(+EV)' : '' }}
+                            </span>
+                            <strong class="text-xs sm:text-sm font-bold text-[#F8FAFC] truncate block">
+                              {{ formatRecommendedMarket(pred.bestPick.label, g) }}
+                            </strong>
+                          </div>
+                        }
+                      </div>
+
+                      <div class="flex items-center gap-2 shrink-0 sm:self-center">
+                        @if (ev.status === 'WON') {
+                          <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-black border border-emerald-500/30">
+                            ✓ Acierto Verificado
                           </span>
                         } @else if (ev.status === 'LOST') {
-                          <span class="px-2 py-0.5 rounded-md bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30 text-xs font-mono font-bold tabular-nums">
-                            ✗ {{ g.home_score ?? 0 }}-{{ g.away_score ?? 0 }}
-                          </span>
-                        } @else if (ev.status === 'VOID') {
-                          <span class="px-2 py-0.5 rounded-md bg-[#64748B]/20 text-[#94A3B8] border border-[#64748B]/30 text-xs font-mono font-bold">
-                            VOID
+                          <span class="px-2 py-0.5 rounded-md bg-rose-500/20 text-rose-300 font-mono text-[10px] font-black border border-rose-500/30">
+                            ✗ Fallo
                           </span>
                         } @else {
-                          <span class="px-2 py-0.5 rounded-md bg-[#F59E0B]/15 text-[#F59E0B] border border-[#F59E0B]/30 text-xs font-mono font-semibold">
-                            ⏳ Pend.
+                          <span class="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 font-mono text-[10px] font-bold border border-cyan-500/30">
+                            @if (pred.bestPick.odds) {
+                              {{ pred.bestPick.odds.toFixed(2) }} · 
+                            }
+                            {{ pred.bestPick.prob.toFixed(0) }}% conf.
                           </span>
                         }
                       </div>
                     </div>
 
-                    <!-- Bottom Row: 1X2 Model Probability Bar (Exact 100.0%) + Primary Pick Chip + Confidence Level -->
-                    <div class="flex flex-col gap-1.5 pt-1 border-t border-[#1E293B]/60">
-                      <!-- 3-Segment 1X2 Bar (Home / Draw / Away) -->
-                      <div class="flex items-center gap-2">
-                        <div class="flex-1 h-1.5 rounded-full bg-[#0B0F17] overflow-hidden flex">
-                          <div class="h-full bg-[#38BDF8]" [style.width.%]="pred.homeWinProb"></div>
-                          @if (pred.drawProb != null) {
-                            <div class="h-full bg-[#64748B]" [style.width.%]="pred.drawProb"></div>
-                          }
-                          <div class="h-full bg-[#A855F7]" [style.width.%]="pred.awayWinProb"></div>
-                        </div>
-                        <div class="text-xs font-mono text-[#94A3B8] tabular-nums shrink-0">
-                          <span class="text-[#38BDF8] font-semibold">{{ pred.homeWinProb.toFixed(1) }}%</span>
-                          @if (pred.drawProb != null) {
-                            <span> / {{ pred.drawProb.toFixed(1) }}%</span>
-                          }
-                          <span> / <span class="text-[#A855F7] font-semibold">{{ pred.awayWinProb.toFixed(1) }}%</span></span>
-                        </div>
-                      </div>
+                    <!-- Bottom Action Buttons: White pill "Ver análisis e IA →", "🎲 Simular 400" + quick "+ Ticket" -->
+                    <div class="pt-2 flex items-center gap-2 relative z-1" (click)="$event.stopPropagation()">
+                      <button 
+                        type="button" 
+                        class="flex-1 py-2.5 px-3 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs inline-flex items-center justify-center gap-1.5 shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.98] transition-all cursor-pointer"
+                        (click)="selectMatch(pred, true)"
+                      >
+                        <span>Ver análisis e IA</span>
+                        <span class="text-sm font-black">→</span>
+                      </button>
 
-                      <!-- Pick Principal Chip + Confidence Badge (No "% conf." ever!) -->
-                      <div class="flex items-center justify-between gap-2 flex-wrap">
-                        <div class="flex items-center gap-1.5 min-w-0">
-                          <span class="text-xs font-semibold text-[#F8FAFC] truncate">
-                            🎯 {{ pred.bestPick.label }}
-                          </span>
-                          <span class="text-xs font-mono text-[#38BDF8] font-bold tabular-nums shrink-0">
-                            ({{ pred.bestPick.prob.toFixed(1) }}%)
-                          </span>
-                        </div>
+                      <button
+                        type="button"
+                        class="py-2.5 px-3 rounded-full bg-purple-600/20 border border-purple-500/40 hover:bg-purple-500/30 text-purple-200 text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer active:scale-95"
+                        title="Simular 400 partidos con IA sobre las líneas oficiales del mercado"
+                        (click)="runSimulation400(pred, true)"
+                      >
+                        <span>🎲 400x IA</span>
+                      </button>
 
-                        <div class="flex items-center gap-1.5 shrink-0">
-                          @if (pred.bestPick.isEV) {
-                            <span class="px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-mono font-bold">
-                              +EV
-                            </span>
-                          }
-                          <span
-                            class="px-2 py-0.5 rounded text-xs font-semibold border"
-                            [class.bg-emerald-500/15]="pred.confidenceContract.level === 'ALTA'"
-                            [class.text-emerald-400]="pred.confidenceContract.level === 'ALTA'"
-                            [class.border-emerald-500/30]="pred.confidenceContract.level === 'ALTA'"
-                            [class.bg-amber-500/15]="pred.confidenceContract.level === 'MEDIA'"
-                            [class.text-amber-400]="pred.confidenceContract.level === 'MEDIA'"
-                            [class.border-amber-500/30]="pred.confidenceContract.level === 'MEDIA'"
-                            [class.bg-slate-500/15]="pred.confidenceContract.level === 'BAJA'"
-                            [class.text-slate-400]="pred.confidenceContract.level === 'BAJA'"
-                            [class.border-slate-500/30]="pred.confidenceContract.level === 'BAJA'"
-                          >
-                            Conf. {{ pred.bestPick.confidence }}
-                          </span>
-                        </div>
-                      </div>
+                      <button 
+                        type="button" 
+                        class="py-2.5 px-3 rounded-full bg-[#1E293B] border border-[#334155] hover:border-[#38BDF8] hover:text-[#38BDF8] text-[#F8FAFC] text-xs font-bold inline-flex items-center justify-center gap-1 shrink-0 transition-all cursor-pointer active:scale-95"
+                        title="Añadir a mi ticket de apuestas"
+                        (click)="addSinglePredictionToTicket(pred)"
+                      >
+                        <app-icon name="plus" />
+                        <span class="hidden sm:inline font-mono">Ticket</span>
+                      </button>
                     </div>
-                  </div>
+                  </article>
                 }
               </div>
             </div>
@@ -884,14 +943,24 @@
                           }
                         </div>
 
-                        <button
-                          type="button"
-                          class="px-3 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
-                          (click)="addSinglePredictionToTicket(sel)"
-                        >
-                          <span>+ Agregar al ticket</span>
-                          <span class="font-mono">@{{ sel.bestPick.odds }}</span>
-                        </button>
+                        <div class="flex items-center gap-2">
+                          <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-lg bg-purple-600/25 hover:bg-purple-500/35 border border-purple-500/40 text-purple-200 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                            (click)="runSimulation400(sel, false)"
+                          >
+                            <span>🎲 Simular 400 partidos (IA)</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-lg bg-[#38BDF8] hover:bg-sky-400 text-slate-950 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                            (click)="addSinglePredictionToTicket(sel)"
+                          >
+                            <span>+ Agregar al ticket</span>
+                            <span class="font-mono">@{{ sel.bestPick.odds }}</span>
+                          </button>
+                        </div>
                       </div>
 
                       <div class="flex items-baseline justify-between gap-2">
@@ -952,9 +1021,14 @@
                           Consenso de Modelos y Mercados Calculados
                         </strong>
                         <div class="flex items-center gap-2">
-                          <span class="text-xs font-mono text-[#94A3B8]">
-                            Fórmula: 45% Poisson/xG + 20% Gemini + 20% Grok + 15% Llama 3.3
-                          </span>
+                          <button
+                            type="button"
+                            class="px-2.5 py-1 rounded-lg bg-purple-600/25 hover:bg-purple-500/35 text-purple-200 text-xs font-mono font-bold border border-purple-500/40 cursor-pointer transition-colors"
+                            (click)="runSimulation400(sel, false)"
+                            title="Simular 400 partidos sobre las líneas reales del casino"
+                          >
+                            🎲 Simular 400 Partidos (IA)
+                          </button>
                           <button
                             type="button"
                             class="px-2 py-0.5 rounded bg-[#1F2937] hover:bg-[#38BDF8]/20 hover:text-[#38BDF8] text-[#94A3B8] text-xs font-mono border border-[#1E293B] cursor-pointer transition-colors"
@@ -1055,6 +1129,91 @@
                   </div>
                 }
 
+                  <!-- 400-Match Monte Carlo + Multi-AI Simulation Panel (Real Market Lines) -->
+                  @if (loadingSimulation()) {
+                    <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-500/40 flex flex-col gap-3 animate-pulse">
+                      <div class="flex items-center gap-2">
+                        <span class="inline-block w-4 h-4 rounded-full border-2 border-purple-400 border-t-transparent animate-spin"></span>
+                        <strong class="text-xs font-bold uppercase tracking-wider text-purple-300">
+                          Ejecutando 400 Simulaciones Monte Carlo + IA sobre líneas oficiales de mercado...
+                        </strong>
+                      </div>
+                      <div class="grid grid-cols-3 gap-2">
+                        <div class="h-14 bg-[#111827] rounded-lg"></div>
+                        <div class="h-14 bg-[#111827] rounded-lg"></div>
+                        <div class="h-14 bg-[#111827] rounded-lg"></div>
+                      </div>
+                    </div>
+                  } @else if (simulation400Data()[sg.id]; as sim) {
+                    <div class="p-4 rounded-xl bg-gradient-to-br from-purple-950/30 via-[#0B0F17] to-[#0B0F17] border border-purple-500/40 flex flex-col gap-3">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                          <span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/40 text-xs font-mono font-bold">
+                            🎲 SIMULACIÓN DE 400 PARTIDOS (MONTE CARLO + IA)
+                          </span>
+                          <span class="text-xs font-mono text-[#94A3B8]">
+                            Fuente de líneas: {{ sim.bookmaker_source }}
+                          </span>
+                        </div>
+                        <span class="text-xs font-mono font-bold text-emerald-400">
+                          Línea Oficial Total: {{ sim.official_lines?.total_line }} {{ sim.official_lines?.unit_label }} · Spread: {{ sim.official_lines?.spread_line > 0 ? '+' + sim.official_lines?.spread_line : sim.official_lines?.spread_line }}
+                        </span>
+                      </div>
+
+                      <!-- Projected Average Score & Best Simulated Market -->
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        <div class="p-3 rounded-lg bg-[#111827] border border-[#1E293B]">
+                          <span class="text-[11px] font-mono text-[#64748B] block">MARCADOR PROMEDIO (400 PARTIDOS)</span>
+                          <strong class="text-sm font-black font-mono text-[#F8FAFC] mt-0.5 block">
+                            {{ sg.home }} {{ sim.Projected_averages?.home_score }} – {{ sim.Projected_averages?.away_score }} {{ sg.away }}
+                          </strong>
+                          <span class="text-xs font-mono text-purple-300">
+                            Total promedio simulado: {{ sim.Projected_averages?.total_score }} {{ sim.official_lines?.unit_label }}
+                          </span>
+                        </div>
+
+                        <div class="p-3 rounded-lg bg-[#111827] border border-purple-500/40">
+                          <span class="text-[11px] font-mono text-purple-300 block">MEJOR OPCIÓN EN 400 SIMULACIONES</span>
+                          <strong class="text-sm font-bold text-[#F8FAFC] mt-0.5 block">
+                            {{ sim.best_simulated_pick?.market }}
+                          </strong>
+                          <span class="text-xs font-mono text-emerald-400 font-bold">
+                            Acierto en {{ sim.best_simulated_pick?.wins_in_400 }} de 400 partidos ({{ sim.best_simulated_pick?.probability_pct }}%)
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- 400-Game Breakdown Grid -->
+                      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                        <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                          <span class="text-[#64748B] block truncate">Gana {{ sg.home }}</span>
+                          <strong class="text-[#38BDF8] text-sm">{{ sim.outcomes_400?.home_wins }}/400</strong>
+                          <span class="text-[#94A3B8] block">({{ sim.outcomes_400?.home_win_pct }}%)</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                          <span class="text-[#64748B] block truncate">Gana {{ sg.away }}</span>
+                          <strong class="text-[#A855F7] text-sm">{{ sim.outcomes_400?.away_wins }}/400</strong>
+                          <span class="text-[#94A3B8] block">({{ sim.outcomes_400?.away_win_pct }}%)</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                          <span class="text-[#64748B] block truncate">Over {{ sim.official_lines?.total_line }}</span>
+                          <strong class="text-emerald-400 text-sm">{{ sim.outcomes_400?.over_hits }}/400</strong>
+                          <span class="text-[#94A3B8] block">({{ sim.outcomes_400?.over_pct }}%)</span>
+                        </div>
+                        <div class="p-2.5 rounded-lg bg-[#111827] border border-[#1E293B]">
+                          <span class="text-[#64748B] block truncate">Under {{ sim.official_lines?.total_line }}</span>
+                          <strong class="text-amber-400 text-sm">{{ sim.outcomes_400?.under_hits }}/400</strong>
+                          <span class="text-[#94A3B8] block">({{ sim.outcomes_400?.under_pct }}%)</span>
+                        </div>
+                      </div>
+
+                      <!-- AI Verdict on the 400 simulations -->
+                      <p class="text-xs text-[#E2E8F0] bg-[#111827] p-3 rounded-lg border border-[#1E293B] m-0 leading-relaxed">
+                        <strong class="text-purple-300 font-mono">[Veredicto IA 400x]:</strong> {{ sim.ai_verdict }}
+                      </p>
+                    </div>
+                  }
+
                   <!-- Deterministic Verification Proof (/audit/verify/{prediction_id}) -->
                   <div class="p-4 rounded-xl bg-[#0B0F17] border border-[#1E293B] flex flex-col gap-2">
                     <div class="flex items-center justify-between">
@@ -1151,6 +1310,135 @@
                     </span>
                   </div>
 
+                  <!-- SECTION: FIGURAS Y JUGADORES CLAVE CON FOTOS GRANDES -->
+                  @let awayStars = getAwayStars(center, sg);
+                  @let homeStars = getHomeStars(center, sg);
+                  @if (awayStars.length > 0 || homeStars.length > 0) {
+                    <div class="flex flex-col gap-2.5 pb-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-[#F8FAFC] flex items-center gap-1.5">
+                          <span>⭐</span>
+                          <span>Figuras y Jugadores Clave</span>
+                        </span>
+                        <span class="text-[11px] font-mono text-[#64748B]">Click para ver rendimiento reciente</span>
+                      </div>
+
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <!-- Away Stars (Visitante) -->
+                        @if (lineupsTeamFilter() === 'all' || lineupsTeamFilter() === 'away') {
+                          @for (star of awayStars; track star.name) {
+                            <div class="p-3.5 rounded-2xl bg-[#0B0F17] hover:bg-[#111827] border border-[#1E293B] hover:border-[#38BDF8]/40 transition-all flex flex-col gap-2.5 shadow-md">
+                              <div class="flex items-start gap-3">
+                                <div class="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden bg-[#111827] border border-white/10 shadow-md">
+                                  <img
+                                    [src]="star.headshot || getPlayerPhoto(star, star.team, sg.sport)"
+                                    [alt]="star.name"
+                                    class="w-full h-full object-cover object-top"
+                                    (error)="onPlayerImageError($event, star)"
+                                  />
+                                  <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/80 text-[10px] font-mono font-bold text-white border border-white/20">
+                                    #{{ star.jersey || '10' }}
+                                  </span>
+                                </div>
+                                <div class="min-w-0 flex-1 flex flex-col gap-1">
+                                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#1F2937] text-[#A855F7] font-mono border border-[#334155]">
+                                      {{ star.team }} (Visita)
+                                    </span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                                      {{ star.marginImpact }}
+                                    </span>
+                                  </div>
+                                  <strong class="text-xs sm:text-sm font-bold text-[#F8FAFC] truncate block mt-0.5">
+                                    {{ star.name }}
+                                  </strong>
+                                  <span class="text-[11px] text-[#94A3B8] font-mono truncate">
+                                    {{ star.role }} · <b class="text-emerald-400">{{ star.statusText }}</b>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    class="mt-1 text-[11px] font-mono text-[#38BDF8] hover:underline flex items-center gap-1 cursor-pointer w-fit"
+                                    (click)="togglePlayerExpand(star.name)"
+                                  >
+                                    <span>{{ isPlayerExpanded(star.name) ? '▼ Ocultar últimos partidos' : '▶ Ver últimos 3 partidos' }}</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              @if (isPlayerExpanded(star.name)) {
+                                <div class="p-2.5 rounded-xl bg-[#030712] border border-[#1E293B] flex flex-col gap-1.5 text-[11px] font-mono">
+                                  <span class="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Rendimiento Últimos Encuentros</span>
+                                  @for (log of getPlayerGameLog(star, sg); track log.opponent + log.date) {
+                                    <div class="flex items-center justify-between text-[#94A3B8] py-0.5 border-b border-[#1E293B]/60 last:border-0">
+                                      <span>vs {{ log.opponent }} ({{ log.date }})</span>
+                                      <span class="text-[#38BDF8] font-semibold">{{ log.stat }}</span>
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        }
+
+                        <!-- Home Stars (Local) -->
+                        @if (lineupsTeamFilter() === 'all' || lineupsTeamFilter() === 'home') {
+                          @for (star of homeStars; track star.name) {
+                            <div class="p-3.5 rounded-2xl bg-[#0B0F17] hover:bg-[#111827] border border-[#1E293B] hover:border-[#38BDF8]/40 transition-all flex flex-col gap-2.5 shadow-md">
+                              <div class="flex items-start gap-3">
+                                <div class="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 rounded-2xl overflow-hidden bg-[#111827] border border-white/10 shadow-md">
+                                  <img
+                                    [src]="star.headshot || getPlayerPhoto(star, star.team, sg.sport)"
+                                    [alt]="star.name"
+                                    class="w-full h-full object-cover object-top"
+                                    (error)="onPlayerImageError($event, star)"
+                                  />
+                                  <span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded-md bg-black/80 text-[10px] font-mono font-bold text-white border border-white/20">
+                                    #{{ star.jersey || '10' }}
+                                  </span>
+                                </div>
+                                <div class="min-w-0 flex-1 flex flex-col gap-1">
+                                  <div class="flex items-center justify-between gap-1 flex-wrap">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#1F2937] text-[#38BDF8] font-mono border border-[#334155]">
+                                      {{ star.team }} (Local)
+                                    </span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/15 text-emerald-400 font-mono border border-emerald-500/30">
+                                      {{ star.marginImpact }}
+                                    </span>
+                                  </div>
+                                  <strong class="text-xs sm:text-sm font-bold text-[#F8FAFC] truncate block mt-0.5">
+                                    {{ star.name }}
+                                  </strong>
+                                  <span class="text-[11px] text-[#94A3B8] font-mono truncate">
+                                    {{ star.role }} · <b class="text-emerald-400">{{ star.statusText }}</b>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    class="mt-1 text-[11px] font-mono text-[#38BDF8] hover:underline flex items-center gap-1 cursor-pointer w-fit"
+                                    (click)="togglePlayerExpand(star.name)"
+                                  >
+                                    <span>{{ isPlayerExpanded(star.name) ? '▼ Ocultar últimos partidos' : '▶ Ver últimos 3 partidos' }}</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              @if (isPlayerExpanded(star.name)) {
+                                <div class="p-2.5 rounded-xl bg-[#030712] border border-[#1E293B] flex flex-col gap-1.5 text-[11px] font-mono">
+                                  <span class="text-[10px] text-[#64748B] uppercase tracking-wider font-bold">Rendimiento Últimos Encuentros</span>
+                                  @for (log of getPlayerGameLog(star, sg); track log.opponent + log.date) {
+                                    <div class="flex items-center justify-between text-[#94A3B8] py-0.5 border-b border-[#1E293B]/60 last:border-0">
+                                      <span>vs {{ log.opponent }} ({{ log.date }})</span>
+                                      <span class="text-[#38BDF8] font-semibold">{{ log.stat }}</span>
+                                    </div>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
+
                   @if (lineupsList.length > 0) {
                     <!-- 2-Column Full Lineups Layout (Home vs Away) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1175,12 +1463,12 @@
                                 [class.bg-[#111827]]="selectedLineupPlayer()?.athlete_id === pl.athlete_id"
                                 (click)="selectedLineupPlayer.set(pl)"
                               >
-                                <div class="flex items-center gap-2 min-w-0">
+                                <div class="flex items-center gap-2.5 min-w-0">
                                   <img
                                     [src]="getPlayerPhoto(pl, homeLineup?.team_name || sg.home, sg.sport)"
                                     (error)="onPlayerImageError($event, pl)"
                                     [alt]="pl.name"
-                                    class="w-7 h-7 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                    class="w-9 h-9 rounded-xl object-cover bg-[#111827] border border-[#1E293B] shrink-0"
                                     loading="lazy"
                                   />
                                   <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>
@@ -1239,12 +1527,12 @@
                                 [class.bg-[#111827]]="selectedLineupPlayer()?.athlete_id === pl.athlete_id"
                                 (click)="selectedLineupPlayer.set(pl)"
                               >
-                                <div class="flex items-center gap-2 min-w-0">
+                                <div class="flex items-center gap-2.5 min-w-0">
                                   <img
                                     [src]="getPlayerPhoto(pl, awayLineup?.team_name || sg.away, sg.sport)"
                                     (error)="onPlayerImageError($event, pl)"
                                     [alt]="pl.name"
-                                    class="w-7 h-7 rounded-full object-cover bg-[#111827] border border-[#1E293B] shrink-0"
+                                    class="w-9 h-9 rounded-xl object-cover bg-[#111827] border border-[#1E293B] shrink-0"
                                     loading="lazy"
                                   />
                                   <span class="font-mono text-[#64748B] w-4 text-center">{{ pl.jersey || '–' }}</span>

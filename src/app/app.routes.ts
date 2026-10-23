@@ -32,11 +32,7 @@ export const routes: Routes = [
   },
   {
     path: 'matches',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/partidos/pages/matches-page/matches-page.component').then(
-        (m) => m.MatchesPageComponent,
-      ),
+    redirectTo: 'pronosticos',
   },
   {
     path: 'pronosticos',
@@ -80,7 +76,7 @@ export const routes: Routes = [
   },
   {
     path: 'estadisticas',
-    redirectTo: 'matches',
+    redirectTo: 'pronosticos',
   },
   {
     path: 'partidos/:league/:id',
@@ -96,7 +92,7 @@ export const routes: Routes = [
   },
   {
     path: 'partidos',
-    redirectTo: 'matches',
+    redirectTo: 'pronosticos',
   },
   {
     path: 'bank',
@@ -146,23 +142,23 @@ export const routes: Routes = [
   },
   {
     path: 'insights',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/rentabilidad/pages/insights-page.component').then(
-        (m) => m.InsightsPageComponent,
-      ),
+    redirectTo: 'overview',
+  },
+  {
+    path: 'rentabilidad',
+    redirectTo: 'overview',
+  },
+  {
+    path: 'rendimiento',
+    redirectTo: 'overview',
   },
   {
     path: 'community',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/comunidad/pages/community-page/community-page.component').then(
-        (m) => m.CommunityPageComponent,
-      ),
+    redirectTo: 'overview',
   },
   {
     path: 'tipsters',
-    redirectTo: 'community',
+    redirectTo: 'overview',
   },
   {
     path: 'profile',

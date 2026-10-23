@@ -36,7 +36,6 @@ export class BetsService {
   }
 
   create(data: CreateBet) {
-    // Keep linked_games locally and strip it from the REST payload to avoid unknown column errors
     const { linked_games, ...apiPayload } = data;
     const cleanLeagueTag = toDatabaseLeagueTag(data.league_tag || 'Sin clasificar');
     const cleanMarketTag = toDatabaseMarketTag(data.market_tag || 'Sin clasificar', cleanLeagueTag);
@@ -49,6 +48,7 @@ export class BetsService {
       league_tag: cleanLeagueTag,
       market_tag: cleanMarketTag,
       selection_details: cleanDetails,
+      linked_games: data.linked_games || [],
     };
 
     return this.state.mutate(

@@ -33,7 +33,7 @@ export interface AvatarPreset {
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, IconComponent],
+  imports: [CommonModule, FormsModule, IconComponent],
   templateUrl: './profile-page.component.html',
   host: { class: 'block max-w-[1200px] mx-auto px-4 sm:px-6 py-6' },
 })
