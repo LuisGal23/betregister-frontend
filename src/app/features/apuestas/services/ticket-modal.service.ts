@@ -8,6 +8,7 @@ export interface InitialBetOption {
   games?: GameReference[] | null;
   betType?: 'simple' | 'parlay' | 'same_game';
   odds?: number | null;
+  stake?: number | null;
   market?: string | null;
   pick?: string | null;
   line?: number | null;

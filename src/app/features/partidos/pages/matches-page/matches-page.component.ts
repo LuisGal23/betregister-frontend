@@ -156,11 +156,21 @@ export class MatchesPageComponent implements OnInit {
       return raw;
     }
     if (
+      raw.toLowerCase().includes('ambos') ||
+      raw.toLowerCase().includes('btts') ||
       raw.toLowerCase().includes('más de') ||
       raw.toLowerCase().includes('over') ||
       raw.toLowerCase().includes('menos de') ||
       raw.toLowerCase().includes('under') ||
-      raw.toLowerCase().includes('spread')
+      raw.toLowerCase().includes('spread') ||
+      raw.toLowerCase().includes('hándicap') ||
+      raw.toLowerCase().includes('handicap') ||
+      raw.toLowerCase().includes('run line') ||
+      raw.toLowerCase().includes('doble oportunidad') ||
+      raw.toLowerCase().includes('o empate') ||
+      raw.toLowerCase().includes('empate o') ||
+      raw.toLowerCase().includes('1x') ||
+      raw.toLowerCase().includes('x2')
     ) {
       return raw;
     }

@@ -42,6 +42,8 @@ export class ApiService {
         msg = result.message;
       } else if (typeof result.error === 'string') {
         msg = result.error;
+      } else if (response.status >= 500) {
+        msg = 'Error en el servidor al procesar la solicitud (código ' + response.status + ').';
       }
       throw new ApiError(response.status, msg);
     }

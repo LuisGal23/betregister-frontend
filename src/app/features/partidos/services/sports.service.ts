@@ -317,6 +317,29 @@ export class SportsService {
   }
 
   /**
+   * Runs 400 Monte Carlo + Multi-AI match simulations calibrated to the real sportsbook lines.
+   */
+  async simulate400Matches(
+    matchId: string,
+    league = 'champions',
+    home = '',
+    away = '',
+    date = ''
+  ): Promise<any> {
+    const params = new URLSearchParams({
+      league,
+      home,
+      away,
+      date,
+    });
+    return this.api.request<any>(
+      `/sports/matches/${encodeURIComponent(matchId)}/simulate-400?${params.toString()}`,
+      {},
+      20000
+    );
+  }
+
+  /**
    * Part E2: Fetches personal effectiveness & ROI vs frozen AI predictions by market, league, sport & odds range.
    */
   async personalVsAiAnalytics(): Promise<PersonalVsAiAnalytics | null> {

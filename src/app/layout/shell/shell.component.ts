@@ -52,19 +52,16 @@ export class ShellComponent implements OnInit {
   );
   links = computed(() => [
     { path: 'overview', label: this.i18n.t().myOverview, icon: 'overview' },
-    { path: 'matches', label: this.i18n.t().matches, icon: 'calendar' },
     { path: 'pronosticos', label: 'Pronósticos IA', icon: 'trend' },
-    { path: 'community', label: this.i18n.t().community, icon: 'chat' },
-    { path: 'tickets', label: this.i18n.t().registerTicket, icon: 'plus' },
     { path: 'bank', label: this.i18n.t().myBank, icon: 'bank' },
     { path: 'history', label: this.i18n.t().myBets, icon: 'bets' },
-    { path: 'insights', label: this.i18n.t().profitability, icon: 'trend' },
+    { path: 'tickets', label: this.i18n.t().registerTicket, icon: 'plus' },
   ]);
   mobileLinks = computed(() => [
     { path: 'overview', label: 'Resumen', icon: 'overview' },
-    { path: 'matches', label: 'Partidos', icon: 'calendar' },
-    { path: 'pronosticos', label: 'IA Picks', icon: 'trend' },
+    { path: 'pronosticos', label: 'Pronósticos', icon: 'trend' },
     { path: 'tickets', label: 'Registrar', icon: 'plus' },
+    { path: 'bank', label: 'Mi Bank', icon: 'bank' },
     { path: 'history', label: 'Apuestas', icon: 'bets' },
   ]);
 

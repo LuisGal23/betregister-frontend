@@ -277,6 +277,7 @@ export interface CleanSelectionDetailForApi {
   description: string;
   game_id: string;
   event_label: string;
+  prediction_id?: number | null;
 }
 
 export function toDatabaseSelectionDetail(
@@ -444,5 +445,6 @@ export function toDatabaseSelectionDetail(
     description,
     game_id: d.game_id || '',
     event_label: (d.event_label || '').slice(0, 120),
+    prediction_id: d.prediction_id ? Number(d.prediction_id) : undefined,
   };
 }
